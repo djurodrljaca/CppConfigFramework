@@ -272,7 +272,7 @@ This configuration shall be equivalent to:
 {
     "config":
     {
-        "base_nodes": {...},
+        "base_nodes": {},
         "result_node1":
         {
             "a": 1,
@@ -286,7 +286,7 @@ This configuration shall be equivalent to:
             "b": 20,
             "c": 30,
             "d": 4,
-            "e": 50
+            "e": 50,
             "f": 60
         }
     }
@@ -347,16 +347,16 @@ This configuration shall be equivalent to:
 {
     "config":
     {
-        "base_nodes": {...},
+        "base_nodes": {},
         "result_node1":
-        {
+        [
             1,
             2,
             3,
             4
-        },
+        ],
         "result_node2":
-        {
+        [
             1,
             2,
             3,
@@ -366,7 +366,7 @@ This configuration shall be equivalent to:
             50,
             30,
             60
-        }
+        ]
     }
 }
 ```
