@@ -13,7 +13,9 @@ Configuration shall be contained in one or more configuration files. In case of 
 
 ## [R3] Container for configuration parameters
 
-All the configuration parameters shall be stored in the *config* member in the root *JSON object*.
+The configuration parameters shall be stored in the *config* member in the root *JSON object*.
+
+The *config* member shall be an optional *JSON object* value (i.e. *null* or an empty *JSON object*).
 
 
 ### [R3.1] Configuration parameter structure
@@ -268,7 +270,11 @@ This configuration shall be equivalent to:
 
 ## [R4] Loading of configuration parameters from other configuration files
 
-Links to other configuration files shall be stored as a *JSON array* in the *includes* member in the root *JSON object*. The specified configuration files shall be loaded in the specified order and before the main configuration is loaded (stored in *config* member of *JSON object*).
+Links to other configuration files shall be stored in the *includes* member in the root *JSON object*.
+
+The *includes* member shall be an optional *JSON array* value (i.e. *null* or an empty *JSON array*).
+
+The specified configuration files shall be loaded in the specified order and before the main configuration is loaded (stored in *config* member of *JSON object*).
 
 The *includes* member's elements shall have the following minimal structure:
 
