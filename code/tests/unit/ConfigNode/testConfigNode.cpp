@@ -58,9 +58,15 @@ private slots:
     void testConstructor();
     void testConstructor_data();
 
-    void testMove();
+    void testMoveNull();
+    void testMoveValue();
+    void testMoveArray();
+    void testMoveObject();
 
-private:
+    void testCloneNull();
+    void testCloneValue();
+    void testCloneArray();
+    void testCloneObject();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -88,7 +94,7 @@ void TestConfigNode::cleanup()
 void TestConfigNode::testDefaultConstructor()
 {
     ConfigNode node;
-    QCOMPARE(node.type(), ConfigNode::Type::Null);
+    QVERIFY(node.isNull());
     QCOMPARE(node.parent(), nullptr);
 }
 
@@ -119,36 +125,251 @@ void TestConfigNode::testConstructor_data()
 
 // Test: Move constructor and move assignment operator ---------------------------------------------
 
-void TestConfigNode::testMove()
+void TestConfigNode::testMoveNull()
 {
-    ConfigNode parentNode;
+    ConfigNode parentNode1;
+    ConfigNode parentNode2;
 
     // Move constructor
-    ConfigNode node(ConfigNode::Type::Value, &parentNode);
-    node.setValue(123);
-
-    ConfigNode movedNode(std::move(node));
-
-    QCOMPARE(movedNode.type(), ConfigNode::Type::Value);
-    QCOMPARE(movedNode.parent(), &parentNode);
-    QCOMPARE(movedNode.value(), QVariant(123));
+    ConfigNode movedNode(ConfigNode(ConfigNode::Type::Null, &parentNode1));
+    QVERIFY(movedNode.isNull());
+    QCOMPARE(movedNode.parent(), &parentNode1);
 
     // Move assignement operator
-    node = ConfigNode(ConfigNode::Type::Array, &parentNode);
+    movedNode = ConfigNode(ConfigNode::Type::Null, &parentNode2);
+    QVERIFY(movedNode.isNull());
+    QCOMPARE(movedNode.parent(), &parentNode2);
+}
+
+void TestConfigNode::testMoveValue()
+{
+    ConfigNode parentNode1;
+    ConfigNode parentNode2;
+
+    // Move constructor
+    {
+        ConfigNode node(ConfigNode::Type::Value, &parentNode1);
+        node.setValue(123);
+
+        ConfigNode movedNode(std::move(node));
+        QVERIFY(movedNode.isValue());
+        QCOMPARE(movedNode.parent(), &parentNode1);
+        QCOMPARE(movedNode.value(), QVariant(123));
+    }
+
+    // Move assignement operator
+    {
+        ConfigNode node(ConfigNode::Type::Value, &parentNode2);
+        node.setValue(456);
+
+        ConfigNode movedNode;
+        movedNode = std::move(node);
+        QVERIFY(movedNode.isValue());
+        QCOMPARE(movedNode.parent(), &parentNode2);
+        QCOMPARE(movedNode.value(), QVariant(456));
+    }
+}
+
+void TestConfigNode::testMoveArray()
+{
+    ConfigNode parentNode1;
+    ConfigNode parentNode2;
+
+    // Move constructor
+    {
+        ConfigNode node(ConfigNode::Type::Array, &parentNode1);
+        node.appendElement(ConfigNode(ConfigNode::Type::Null));
+        node.appendElement(ConfigNode(ConfigNode::Type::Value));
+
+        ConfigNode movedNode(std::move(node));
+        QVERIFY(movedNode.isArray());
+        QCOMPARE(movedNode.parent(), &parentNode1);
+        QCOMPARE(movedNode.count(), 2);
+
+        QCOMPARE(movedNode.element(0)->type(), ConfigNode::Type::Null);
+        QCOMPARE(movedNode.element(0)->parent(), &movedNode);
+
+        QCOMPARE(movedNode.element(1)->type(), ConfigNode::Type::Value);
+        QCOMPARE(movedNode.element(1)->parent(), &movedNode);
+    }
+
+    // Move assignement operator
+    {
+        ConfigNode node(ConfigNode::Type::Array, &parentNode1);
+        node.appendElement(ConfigNode(ConfigNode::Type::Array));
+        node.appendElement(ConfigNode(ConfigNode::Type::Object));
+
+        ConfigNode movedNode;
+        movedNode = std::move(node);
+        QVERIFY(movedNode.isArray());
+        QCOMPARE(movedNode.parent(), &parentNode1);
+        QCOMPARE(movedNode.count(), 2);
+
+        QCOMPARE(movedNode.element(0)->type(), ConfigNode::Type::Array);
+        QCOMPARE(movedNode.element(0)->parent(), &movedNode);
+
+        QCOMPARE(movedNode.element(1)->type(), ConfigNode::Type::Object);
+        QCOMPARE(movedNode.element(1)->parent(), &movedNode);
+    }
+}
+
+void TestConfigNode::testMoveObject()
+{
+    ConfigNode parentNode1;
+    ConfigNode parentNode2;
+
+    // Move constructor
+    {
+        ConfigNode node(ConfigNode::Type::Object, &parentNode1);
+        node.setMember("item1", ConfigNode(ConfigNode::Type::Null));
+        node.setMember("item2", ConfigNode(ConfigNode::Type::Value));
+
+        ConfigNode movedNode(std::move(node));
+        QVERIFY(movedNode.isObject());
+        QCOMPARE(movedNode.parent(), &parentNode1);
+        QCOMPARE(movedNode.count(), 2);
+
+        QCOMPARE(movedNode.member("item1")->type(), ConfigNode::Type::Null);
+        QCOMPARE(movedNode.member("item1")->parent(), &movedNode);
+
+        QCOMPARE(movedNode.member("item2")->type(), ConfigNode::Type::Value);
+        QCOMPARE(movedNode.member("item2")->parent(), &movedNode);
+    }
+
+    // Move assignement operator
+    {
+        ConfigNode node(ConfigNode::Type::Object, &parentNode1);
+        node.setMember("item1", ConfigNode(ConfigNode::Type::Null));
+        node.setMember("item2", ConfigNode(ConfigNode::Type::Value));
+
+        ConfigNode movedNode;
+        movedNode = std::move(node);
+        QVERIFY(movedNode.isObject());
+        QCOMPARE(movedNode.parent(), &parentNode1);
+        QCOMPARE(movedNode.count(), 2);
+
+        QCOMPARE(movedNode.member("item1")->type(), ConfigNode::Type::Null);
+        QCOMPARE(movedNode.member("item1")->parent(), &movedNode);
+
+        QCOMPARE(movedNode.member("item2")->type(), ConfigNode::Type::Value);
+        QCOMPARE(movedNode.member("item2")->parent(), &movedNode);
+    }
+}
+
+// Test: clone() method ----------------------------------------------------------------------------
+
+void TestConfigNode::testCloneNull()
+{
+    // Clone without parent
+    ConfigNode node(ConfigNode::Type::Null, nullptr);
+
+    ConfigNode clonedNode(node.clone());
+    QVERIFY(clonedNode.isNull());
+    QCOMPARE(clonedNode.parent(), nullptr);
+
+    // Clone with parent
+    ConfigNode parentNode;
+    node.setParent(&parentNode);
+
+    clonedNode = node.clone();
+    QVERIFY(clonedNode.isNull());
+    QCOMPARE(clonedNode.parent(), nullptr);
+}
+
+void TestConfigNode::testCloneValue()
+{
+    // Clone without parent
+    ConfigNode node(ConfigNode::Type::Value, nullptr);
+    node.setValue(123);
+
+    ConfigNode clonedNode(node.clone());
+    QVERIFY(clonedNode.isValue());
+    QCOMPARE(clonedNode.parent(), nullptr);
+    QCOMPARE(clonedNode.value(), QVariant(123));
+
+    // Clone with parent
+    ConfigNode parentNode;
+    node.setParent(&parentNode);
+    node.setValue(456);
+
+    clonedNode = node.clone();
+    QVERIFY(clonedNode.isValue());
+    QCOMPARE(clonedNode.parent(), nullptr);
+    QCOMPARE(clonedNode.value(), QVariant(456));
+}
+
+void TestConfigNode::testCloneArray()
+{
+    // Clone without parent
+    ConfigNode node(ConfigNode::Type::Array, nullptr);
     node.appendElement(ConfigNode(ConfigNode::Type::Null));
     node.appendElement(ConfigNode(ConfigNode::Type::Value));
 
-    movedNode = std::move(node);
+    ConfigNode clonedNode(node.clone());
+    QVERIFY(clonedNode.isArray());
+    QCOMPARE(clonedNode.parent(), nullptr);
+    QCOMPARE(clonedNode.count(), 2);
 
-    QCOMPARE(movedNode.type(), ConfigNode::Type::Array);
-    QCOMPARE(movedNode.parent(), &parentNode);
-    QCOMPARE(movedNode.count(), 2);
+    QCOMPARE(clonedNode.element(0)->type(), ConfigNode::Type::Null);
+    QCOMPARE(clonedNode.element(0)->parent(), &clonedNode);
 
-    QCOMPARE(movedNode.element(0)->type(), ConfigNode::Type::Null);
-    QCOMPARE(movedNode.element(0)->parent(), &movedNode);
+    QCOMPARE(clonedNode.element(1)->type(), ConfigNode::Type::Value);
+    QCOMPARE(clonedNode.element(1)->parent(), &clonedNode);
 
-    QCOMPARE(movedNode.element(1)->type(), ConfigNode::Type::Value);
-    QCOMPARE(movedNode.element(1)->parent(), &movedNode);
+    // Clone with parent
+    ConfigNode parentNode;
+    node.setParent(&parentNode);
+    node.removeAll();
+    node.appendElement(ConfigNode(ConfigNode::Type::Array));
+    node.appendElement(ConfigNode(ConfigNode::Type::Object));
+
+    clonedNode = node.clone();
+    QVERIFY(clonedNode.isArray());
+    QCOMPARE(clonedNode.parent(), nullptr);
+    QCOMPARE(clonedNode.count(), 2);
+
+    QCOMPARE(clonedNode.element(0)->type(), ConfigNode::Type::Array);
+    QCOMPARE(clonedNode.element(0)->parent(), &clonedNode);
+
+    QCOMPARE(clonedNode.element(1)->type(), ConfigNode::Type::Object);
+    QCOMPARE(clonedNode.element(1)->parent(), &clonedNode);
+}
+
+void TestConfigNode::testCloneObject()
+{
+    // Clone without parent
+    ConfigNode node(ConfigNode::Type::Object, nullptr);
+    node.setMember("item1", ConfigNode(ConfigNode::Type::Null));
+    node.setMember("item2", ConfigNode(ConfigNode::Type::Value));
+
+    ConfigNode clonedNode(node.clone());
+    QVERIFY(clonedNode.isObject());
+    QCOMPARE(clonedNode.parent(), nullptr);
+    QCOMPARE(clonedNode.count(), 2);
+
+    QCOMPARE(clonedNode.member("item1")->type(), ConfigNode::Type::Null);
+    QCOMPARE(clonedNode.member("item1")->parent(), &clonedNode);
+
+    QCOMPARE(clonedNode.member("item2")->type(), ConfigNode::Type::Value);
+    QCOMPARE(clonedNode.member("item2")->parent(), &clonedNode);
+
+    // Clone with parent
+    ConfigNode parentNode;
+    node.setParent(&parentNode);
+    node.removeAll();
+    node.setMember("item1", ConfigNode(ConfigNode::Type::Array));
+    node.setMember("item2", ConfigNode(ConfigNode::Type::Object));
+
+    clonedNode = node.clone();
+    QVERIFY(clonedNode.isObject());
+    QCOMPARE(clonedNode.parent(), nullptr);
+    QCOMPARE(clonedNode.count(), 2);
+
+    QCOMPARE(clonedNode.member("item1")->type(), ConfigNode::Type::Array);
+    QCOMPARE(clonedNode.member("item1")->parent(), &clonedNode);
+
+    QCOMPARE(clonedNode.member("item2")->type(), ConfigNode::Type::Object);
+    QCOMPARE(clonedNode.member("item2")->parent(), &clonedNode);
 }
 
 // Main function -----------------------------------------------------------------------------------
