@@ -67,6 +67,8 @@ private slots:
     void testCloneValue();
     void testCloneArray();
     void testCloneObject();
+
+    void testNodePath();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -108,9 +110,10 @@ void TestConfigNode::testConstructor()
     QCOMPARE(nodeWithoutParent.type(), nodeType);
     QCOMPARE(nodeWithoutParent.parent(), nullptr);
 
-    ConfigNode nodeWithParent(nodeType, &nodeWithoutParent);
+    ConfigNode parent(ConfigNode::Type::Object);
+    ConfigNode nodeWithParent(nodeType, &parent);
     QCOMPARE(nodeWithParent.type(), nodeType);
-    QCOMPARE(nodeWithParent.parent(), &nodeWithoutParent);
+    QCOMPARE(nodeWithParent.parent(), &parent);
 }
 
 void TestConfigNode::testConstructor_data()
@@ -127,8 +130,8 @@ void TestConfigNode::testConstructor_data()
 
 void TestConfigNode::testMoveNull()
 {
-    ConfigNode parentNode1;
-    ConfigNode parentNode2;
+    ConfigNode parentNode1(ConfigNode::Type::Object);
+    ConfigNode parentNode2(ConfigNode::Type::Object);
 
     // Move constructor
     ConfigNode movedNode(ConfigNode(ConfigNode::Type::Null, &parentNode1));
@@ -143,8 +146,8 @@ void TestConfigNode::testMoveNull()
 
 void TestConfigNode::testMoveValue()
 {
-    ConfigNode parentNode1;
-    ConfigNode parentNode2;
+    ConfigNode parentNode1(ConfigNode::Type::Object);
+    ConfigNode parentNode2(ConfigNode::Type::Object);
 
     // Move constructor
     {
@@ -172,8 +175,8 @@ void TestConfigNode::testMoveValue()
 
 void TestConfigNode::testMoveArray()
 {
-    ConfigNode parentNode1;
-    ConfigNode parentNode2;
+    ConfigNode parentNode1(ConfigNode::Type::Object);
+    ConfigNode parentNode2(ConfigNode::Type::Object);
 
     // Move constructor
     {
@@ -215,8 +218,8 @@ void TestConfigNode::testMoveArray()
 
 void TestConfigNode::testMoveObject()
 {
-    ConfigNode parentNode1;
-    ConfigNode parentNode2;
+    ConfigNode parentNode1(ConfigNode::Type::Object);
+    ConfigNode parentNode2(ConfigNode::Type::Object);
 
     // Move constructor
     {
@@ -268,7 +271,7 @@ void TestConfigNode::testCloneNull()
     QCOMPARE(clonedNode.parent(), nullptr);
 
     // Clone with parent
-    ConfigNode parentNode;
+    ConfigNode parentNode(ConfigNode::Type::Object);
     node.setParent(&parentNode);
 
     clonedNode = node.clone();
@@ -288,7 +291,7 @@ void TestConfigNode::testCloneValue()
     QCOMPARE(clonedNode.value(), QVariant(123));
 
     // Clone with parent
-    ConfigNode parentNode;
+    ConfigNode parentNode(ConfigNode::Type::Object);
     node.setParent(&parentNode);
     node.setValue(456);
 
@@ -317,7 +320,7 @@ void TestConfigNode::testCloneArray()
     QCOMPARE(clonedNode.element(1)->parent(), &clonedNode);
 
     // Clone with parent
-    ConfigNode parentNode;
+    ConfigNode parentNode(ConfigNode::Type::Object);
     node.setParent(&parentNode);
     node.removeAll();
     node.appendElement(ConfigNode(ConfigNode::Type::Array));
@@ -354,7 +357,7 @@ void TestConfigNode::testCloneObject()
     QCOMPARE(clonedNode.member("item2")->parent(), &clonedNode);
 
     // Clone with parent
-    ConfigNode parentNode;
+    ConfigNode parentNode(ConfigNode::Type::Object);
     node.setParent(&parentNode);
     node.removeAll();
     node.setMember("item1", ConfigNode(ConfigNode::Type::Array));
@@ -370,6 +373,81 @@ void TestConfigNode::testCloneObject()
 
     QCOMPARE(clonedNode.member("item2")->type(), ConfigNode::Type::Object);
     QCOMPARE(clonedNode.member("item2")->parent(), &clonedNode);
+}
+
+// Test: rootNode() method -------------------------------------------------------------------------
+
+void TestConfigNode::testNodePath()
+{
+    // Root node
+    ConfigNode rootNode(ConfigNode::Type::Object);
+
+    QVERIFY(rootNode.isRoot());
+    QCOMPARE(rootNode.rootNode(), &rootNode);
+    QCOMPARE(rootNode.absoluteNodePath(), "/");
+    QCOMPARE(rootNode.nodeAtPath("/"), &rootNode);
+
+    // Level 1
+    rootNode.setMember("level1", ConfigNode(ConfigNode::Type::Object));
+    ConfigNode *level1 = rootNode.member("level1");
+    QVERIFY(level1 != nullptr);
+    QCOMPARE(level1->rootNode(), &rootNode);
+    QCOMPARE(level1->absoluteNodePath(), "/level1");
+    QCOMPARE(rootNode.nodeAtPath("/level1"), level1);
+
+    // Level 2
+    level1->setMember("level2", ConfigNode(ConfigNode::Type::Object));
+    ConfigNode *level2 = level1->member("level2");
+    QVERIFY(level2 != nullptr);
+    QCOMPARE(level2->rootNode(), &rootNode);
+    QCOMPARE(level2->absoluteNodePath(), "/level1/level2");
+    QCOMPARE(rootNode.nodeAtPath("/level1/level2"), level2);
+
+    // Level 3
+    level2->setMember("level3", ConfigNode(ConfigNode::Type::Array));
+    ConfigNode *level3 = level2->member("level3");
+    QVERIFY(level3 != nullptr);
+    QCOMPARE(level3->rootNode(), &rootNode);
+    QCOMPARE(level3->absoluteNodePath(), "/level1/level2/level3");
+    QCOMPARE(rootNode.nodeAtPath("/level1/level2/level3"), level3);
+
+    // Level 3 elements
+    level3->appendElement(ConfigNode(ConfigNode::Type::Null));
+    ConfigNode *level3Element0 = level3->element(0);
+    QVERIFY(level3Element0 != nullptr);
+    QCOMPARE(level3Element0->rootNode(), &rootNode);
+    QCOMPARE(level3Element0->absoluteNodePath(), "/level1/level2/level3/0");
+    QCOMPARE(level3Element0, rootNode.nodeAtPath("/level1/level2/level3/0"));
+    QCOMPARE(rootNode.nodeAtPath("/level1/level2/level3/0"), level3Element0);
+
+    level3->appendElement(ConfigNode(ConfigNode::Type::Value));
+    ConfigNode *level3Element1 = level3->element(1);
+    QVERIFY(level3Element1 != nullptr);
+    QCOMPARE(level3Element1->rootNode(), &rootNode);
+    QCOMPARE(level3Element1->absoluteNodePath(), "/level1/level2/level3/1");
+    QCOMPARE(rootNode.nodeAtPath("/level1/level2/level3/1"), level3Element1);
+
+    // Test absolute paths on non-root items
+    QCOMPARE(level3Element0->nodeAtPath("/"), &rootNode);
+    QCOMPARE(level3Element1->nodeAtPath("/"), &rootNode);
+
+    QCOMPARE(level3Element0->nodeAtPath("/level1"), level1);
+    QCOMPARE(level3Element1->nodeAtPath("/level1/level2"), level2);
+
+    // Test relative paths
+    QCOMPARE(rootNode.nodeAtPath("/level1/.."), &rootNode);
+    QCOMPARE(rootNode.nodeAtPath("level1/.."), &rootNode);
+
+    QCOMPARE(rootNode.nodeAtPath("level1"), level1);
+    QCOMPARE(rootNode.nodeAtPath("/level1/level2/.."), level1);
+    QCOMPARE(rootNode.nodeAtPath("/level1/../level1/level2/.."), level1);
+    QCOMPARE(rootNode.nodeAtPath("level1/level2/.."), level1);
+
+    QCOMPARE(level1->nodeAtPath(".."), &rootNode);
+    QCOMPARE(level1->nodeAtPath("level2/.."), level1);
+    QCOMPARE(level1->nodeAtPath("level2"), level2);
+
+    QCOMPARE(level3Element1->nodeAtPath("../0"), level3Element0);
 }
 
 // Main function -----------------------------------------------------------------------------------
