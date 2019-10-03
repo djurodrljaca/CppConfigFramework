@@ -112,6 +112,9 @@ public:
     //! \copydoc    ConfigNode::rootNode()
     const ConfigNode *rootNode() const;
 
+    //! \copydoc    ConfigNode::rootNode()
+    ConfigNode *rootNode();
+
     //! \copydoc    ConfigNode::absoluteNodePath()
     QString absoluteNodePath() const;
 
@@ -145,6 +148,9 @@ public:
     //! \copydoc    ConfigNode::nodeAtPath()
     const ConfigNode *nodeAtPath(const QString &nodePath) const;
 
+    //! \copydoc    ConfigNode::nodeAtPath()
+    ConfigNode *nodeAtPath(const QString &nodePath);
+
     //! \copydoc    ConfigNode::setValue()
     void setValue(const QVariant &value);
 
@@ -162,6 +168,9 @@ public:
 
     //! \copydoc    ConfigNode::removeMember()
     void removeMember(const QString &name);
+
+    //! \copydoc    ConfigNode::removeAll()
+    void removeAll();
 
     //! \copydoc    ConfigNode::apply()
     bool apply(const ConfigNode &otherNode);
@@ -338,6 +347,14 @@ const ConfigNode *ConfigNode::Impl::rootNode() const
 
 // -------------------------------------------------------------------------------------------------
 
+ConfigNode *ConfigNode::Impl::rootNode()
+{
+    auto constThis = static_cast<const Impl*>(this);
+    return const_cast<ConfigNode *>(constThis->rootNode());
+}
+
+// -------------------------------------------------------------------------------------------------
+
 QString ConfigNode::Impl::absoluteNodePath() const
 {
     if (isRoot())
@@ -434,7 +451,7 @@ QVariant ConfigNode::Impl::value() const
     if (!isValue())
     {
         qDebug() << DEBUG_METHOD_IMPL("value") << "Error: config node is not of a Value type";
-        return QVariant();
+        return {};
     }
 
     return *m_data->value();
@@ -593,6 +610,14 @@ const ConfigNode *ConfigNode::Impl::nodeAtPath(const QString &nodePath) const
 
 // -------------------------------------------------------------------------------------------------
 
+ConfigNode *ConfigNode::Impl::nodeAtPath(const QString &nodePath)
+{
+    auto constThis = static_cast<const Impl*>(this);
+    return const_cast<ConfigNode *>(constThis->nodeAtPath(nodePath));
+}
+
+// -------------------------------------------------------------------------------------------------
+
 void ConfigNode::Impl::setValue(const QVariant &value)
 {
     if (!isValue())
@@ -714,6 +739,25 @@ void ConfigNode::Impl::removeMember(const QString &name)
 
 // -------------------------------------------------------------------------------------------------
 
+void ConfigNode::Impl::removeAll()
+{
+    if (isArray())
+    {
+        m_data->array()->clear();
+    }
+    else if (isObject())
+    {
+        m_data->object()->clear();
+    }
+    else
+    {
+        qDebug() << DEBUG_METHOD_IMPL("removeAll")
+                 << "Config node is not of an Array or Object type";
+    }
+}
+
+// -------------------------------------------------------------------------------------------------
+
 bool ConfigNode::Impl::apply(const ConfigNode &otherNode)
 {
     for (const QString &name : otherNode.memberNames())
@@ -807,7 +851,7 @@ QString ConfigNode::Impl::findNodeName(const Impl &value) const
         }
     }
 
-    return QString();
+    return {};
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -886,7 +930,7 @@ QString ConfigNode::typeToString(const ConfigNode::Type type)
         }
     }
 
-    return QString();
+    return {};
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -956,8 +1000,7 @@ const ConfigNode *ConfigNode::rootNode() const
 
 ConfigNode *ConfigNode::rootNode()
 {
-    auto constThis = static_cast<const ConfigNode*>(this);
-    return const_cast<ConfigNode *>(constThis->rootNode());
+    return impl()->rootNode();
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -1041,8 +1084,7 @@ const ConfigNode *ConfigNode::nodeAtPath(const QString &nodePath) const
 
 ConfigNode *ConfigNode::nodeAtPath(const QString &nodePath)
 {
-    auto constThis = static_cast<const ConfigNode*>(this);
-    return const_cast<ConfigNode *>(constThis->nodeAtPath(nodePath));
+    return impl()->nodeAtPath(nodePath);
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -1085,6 +1127,13 @@ void ConfigNode::removeElement(const int index)
 void ConfigNode::removeMember(const QString &name)
 {
     return impl()->removeMember(name);
+}
+
+// -------------------------------------------------------------------------------------------------
+
+void ConfigNode::removeAll()
+{
+    return impl()->removeAll();
 }
 
 // -------------------------------------------------------------------------------------------------

@@ -186,6 +186,9 @@ public:
     //! Removes a value with the specified name from the Object node
     void removeMember(const QString &name);
 
+    //! Removes all elements from an Array node or all members from an Object node
+    void removeAll();
+
     /*!
      * Merges the specified Object node with this Object node
      *
