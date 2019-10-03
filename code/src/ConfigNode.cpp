@@ -40,6 +40,8 @@
 #define DEBUG_METHOD(METHOD)      CPPCONFIGFRAMEWORK_DEBUG_METHOD("ConfigNode::" METHOD)
 #define DEBUG_METHOD_IMPL(METHOD) CPPCONFIGFRAMEWORK_DEBUG_METHOD("ConfigNode::Impl::" METHOD)
 
+// -------------------------------------------------------------------------------------------------
+
 namespace CppConfigFramework
 {
 
@@ -54,13 +56,16 @@ class ConfigNode::Impl
 {
 public:
     //! Constructor
-    Impl(const Type type = Type::Null, ConfigNode *parent = nullptr);
+    Impl() = delete;
+
+    //! Constructor
+    Impl(const Type type, ConfigNode *parent, ConfigNode *owner);
 
     //! Copy constructor
     Impl(const Impl &other) = delete;
 
     //! Move constructor
-    Impl(Impl &&other) noexcept = default;
+    Impl(Impl &&other) = delete;
 
     //! Destructor
     ~Impl();
@@ -69,7 +74,10 @@ public:
     Impl &operator=(const Impl &other) = delete;
 
     //! Move assignment operator
-    Impl &operator=(Impl &&other) noexcept = default;
+    Impl &operator=(Impl &&other) = delete;
+
+    //! Changes the owner of this implementation
+    void setOwner(ConfigNode *owner);
 
     //! \copydoc    ConfigNode::clone()
     ConfigNode clone() const;
@@ -101,6 +109,9 @@ public:
     //! \copydoc    ConfigNode::setParent()
     void setParent(ConfigNode *parent);
 
+    //! \copydoc    ConfigNode::rootNode()
+    const ConfigNode *rootNode() const;
+
     //! \copydoc    ConfigNode::absoluteNodePath()
     QString absoluteNodePath() const;
 
@@ -130,6 +141,9 @@ public:
 
     //! \copydoc    ConfigNode::member()
     ConfigNode *member(const QString &name);
+
+    //! \copydoc    ConfigNode::nodeAtPath()
+    const ConfigNode *nodeAtPath(const QString &nodePath) const;
 
     //! \copydoc    ConfigNode::setValue()
     void setValue(const QVariant &value);
@@ -162,25 +176,38 @@ private:
     //! Container for node data
     std::unique_ptr<ConfigNodeData> m_data;
 
-    //! Pointer to the parent
-    ConfigNode *m_parent;
+    //! Pointer to the parent node's PIMPL
+    Impl *m_parent;
+
+    //! Pointer to the public part of the class
+    ConfigNode *m_owner;
 };
 
 // -------------------------------------------------------------------------------------------------
 
-ConfigNode::Impl::Impl(const Type type, ConfigNode *parent)
-    : m_data(),
-      m_parent(parent)
+ConfigNode::Impl::Impl(const Type type, ConfigNode *parent, ConfigNode *owner)
+    : m_data(ConfigNodeData::create(type)),
+      m_parent((parent == nullptr) ? nullptr : parent->impl()),
+      m_owner(owner)
 {
-    m_data = ConfigNodeData::create(type);
+    Q_ASSERT(owner);
 }
 
 // -------------------------------------------------------------------------------------------------
 
 ConfigNode::Impl::~Impl()
 {
-    // This object doesn't own the parent
+    // This object doesn't own the parent or the public part of the class
     m_parent = nullptr;
+    m_owner = nullptr;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+void ConfigNode::Impl::setOwner(ConfigNode *owner)
+{
+    Q_ASSERT(owner);
+    m_owner = owner;
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -273,21 +300,40 @@ bool ConfigNode::Impl::isRoot() const
 
 const ConfigNode *ConfigNode::Impl::parent() const
 {
-    return m_parent;
+    return (m_parent == nullptr) ? nullptr : m_parent->m_owner;
 }
 
 // -------------------------------------------------------------------------------------------------
 
 ConfigNode *ConfigNode::Impl::parent()
 {
-    return m_parent;
+    return (m_parent == nullptr) ? nullptr : m_parent->m_owner;
 }
 
 // -------------------------------------------------------------------------------------------------
 
 void ConfigNode::Impl::setParent(ConfigNode *parent)
 {
-    m_parent = parent;
+    m_parent = (parent == nullptr) ? nullptr : parent->impl();
+}
+
+// -------------------------------------------------------------------------------------------------
+
+const ConfigNode *ConfigNode::Impl::rootNode() const
+{
+    if (isRoot())
+    {
+        return m_owner;
+    }
+
+    const ConfigNode *node = parent();
+
+    while (node != nullptr)
+    {
+        node = node->parent();
+    }
+
+    return node;
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -302,12 +348,12 @@ QString ConfigNode::Impl::absoluteNodePath() const
     if (parent()->isArray())
     {
         return parent()->absoluteNodePath() % '/' %
-                QString::number(parent()->m_impl->findNodeIndex(*this));
+                QString::number(parent()->impl()->findNodeIndex(*this));
     }
 
     if (parent()->isObject())
     {
-        return parent()->absoluteNodePath() % '/' % parent()->m_impl->findNodeName(*this);
+        return parent()->absoluteNodePath() % '/' % parent()->impl()->findNodeName(*this);
     }
 
     return parent()->absoluteNodePath();
@@ -317,7 +363,7 @@ QString ConfigNode::Impl::absoluteNodePath() const
 
 void ConfigNode::Impl::clear()
 {
-    *this = ConfigNode::Impl(Type::Null, m_parent);
+    this->m_data = ConfigNodeData::create(ConfigNode::Type::Null);
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -453,6 +499,100 @@ ConfigNode *ConfigNode::Impl::member(const QString &name)
 
 // -------------------------------------------------------------------------------------------------
 
+const ConfigNode *ConfigNode::Impl::nodeAtPath(const QString &nodePath) const
+{
+    // Validate node path
+    if (!validateNodePath(nodePath, absoluteNodePath()))
+    {
+        qDebug() << DEBUG_METHOD_IMPL("nodeAtPath") << "Error: invalid path:" << nodePath;
+        return nullptr;
+    }
+
+    // Try to find the node at the specified path
+    const ConfigNode *currentNode = nullptr;
+    QStringList nodeNames;
+
+    if (isAbsoluteNodePath(nodePath))
+    {
+        currentNode = rootNode();
+        nodeNames = nodePath.mid(1).split(QChar('/'));
+    }
+    else
+    {
+        currentNode = m_owner;
+        nodeNames = nodePath.split(QChar('/'));
+    }
+
+    for (const QString &nodeName : nodeNames)
+    {
+        // Check if parent node is referenced
+        if (nodeName == QStringLiteral(".."))
+        {
+            if (currentNode->isRoot())
+            {
+                qDebug() << DEBUG_METHOD_IMPL("nodeAtPath")
+                         << "Error: parent of the root node was request:" << nodePath;
+                return nullptr;
+            }
+
+            currentNode = currentNode->parent();
+            continue;
+        }
+
+        // Get the specified member node if this is an Object node
+        if (isObject())
+        {
+            if (currentNode->containsMember(nodeName))
+            {
+                qDebug() << DEBUG_METHOD_IMPL("nodeAtPath")
+                         << QString("Error: node [%1] from node path [%2] was not found in [%3]")
+                            .arg(nodeName, nodePath, absoluteNodePath());
+                return nullptr;
+            }
+
+            currentNode = currentNode->member(nodeName);
+            continue;
+        }
+
+        // Get the specified element node if this is an Array node
+        if (isArray())
+        {
+            bool ok = false;
+            const int index = nodeName.toInt(&ok);
+
+            if (!ok)
+            {
+                qDebug() << DEBUG_METHOD_IMPL("nodeAtPath")
+                         << QString("Error: node [%1] from node path [%2] was not found in [%3]: "
+                                    "invalid node index")
+                            .arg(nodeName, nodePath, absoluteNodePath());
+                return nullptr;
+            }
+
+            if ((index < 0) || (index >= currentNode->count()))
+            {
+                qDebug() << DEBUG_METHOD_IMPL("nodeAtPath")
+                         << QString("Error: node [%1] from node path [%2] was not found in [%3]: "
+                                    "node index our of range")
+                            .arg(nodeName, nodePath, absoluteNodePath());
+                return nullptr;
+            }
+
+            currentNode = currentNode->member(nodeName);
+            continue;
+        }
+
+        qDebug() << DEBUG_METHOD_IMPL("nodeAtPath")
+                 << QString("Error: cannot get node [%1] from node path [%2] with type [%3]")
+                    .arg(nodeName, nodePath, typeToString(currentNode->type()));
+        return nullptr;
+    }
+
+    return currentNode;
+}
+
+// -------------------------------------------------------------------------------------------------
+
 void ConfigNode::Impl::setValue(const QVariant &value)
 {
     if (!isValue())
@@ -500,6 +640,7 @@ void ConfigNode::Impl::setMember(const QString &name, ConfigNode &&value)
         return;
     }
 
+    value.setParent(m_owner);
     auto it = m_data->object()->find(name);
 
     if (it == m_data->object()->end())
@@ -524,6 +665,7 @@ void ConfigNode::Impl::appendElement(ConfigNode &&value)
         return;
     }
 
+    value.setParent(m_owner);
     m_data->array()->push_back(std::move(value));
 }
 
@@ -640,7 +782,7 @@ int ConfigNode::Impl::findNodeIndex(const Impl &value) const
 {
     for (std::size_t i = 0U; i < m_data->array()->size(); i++)
     {
-        const Impl &item = *m_data->array()->at(i).m_impl;
+        const Impl &item = *m_data->array()->at(i).impl();
 
         if (&item == &value)
         {
@@ -657,7 +799,7 @@ QString ConfigNode::Impl::findNodeName(const Impl &value) const
 {
     for (auto &it : *m_data->object())
     {
-        const Impl &item = *it.second.m_impl;
+        const Impl &item = *it.second.impl();
 
         if (&item == &value)
         {
@@ -673,13 +815,17 @@ QString ConfigNode::Impl::findNodeName(const Impl &value) const
 // -------------------------------------------------------------------------------------------------
 
 ConfigNode::ConfigNode(const ConfigNode::Type type, ConfigNode *parent)
-    : m_impl(Impl(type, parent))
+    : m_pimpl(std::make_unique<Impl>(type, parent, this))
 {
 }
 
 // -------------------------------------------------------------------------------------------------
 
-ConfigNode::ConfigNode(ConfigNode &&other) noexcept = default;
+ConfigNode::ConfigNode(ConfigNode &&other) noexcept
+    : m_pimpl(std::move(other.m_pimpl))
+{
+    m_pimpl->setOwner(this);
+}
 
 // -------------------------------------------------------------------------------------------------
 
@@ -687,20 +833,30 @@ ConfigNode::~ConfigNode() = default;
 
 // -------------------------------------------------------------------------------------------------
 
-ConfigNode &ConfigNode::operator=(ConfigNode &&other) noexcept = default;
+ConfigNode &ConfigNode::operator=(ConfigNode &&other) noexcept
+{
+    if (&other == this)
+    {
+        return *this;
+    }
+
+    m_pimpl = std::move(other.m_pimpl);
+    m_pimpl->setOwner(this);
+    return *this;
+}
 
 // -------------------------------------------------------------------------------------------------
 
 ConfigNode ConfigNode::clone() const
 {
-    return m_impl->clone();
+    return impl()->clone();
 }
 
 // -------------------------------------------------------------------------------------------------
 
 ConfigNode::Type ConfigNode::type() const
 {
-    return m_impl->type();
+    return impl()->type();
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -737,70 +893,63 @@ QString ConfigNode::typeToString(const ConfigNode::Type type)
 
 bool ConfigNode::isNull() const
 {
-    return m_impl->isNull();
+    return impl()->isNull();
 }
 
 // -------------------------------------------------------------------------------------------------
 
 bool ConfigNode::isValue() const
 {
-    return m_impl->isValue();
+    return impl()->isValue();
 }
 
 // -------------------------------------------------------------------------------------------------
 
 bool ConfigNode::isArray() const
 {
-    return m_impl->isArray();
+    return impl()->isArray();
 }
 
 // -------------------------------------------------------------------------------------------------
 
 bool ConfigNode::isObject() const
 {
-    return m_impl->isObject();
+    return impl()->isObject();
 }
 
 // -------------------------------------------------------------------------------------------------
 
 bool ConfigNode::isRoot() const
 {
-    return m_impl->isRoot();
+    return impl()->isRoot();
 }
 
 // -------------------------------------------------------------------------------------------------
 
 const ConfigNode *ConfigNode::parent() const
 {
-    return m_impl->parent();
+    return impl()->parent();
 }
 
 // -------------------------------------------------------------------------------------------------
 
 ConfigNode *ConfigNode::parent()
 {
-    return m_impl->parent();
+    return impl()->parent();
 }
 
 // -------------------------------------------------------------------------------------------------
 
 void ConfigNode::setParent(ConfigNode *parent)
 {
-    m_impl->setParent(parent);
+    impl()->setParent(parent);
 }
 
 // -------------------------------------------------------------------------------------------------
 
 const ConfigNode *ConfigNode::rootNode() const
 {
-    const ConfigNode *node = this;
-
-    while (node->parent() != nullptr)
-    {
-        node = node->parent();
-    }
-
-    return node;
+    return impl()->rootNode();
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -815,164 +964,77 @@ ConfigNode *ConfigNode::rootNode()
 
 QString ConfigNode::absoluteNodePath() const
 {
-    return m_impl->absoluteNodePath();
+    return impl()->absoluteNodePath();
 }
 
 // -------------------------------------------------------------------------------------------------
 
 void ConfigNode::clear()
 {
-    m_impl->clear();
+    impl()->clear();
 }
 
 // -------------------------------------------------------------------------------------------------
 
 int ConfigNode::count() const
 {
-    return m_impl->count();
+    return impl()->count();
 }
 
 // -------------------------------------------------------------------------------------------------
 
 bool ConfigNode::containsMember(const QString &name) const
 {
-    return m_impl->containsMember(name);
+    return impl()->containsMember(name);
 }
 
 // -------------------------------------------------------------------------------------------------
 
 QStringList ConfigNode::memberNames() const
 {
-    return m_impl->memberNames();
+    return impl()->memberNames();
 }
 
 // -------------------------------------------------------------------------------------------------
 
 QVariant ConfigNode::value() const
 {
-    return m_impl->value();
+    return impl()->value();
 }
 
 // -------------------------------------------------------------------------------------------------
 
 const ConfigNode *ConfigNode::element(const int index) const
 {
-    return m_impl->element(index);
+    return impl()->element(index);
 }
 
 // -------------------------------------------------------------------------------------------------
 
 ConfigNode *ConfigNode::element(const int index)
 {
-    return m_impl->element(index);
+    return impl()->element(index);
 }
 
 // -------------------------------------------------------------------------------------------------
 
 const ConfigNode *ConfigNode::member(const QString &name) const
 {
-    return m_impl->member(name);
+    return impl()->member(name);
 }
 
 // -------------------------------------------------------------------------------------------------
 
 ConfigNode *ConfigNode::member(const QString &name)
 {
-    return m_impl->member(name);
+    return impl()->member(name);
 }
 
 // -------------------------------------------------------------------------------------------------
 
 const ConfigNode *ConfigNode::nodeAtPath(const QString &nodePath) const
 {
-    // Validate node path
-    if (!validateNodePath(nodePath, absoluteNodePath()))
-    {
-        qDebug() << DEBUG_METHOD_IMPL("nodeAtPath") << "Error: invalid path:" << nodePath;
-        return nullptr;
-    }
-
-    // Try to find the node at the specified path
-    const ConfigNode *currentNode = nullptr;
-    QStringList nodeNames;
-
-    if (isAbsoluteNodePath(nodePath))
-    {
-        currentNode = rootNode();
-        nodeNames = nodePath.mid(1).split(QChar('/'));
-    }
-    else
-    {
-        currentNode = this;
-        nodeNames = nodePath.split(QChar('/'));
-    }
-
-    for (const QString &nodeName : nodeNames)
-    {
-        // Check if parent node is referenced
-        if (nodeName == QStringLiteral(".."))
-        {
-            if (currentNode->isRoot())
-            {
-                qDebug() << DEBUG_METHOD_IMPL("nodeAtPath")
-                         << "Error: parent of the root node was request:" << nodePath;
-                return nullptr;
-            }
-
-            currentNode = currentNode->parent();
-            continue;
-        }
-
-        // Get the specified member node if this is an Object node
-        if (isObject())
-        {
-            if (currentNode->containsMember(nodeName))
-            {
-                qDebug() << DEBUG_METHOD_IMPL("nodeAtPath")
-                         << QString("Error: node [%1] from node path [%2] was not found in [%3]")
-                            .arg(nodeName, nodePath, absoluteNodePath());
-                return nullptr;
-            }
-
-            currentNode = currentNode->member(nodeName);
-            continue;
-        }
-
-        // Get the specified element node if this is an Array node
-        if (isArray())
-        {
-            bool ok = false;
-            const int index = nodeName.toInt(&ok);
-
-            if (!ok)
-            {
-                qDebug() << DEBUG_METHOD_IMPL("nodeAtPath")
-                         << QString("Error: node [%1] from node path [%2] was not found in [%3]: "
-                                    "invalid node index")
-                            .arg(nodeName, nodePath, absoluteNodePath());
-                return nullptr;
-            }
-
-            if ((index < 0) || (index >= currentNode->count()))
-            {
-                qDebug() << DEBUG_METHOD_IMPL("nodeAtPath")
-                         << QString("Error: node [%1] from node path [%2] was not found in [%3]: "
-                                    "node index our of range")
-                            .arg(nodeName, nodePath, absoluteNodePath());
-                return nullptr;
-            }
-
-            currentNode = currentNode->member(nodeName);
-            continue;
-        }
-
-        qDebug() << DEBUG_METHOD_IMPL("nodeAtPath")
-                 << QString("Error: cannot get node [%1] from node path [%2] with type [%3]")
-                    .arg(nodeName, nodePath, typeToString(currentNode->type()));
-        return nullptr;
-    }
-
-    return currentNode;
+    return impl()->nodeAtPath(nodePath);
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -987,49 +1049,49 @@ ConfigNode *ConfigNode::nodeAtPath(const QString &nodePath)
 
 void ConfigNode::setValue(const QVariant &value)
 {
-    return m_impl->setValue(value);
+    return impl()->setValue(value);
 }
 
 // -------------------------------------------------------------------------------------------------
 
 void ConfigNode::setElement(const int index, ConfigNode &&value)
 {
-    return m_impl->setElement(index, std::move(value));
+    return impl()->setElement(index, std::move(value));
 }
 
 // -------------------------------------------------------------------------------------------------
 
 void ConfigNode::setMember(const QString &name, ConfigNode &&value)
 {
-    return m_impl->setMember(name, std::move(value));
+    return impl()->setMember(name, std::move(value));
 }
 
 // -------------------------------------------------------------------------------------------------
 
 void ConfigNode::appendElement(ConfigNode &&value)
 {
-    return m_impl->appendElement(std::move(value));
+    return impl()->appendElement(std::move(value));
 }
 
 // -------------------------------------------------------------------------------------------------
 
 void ConfigNode::removeElement(const int index)
 {
-    return m_impl->removeElement(index);
+    return impl()->removeElement(index);
 }
 
 // -------------------------------------------------------------------------------------------------
 
 void ConfigNode::removeMember(const QString &name)
 {
-    return m_impl->removeMember(name);
+    return impl()->removeMember(name);
 }
 
 // -------------------------------------------------------------------------------------------------
 
 bool ConfigNode::apply(const ConfigNode &otherNode)
 {
-    return m_impl->apply(otherNode);
+    return impl()->apply(otherNode);
 }
 
 // -------------------------------------------------------------------------------------------------

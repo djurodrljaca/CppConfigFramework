@@ -25,7 +25,7 @@ find_package(Qt5Core REQUIRED)
 add_library(CppConfigFramework SHARED
     inc/CppConfigFramework/ConfigNode.hpp
     inc/CppConfigFramework/ConfigReader.hpp
-    inc/CppConfigFramework/PimplWrapper.hpp
+    inc/CppConfigFramework/Pimpl.hpp
 
     src/ConfigNode.cpp
     src/ConfigNodeData.cpp

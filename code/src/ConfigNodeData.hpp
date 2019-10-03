@@ -34,6 +34,8 @@
 
 // Macros
 
+// -------------------------------------------------------------------------------------------------
+
 namespace CppConfigFramework
 {
 
@@ -73,7 +75,7 @@ public:
     //! Move assignment operator
     ConfigNodeData &operator=(ConfigNodeData &&other) = delete;
 
-    //! Clones the node data
+    //! Creates the node data
     static std::unique_ptr<ConfigNodeData> create(const ConfigNode::Type type);
 
     //! Gets the node's type

@@ -24,7 +24,7 @@
 // C++ Config Framework includes
 #include <CppConfigFramework/ConfigNode.hpp>
 #include <CppConfigFramework/CppConfigFrameworkExport.hpp>
-#include <CppConfigFramework/PimplWrapper.hpp>
+#include <CppConfigFramework/Pimpl.hpp>
 
 // Qt includes
 #include <QtCore/QString>
@@ -34,6 +34,8 @@
 // Forward declarations
 
 // Macros
+
+// -------------------------------------------------------------------------------------------------
 
 namespace CppConfigFramework
 {
@@ -73,8 +75,7 @@ public:
                                      const QString &destinationNode = QStringLiteral("/"));
 
 private:
-    class Impl;
-    PimplWrapper<Impl> m_impl;
+    CPPCONFIGFRAMEWORK_DECLARE_PIMPL()
 };
 
 } // namespace CppConfigFramework

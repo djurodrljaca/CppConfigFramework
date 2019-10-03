@@ -41,6 +41,8 @@
 #define DEBUG_METHOD(METHOD)      CPPCONFIGFRAMEWORK_DEBUG_METHOD("ConfigReader::" METHOD)
 #define DEBUG_METHOD_IMPL(METHOD) CPPCONFIGFRAMEWORK_DEBUG_METHOD("ConfigReader::Impl::" METHOD)
 
+// -------------------------------------------------------------------------------------------------
+
 namespace CppConfigFramework
 {
 
@@ -420,7 +422,10 @@ std::unique_ptr<ConfigNode> ConfigReader::Impl::readJsonObject(const QJsonObject
 // API
 // -------------------------------------------------------------------------------------------------
 
-ConfigReader::ConfigReader() = default;
+ConfigReader::ConfigReader()
+    : m_pimpl(std::make_unique<Impl>())
+{
+}
 
 // -------------------------------------------------------------------------------------------------
 
@@ -440,7 +445,7 @@ std::unique_ptr<ConfigNode> ConfigReader::read(const QString &filePath,
                                                const QString &sourceNode,
                                                const QString &destinationNode)
 {
-    return m_impl->read(filePath, sourceNode, destinationNode);
+    return impl()->read(filePath, sourceNode, destinationNode);
 }
 
 } // namespace CppConfigFramework

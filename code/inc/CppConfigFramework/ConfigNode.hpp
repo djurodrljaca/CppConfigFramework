@@ -23,7 +23,7 @@
 
 // C++ Config Framework includes
 #include <CppConfigFramework/CppConfigFrameworkExport.hpp>
-#include <CppConfigFramework/PimplWrapper.hpp>
+#include <CppConfigFramework/Pimpl.hpp>
 
 // Qt includes
 #include <QtCore/QVariant>
@@ -33,6 +33,8 @@
 // Forward declarations
 
 // Macros
+
+// -------------------------------------------------------------------------------------------------
 
 namespace CppConfigFramework
 {
@@ -237,8 +239,7 @@ public:
     static QString appendNodeToPath(const QString &nodePath, const QString &nodeName);
 
 private:
-    class Impl;
-    PimplWrapper<Impl> m_impl;
+    CPPCONFIGFRAMEWORK_DECLARE_PIMPL()
 };
 
 } // namespace CppConfigFramework
