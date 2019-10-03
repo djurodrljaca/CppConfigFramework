@@ -118,9 +118,6 @@ public:
     //! \copydoc    ConfigNode::absoluteNodePath()
     QString absoluteNodePath() const;
 
-    //! \copydoc    ConfigNode::clear()
-    void clear();
-
     //! \copydoc    ConfigNode::count()
     int count() const;
 
@@ -199,7 +196,16 @@ ConfigNode::Impl::Impl(const Type type, ConfigNode *parent, ConfigNode *owner)
       m_parent((parent == nullptr) ? nullptr : parent->impl()),
       m_owner(owner)
 {
-    Q_ASSERT(owner);
+    if (parent != nullptr)
+    {
+        Q_ASSERT_X((parent->isArray() || parent->isObject()),
+                   "ConfigNode::Impl::Impl",
+                   "Parent must be either an Array or Object!");
+    }
+
+    Q_ASSERT_X((owner != nullptr),
+               "ConfigNode::Impl::Impl",
+               "Owner class for an implementation class must to be set!");
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -323,7 +329,18 @@ ConfigNode *ConfigNode::Impl::parent()
 
 void ConfigNode::Impl::setParent(ConfigNode *parent)
 {
-    m_parent = (parent == nullptr) ? nullptr : parent->impl();
+    if (parent == nullptr)
+    {
+        m_parent = nullptr;
+    }
+    else
+    {
+        Q_ASSERT_X((parent->isArray() || parent->isObject()),
+                   "ConfigNode::Impl::setParent",
+                   "Parent must be either an Array or Object!");
+        m_parent = parent->impl();
+    }
+
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -337,7 +354,7 @@ const ConfigNode *ConfigNode::Impl::rootNode() const
 
     const ConfigNode *node = parent();
 
-    while (node != nullptr)
+    while (!node->isRoot())
     {
         node = node->parent();
     }
@@ -364,49 +381,51 @@ QString ConfigNode::Impl::absoluteNodePath() const
 
     if (parent()->isArray())
     {
-        return parent()->absoluteNodePath() % '/' %
-                QString::number(parent()->impl()->findNodeIndex(*this));
+        if (parent()->isRoot())
+        {
+            return '/' % QString::number(parent()->impl()->findNodeIndex(*this));
+        }
+        else
+        {
+            return parent()->absoluteNodePath() % '/' %
+                    QString::number(parent()->impl()->findNodeIndex(*this));
+        }
     }
-
-    if (parent()->isObject())
+    else if (parent()->isObject())
     {
-        return parent()->absoluteNodePath() % '/' % parent()->impl()->findNodeName(*this);
+        if (parent()->isRoot())
+        {
+            return '/' % parent()->impl()->findNodeName(*this);
+        }
+        else
+        {
+            return parent()->absoluteNodePath() % '/' % parent()->impl()->findNodeName(*this);
+        }
     }
-
-    return parent()->absoluteNodePath();
-}
-
-// -------------------------------------------------------------------------------------------------
-
-void ConfigNode::Impl::clear()
-{
-    this->m_data = ConfigNodeData::create(ConfigNode::Type::Null);
+    else
+    {
+        qDebug() << DEBUG_METHOD_IMPL("absoluteNodePath")
+                 << "Error: parent is not a container type (Array or Object)";
+        return {};
+    }
 }
 
 // -------------------------------------------------------------------------------------------------
 
 int ConfigNode::Impl::count() const
 {
-    switch (m_data->type())
+    if (isArray())
     {
-        case Type::Null:
-        case Type::Value:
-        {
-            return 0;
-        }
-
-        case Type::Array:
-        {
-            return static_cast<int>(m_data->array()->size());
-        }
-
-        case Type::Object:
-        {
-            return static_cast<int>(m_data->object()->size());
-        }
+        return static_cast<int>(m_data->array()->size());
     }
-
-    return 0;
+    else if (isObject())
+    {
+        return static_cast<int>(m_data->object()->size());
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -474,7 +493,9 @@ const ConfigNode *ConfigNode::Impl::element(const int index) const
         return nullptr;
     }
 
-    return &m_data->array()->at(static_cast<std::size_t>(index));
+    auto it = m_data->array()->begin();
+    std::advance(it, index);
+    return &(*it);
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -526,6 +547,11 @@ const ConfigNode *ConfigNode::Impl::nodeAtPath(const QString &nodePath) const
     }
 
     // Try to find the node at the specified path
+    if (nodePath == QStringLiteral("/"))
+    {
+        return rootNode();
+    }
+
     const ConfigNode *currentNode = nullptr;
     QStringList nodeNames;
 
@@ -557,9 +583,9 @@ const ConfigNode *ConfigNode::Impl::nodeAtPath(const QString &nodePath) const
         }
 
         // Get the specified member node if this is an Object node
-        if (isObject())
+        if (currentNode->isObject())
         {
-            if (currentNode->containsMember(nodeName))
+            if (!currentNode->containsMember(nodeName))
             {
                 qDebug() << DEBUG_METHOD_IMPL("nodeAtPath")
                          << QString("Error: node [%1] from node path [%2] was not found in [%3]")
@@ -572,7 +598,7 @@ const ConfigNode *ConfigNode::Impl::nodeAtPath(const QString &nodePath) const
         }
 
         // Get the specified element node if this is an Array node
-        if (isArray())
+        if (currentNode->isArray())
         {
             bool ok = false;
             const int index = nodeName.toInt(&ok);
@@ -595,7 +621,7 @@ const ConfigNode *ConfigNode::Impl::nodeAtPath(const QString &nodePath) const
                 return nullptr;
             }
 
-            currentNode = currentNode->member(nodeName);
+            currentNode = currentNode->element(index);
             continue;
         }
 
@@ -646,7 +672,9 @@ void ConfigNode::Impl::setElement(const int index, ConfigNode &&value)
         return;
     }
 
-    m_data->array()->at(static_cast<std::size_t>(index)) = std::move(value);
+    auto it = m_data->array()->begin();
+    std::advance(it, index);
+    *it = std::move(value);
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -711,7 +739,9 @@ void ConfigNode::Impl::removeElement(const int index)
         return;
     }
 
-    m_data->array()->erase(m_data->array()->begin() + index);
+    auto it = m_data->array()->begin();
+    std::advance(it, index);
+    m_data->array()->erase(it);
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -760,14 +790,15 @@ void ConfigNode::Impl::removeAll()
 
 bool ConfigNode::Impl::apply(const ConfigNode &otherNode)
 {
+    // TODO: check for node type!
+
     for (const QString &name : otherNode.memberNames())
     {
-        // Check if an item with the same name exists in this node
+        // Copy and add the item to this node if there is no member with the same name
         const ConfigNode *itemFromOtherNode = otherNode.member(name);
 
         if (!containsMember(name))
         {
-            // Copy and add the item to this node
             setMember(name, itemFromOtherNode->clone());
         }
 
@@ -777,14 +808,14 @@ bool ConfigNode::Impl::apply(const ConfigNode &otherNode)
         if (itemFromOtherNode->isNull())
         {
             // Clear the node
-            itemFromThisNode->clear();
+            *itemFromThisNode = ConfigNode();
             continue;
         }
 
         if (itemFromThisNode->isNull())
         {
             // Anything can overwrite a Null node
-            setMember(name, itemFromOtherNode->clone());
+            *itemFromThisNode = itemFromOtherNode->clone();
             continue;
         }
 
@@ -813,7 +844,7 @@ bool ConfigNode::Impl::apply(const ConfigNode &otherNode)
         else
         {
             // Overwrite the this node's value for non-Object types
-            setMember(name, itemFromOtherNode->clone());
+            *itemFromThisNode = itemFromOtherNode->clone();
         }
     }
 
@@ -824,13 +855,13 @@ bool ConfigNode::Impl::apply(const ConfigNode &otherNode)
 
 int ConfigNode::Impl::findNodeIndex(const Impl &value) const
 {
-    for (std::size_t i = 0U; i < m_data->array()->size(); i++)
-    {
-        const Impl &item = *m_data->array()->at(i).impl();
+    int index = 0;
 
-        if (&item == &value)
+    for (auto it = m_data->array()->begin(); it != m_data->array()->end(); it++, index++)
+    {
+        if (it->impl() == &value)
         {
-            return static_cast<int>(i);
+            return index;
         }
     }
 
@@ -868,6 +899,7 @@ ConfigNode::ConfigNode(const ConfigNode::Type type, ConfigNode *parent)
 ConfigNode::ConfigNode(ConfigNode &&other) noexcept
     : m_pimpl(std::move(other.m_pimpl))
 {
+    // Take ownership of the moved implementation instance
     m_pimpl->setOwner(this);
 }
 
@@ -1008,13 +1040,6 @@ ConfigNode *ConfigNode::rootNode()
 QString ConfigNode::absoluteNodePath() const
 {
     return impl()->absoluteNodePath();
-}
-
-// -------------------------------------------------------------------------------------------------
-
-void ConfigNode::clear()
-{
-    impl()->clear();
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -1186,15 +1211,20 @@ bool ConfigNode::validateNodePath(const QString &nodePath, const QString &curren
     }
     else
     {
-        if (isAbsoluteNodePath(currentNodePath))
+        if (!isAbsoluteNodePath(currentNodePath))
         {
             qDebug() << DEBUG_METHOD("validateNodePath")
-                     << "Error: current node path must be an absolute node path:"
-                     << currentNodePath;
+                     << QString("Error: current node path [%1] must be an absolute node path "
+                                "because node path [%2] is also not an absolute path")
+                        .arg(currentNodePath, nodePath);
             return false;
         }
 
-        if (currentNodePath == QStringLiteral("/"))
+        if (nodePath.isEmpty())
+        {
+            fullNodePath = currentNodePath;
+        }
+        else if (currentNodePath == QStringLiteral("/"))
         {
             fullNodePath = QChar('/') % nodePath;
         }
@@ -1206,13 +1236,13 @@ bool ConfigNode::validateNodePath(const QString &nodePath, const QString &curren
 
     // Split the node path to individual nodes (without the leading '/')
     const QStringList nodeNames = fullNodePath.mid(1).split(QChar('/'));
-    QStringList processedNodeNames;
+    QStringList workingNodeNames;
 
     for (const QString &nodeName : nodeNames)
     {
         if (nodeName == QStringLiteral(".."))
         {
-            if (processedNodeNames.isEmpty())
+            if (workingNodeNames.isEmpty())
             {
                 qDebug() << DEBUG_METHOD("validateNodePath")
                          << "Error: invalid access to the parent node of the root node in node "
@@ -1220,7 +1250,7 @@ bool ConfigNode::validateNodePath(const QString &nodePath, const QString &curren
                 return false;
             }
 
-            processedNodeNames.removeLast();
+            workingNodeNames.removeLast();
             continue;
         }
 
@@ -1232,7 +1262,7 @@ bool ConfigNode::validateNodePath(const QString &nodePath, const QString &curren
             return false;
         }
 
-        processedNodeNames.append(nodeName);
+        workingNodeNames.append(nodeName);
     }
 
     return true;

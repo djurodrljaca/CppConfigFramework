@@ -118,9 +118,6 @@ public:
     //! Gets the absolute node path
     QString absoluteNodePath() const;
 
-    //! Clears the node's value (changes the node type to Null)
-    void clear();
-
     //! Gets the number of elements in the Array node or number of members in the Object node
     int count() const;
 
@@ -139,11 +136,15 @@ public:
     //! \copydoc    ConfigNode::element()
     ConfigNode *element(const int index);
 
+    // TODO: add iteration API for array?
+
     //! Gets the member at the specified index of the Object node
     const ConfigNode *member(const QString &name) const;
 
     //! \copydoc    ConfigNode::member()
     ConfigNode *member(const QString &name);
+
+    // TODO: add iteration API for object?
 
     //! Gets the member at the specified node path
     const ConfigNode *nodeAtPath(const QString &nodePath) const;

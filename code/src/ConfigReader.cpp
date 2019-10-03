@@ -396,9 +396,11 @@ std::unique_ptr<ConfigNode> ConfigReader::Impl::readJsonObject(const QJsonObject
     {
         const QString memberName = it.key();
 
+        // TODO: check for reference types first!
+        // TODO: add support for a array/map value? This would store it in a Value item as a QVariantList/QVariantMap ("final value")
+
         if (!ConfigNode::validateNodeName(memberName))
         {
-            // TODO: make an exception for reference types!
             qDebug() << DEBUG_METHOD_IMPL("readJsonObject")
                      << "Error: invalid member name:" << memberName;
             return {};

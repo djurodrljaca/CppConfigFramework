@@ -50,8 +50,14 @@ struct StringHashCalculator
 class ConfigNodeData
 {
 public:
-    //! Alias for Array node data
-    using ArrayNodeData = std::vector<ConfigNode>;
+    /*!
+     * Alias for Array node data
+     *
+     * \note    The main reason for using std::list instead of std::vector is so that the references
+     *          to the elements in the container are not invalidated when elements are added to or
+     *          removed from the container
+     */
+    using ArrayNodeData = std::list<ConfigNode>;
 
     //! Alias for Object node data
     using ObjectNodeData = std::unordered_map<QString, ConfigNode, StringHashCalculator>;
