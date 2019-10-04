@@ -70,7 +70,10 @@ private slots:
 
     void testNodePath();
 
-    void testApplyNode();
+    void testApply();
+
+    void testArrayNode();
+    void testObjectNode();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -454,7 +457,7 @@ void TestConfigNode::testNodePath()
 
 // Test: apply() method ----------------------------------------------------------------------------
 
-void TestConfigNode::testApplyNode()
+void TestConfigNode::testApply()
 {
     // Create 3 level node structure
     ConfigNode node(ConfigNode::Type::Object);
@@ -527,6 +530,76 @@ void TestConfigNode::testApplyNode()
     QVERIFY(node.nodeAtPath("level1/level2")->containsMember("value"));
     QVERIFY(node.nodeAtPath("level1/level2/value")->isValue());
     QCOMPARE(node.nodeAtPath("level1/level2/value")->value(), QVariant(789));
+}
+
+// Test: Array node --------------------------------------------------------------------------------
+
+void TestConfigNode::testArrayNode()
+{
+    ConfigNode array(ConfigNode::Type::Array);
+    array.appendElement(ConfigNode(ConfigNode::Type::Value));
+    array.appendElement(ConfigNode(ConfigNode::Type::Value));
+    array.appendElement(ConfigNode(ConfigNode::Type::Null));
+
+    array.element(0)->setValue(123);
+    array.element(1)->setValue("str");
+
+    QCOMPARE(array.count(), 3);
+    QCOMPARE(array.element(0)->value(), QVariant(123));
+    QCOMPARE(array.element(1)->value(), QVariant("str"));
+    QVERIFY(array.element(2)->isNull());
+
+    {
+        ConfigNode value(ConfigNode::Type::Value);
+        value.setValue(0.5);
+        array.setElement(1, std::move(value));
+    }
+
+    QCOMPARE(array.element(0)->value(), QVariant(123));
+    QCOMPARE(array.element(1)->value(), QVariant(0.5));
+    QVERIFY(array.element(2)->isNull());
+
+    array.removeElement(1);
+    QCOMPARE(array.count(), 2);
+    QCOMPARE(array.element(0)->value(), QVariant(123));
+    QVERIFY(array.element(1)->isNull());
+
+    array.removeAll();
+    QCOMPARE(array.count(), 0);
+}
+
+// Test: Object node -------------------------------------------------------------------------------
+
+void TestConfigNode::testObjectNode()
+{
+    ConfigNode object(ConfigNode::Type::Object);
+    object.setMember("item1", ConfigNode(ConfigNode::Type::Null));
+    object.setMember("item2", ConfigNode(ConfigNode::Type::Value));
+    object.member("item2")->setValue(123);
+    object.setMember("item3", ConfigNode(ConfigNode::Type::Object));
+
+    QCOMPARE(object.count(), 3);
+    QVERIFY(object.member("item1")->isNull());
+    QVERIFY(object.member("item2")->isValue());
+    QCOMPARE(object.member("item2")->value(), QVariant(123));
+    QVERIFY(object.member("item3")->isObject());
+
+    {
+        ConfigNode item2(ConfigNode::Type::Value);
+        item2.setValue("str");
+        object.setMember("item2", std::move(item2));
+    }
+
+    QCOMPARE(object.member("item2")->value(), QVariant("str"));
+
+    object.removeMember("item2");
+
+    QCOMPARE(object.count(), 2);
+    QVERIFY(object.member("item1")->isNull());
+    QVERIFY(object.member("item3")->isObject());
+
+    object.removeAll();
+    QCOMPARE(object.count(), 0);
 }
 
 // Main function -----------------------------------------------------------------------------------
