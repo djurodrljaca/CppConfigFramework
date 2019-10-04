@@ -69,6 +69,8 @@ private slots:
     void testCloneObject();
 
     void testNodePath();
+
+    void testApplyNode();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -448,6 +450,83 @@ void TestConfigNode::testNodePath()
     QCOMPARE(level1->nodeAtPath("level2"), level2);
 
     QCOMPARE(level3Element1->nodeAtPath("../0"), level3Element0);
+}
+
+// Test: apply() method ----------------------------------------------------------------------------
+
+void TestConfigNode::testApplyNode()
+{
+    // Create 3 level node structure
+    ConfigNode node(ConfigNode::Type::Object);
+    node.setMember("value", ConfigNode(ConfigNode::Type::Value));
+    node.member("value")->setValue(111);
+    node.setMember("array", ConfigNode(ConfigNode::Type::Array));
+    node.member("array")->appendElement(ConfigNode(ConfigNode::Type::Value));
+    node.member("array")->appendElement(ConfigNode(ConfigNode::Type::Value));
+
+    node.setMember("level1", ConfigNode(ConfigNode::Type::Object));
+
+    node.member("level1")->setMember("level2", ConfigNode(ConfigNode::Type::Object));
+    node.nodeAtPath("level1/level2")->setMember("null", ConfigNode());
+    node.nodeAtPath("level1/level2")->setMember("value", ConfigNode());
+
+    // Create a compatible node structure for the update
+    ConfigNode update(ConfigNode::Type::Object);
+    update.setMember("null", ConfigNode());
+    update.setMember("value", ConfigNode(ConfigNode::Type::Value));
+    update.member("value")->setValue(123);
+    update.setMember("array", ConfigNode(ConfigNode::Type::Array));
+    update.member("array")->appendElement(ConfigNode(ConfigNode::Type::Object));
+
+    update.setMember("level1", ConfigNode(ConfigNode::Type::Object));
+    update.member("level1")->setMember("null", ConfigNode());
+    update.member("level1")->setMember("value", ConfigNode(ConfigNode::Type::Value));
+    update.nodeAtPath("level1/value")->setValue(456);
+
+    update.member("level1")->setMember("level2", ConfigNode(ConfigNode::Type::Object));
+    update.nodeAtPath("level1/level2")->setMember("null", ConfigNode());
+    update.nodeAtPath("level1/level2")->setMember("value", ConfigNode(ConfigNode::Type::Value));
+    update.nodeAtPath("level1/level2/value")->setValue(789);
+
+    // Apply the update
+    QVERIFY(node.apply(update));
+
+    // Check the root level
+    QVERIFY(node.isObject());
+
+    QVERIFY(node.containsMember("null"));
+    QVERIFY(node.member("null")->isNull());
+
+    QVERIFY(node.containsMember("value"));
+    QVERIFY(node.member("value")->isValue());
+    QCOMPARE(node.member("value")->value(), QVariant(123));
+
+    QVERIFY(node.containsMember("array"));
+    QVERIFY(node.member("array")->isArray());
+    QCOMPARE(node.member("array")->count(), 1);
+    QVERIFY(node.member("array")->element(0)->isObject());
+    QCOMPARE(node.member("array")->element(0)->count(), 0);
+
+    // Check the level 1
+    QVERIFY(node.containsMember("level1"));
+    QVERIFY(node.member("level1")->isObject());
+
+    QVERIFY(node.member("level1")->containsMember("null"));
+    QVERIFY(node.nodeAtPath("level1/null")->isNull());
+
+    QVERIFY(node.nodeAtPath("level1/value")->isValue());
+    QCOMPARE(node.nodeAtPath("level1/value")->value(), QVariant(456));
+
+    // Check the level 2
+    QVERIFY(node.member("level1")->containsMember("level2"));
+    QVERIFY(node.nodeAtPath("level1/level2")->isObject());
+
+    QVERIFY(node.nodeAtPath("level1/level2")->containsMember("null"));
+    QVERIFY(node.nodeAtPath("level1/level2/null")->isNull());
+
+    QVERIFY(node.nodeAtPath("level1/level2")->containsMember("value"));
+    QVERIFY(node.nodeAtPath("level1/level2/value")->isValue());
+    QCOMPARE(node.nodeAtPath("level1/level2/value")->value(), QVariant(789));
 }
 
 // Main function -----------------------------------------------------------------------------------

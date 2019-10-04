@@ -49,6 +49,8 @@ namespace CppConfigFramework
 // Implementation
 // -------------------------------------------------------------------------------------------------
 
+// TODO: move implementation to its own class!
+
 /*!
  * Private implementation for ConfigNode class
  */
@@ -790,27 +792,42 @@ void ConfigNode::Impl::removeAll()
 
 bool ConfigNode::Impl::apply(const ConfigNode &otherNode)
 {
-    // TODO: check for node type!
+    if (!isObject())
+    {
+        qDebug() << DEBUG_METHOD_IMPL("apply")
+                 << "Error: this config node is not of an Object type";
+        return false;
+    }
 
+    if (!otherNode.isObject())
+    {
+        qDebug() << DEBUG_METHOD_IMPL("apply")
+                 << "Error: other config node is not of an Object type";
+        return false;
+    }
+
+    // Merge nodes
     for (const QString &name : otherNode.memberNames())
     {
-        // Copy and add the item to this node if there is no member with the same name
+        // Check if a member with the same name already exists
         const ConfigNode *itemFromOtherNode = otherNode.member(name);
 
         if (!containsMember(name))
         {
+            // A member with the same name doesn't exist, copy the item and add it to this node as
+            // a new member (even if Null)
             setMember(name, itemFromOtherNode->clone());
+            continue;
+        }
+
+        if (itemFromOtherNode->isNull())
+        {
+            // Nothing to merge, just skip the node
+            continue;
         }
 
         // Merge other node's item to this node
         ConfigNode *itemFromThisNode = member(name);
-
-        if (itemFromOtherNode->isNull())
-        {
-            // Clear the node
-            *itemFromThisNode = ConfigNode();
-            continue;
-        }
 
         if (itemFromThisNode->isNull())
         {
@@ -819,7 +836,8 @@ bool ConfigNode::Impl::apply(const ConfigNode &otherNode)
             continue;
         }
 
-        // Check for type mismatch
+        // TODO: handle reference types?
+
         if (itemFromThisNode->type() != itemFromOtherNode->type())
         {
             qDebug() << DEBUG_METHOD_IMPL("apply")
@@ -832,8 +850,7 @@ bool ConfigNode::Impl::apply(const ConfigNode &otherNode)
             return false;
         }
 
-        // Merge compatible types
-        if (!itemFromThisNode->isObject())
+        if (itemFromThisNode->isObject())
         {
             // Merge object items
             if (!itemFromThisNode->apply(*itemFromOtherNode))
