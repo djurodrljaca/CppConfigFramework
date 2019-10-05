@@ -87,18 +87,6 @@ public:
     //! Gets the node's type
     virtual ConfigNode::Type type() const = 0;
 
-    //! Checks if the node data is of Null type
-    bool isNull() const;
-
-    //! Checks if the node data is of Value type
-    bool isValue() const;
-
-    //! Checks if the node data is of Array type
-    bool isArray() const;
-
-    //! Checks if the node data is of Object type
-    bool isObject() const;
-
     //! Gets a reference to the Value data
     virtual const QVariant *value() const;
 
@@ -116,6 +104,12 @@ public:
 
     //! \copydoc    ConfigNodeData::object()
     virtual ObjectNodeData *object();
+
+    //! Gets a reference to the Object data
+    virtual const QString *nodeReference() const;
+
+    //! \copydoc    ConfigNodeData::nodeReference()
+    virtual QString *nodeReference();
 };
 
 // -------------------------------------------------------------------------------------------------
@@ -258,6 +252,44 @@ public:
 private:
     //! Actual data
     ObjectNodeData m_object;
+};
+
+// -------------------------------------------------------------------------------------------------
+
+//! This is a class for an NodeReference configuration node data
+class ConfigNodeReferenceData : public ConfigNodeData
+{
+public:
+    //! Constructor
+    ConfigNodeReferenceData() = default;
+
+    //! Copy constructor
+    ConfigNodeReferenceData(const ConfigNodeReferenceData &other) = delete;
+
+    //! Move constructor
+    ConfigNodeReferenceData(ConfigNodeReferenceData &&other) = delete;
+
+    //! Destructor
+    ~ConfigNodeReferenceData() override = default;
+
+    //! Copy assignment operator
+    ConfigNodeReferenceData &operator=(const ConfigNodeReferenceData &other) = delete;
+
+    //! Move assignment operator
+    ConfigNodeReferenceData &operator=(ConfigNodeReferenceData &&other) = delete;
+
+    //! \copydoc    ConfigNodeData::type()
+    ConfigNode::Type type() const override;
+
+    //! \copydoc    ConfigNodeData::nodeReference()
+    const QString *nodeReference() const override;
+
+    //! \copydoc    ConfigNodeData::nodeReference()
+    QString *nodeReference() override;
+
+private:
+    //! Actual data
+    QString m_nodeReference;
 };
 
 } // namespace CppConfigFramework

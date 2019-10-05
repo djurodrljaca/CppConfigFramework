@@ -62,15 +62,17 @@ private slots:
     void testMoveValue();
     void testMoveArray();
     void testMoveObject();
+    void testMoveNodeReference();
 
     void testCloneNull();
     void testCloneValue();
     void testCloneArray();
     void testCloneObject();
+    void testCloneNodeReference();
 
     void testNodePath();
 
-    void testApply();
+    void testApplyObject();
 
     void testArrayNode();
     void testObjectNode();
@@ -125,10 +127,11 @@ void TestConfigNode::testConstructor_data()
 {
     QTest::addColumn<ConfigNode::Type>("nodeType");
 
-    QTest::newRow("Null")   << ConfigNode::Type::Null;
-    QTest::newRow("Value")  << ConfigNode::Type::Value;
-    QTest::newRow("Array")  << ConfigNode::Type::Array;
-    QTest::newRow("Object") << ConfigNode::Type::Object;
+    QTest::newRow("Null")          << ConfigNode::Type::Null;
+    QTest::newRow("Value")         << ConfigNode::Type::Value;
+    QTest::newRow("Array")         << ConfigNode::Type::Array;
+    QTest::newRow("Object")        << ConfigNode::Type::Object;
+    QTest::newRow("NodeReference") << ConfigNode::Type::NodeReference;
 }
 
 // Test: Move constructor and move assignment operator ---------------------------------------------
@@ -264,6 +267,35 @@ void TestConfigNode::testMoveObject()
     }
 }
 
+void TestConfigNode::testMoveNodeReference()
+{
+    ConfigNode parentNode1(ConfigNode::Type::Object);
+    ConfigNode parentNode2(ConfigNode::Type::Object);
+
+    // Move constructor
+    {
+        ConfigNode node(ConfigNode::Type::NodeReference, &parentNode1);
+        node.setNodeReference("ref");
+
+        ConfigNode movedNode(std::move(node));
+        QVERIFY(movedNode.isNodeReference());
+        QCOMPARE(movedNode.parent(), &parentNode1);
+        QCOMPARE(movedNode.nodeReference(), QString("ref"));
+    }
+
+    // Move assignement operator
+    {
+        ConfigNode node(ConfigNode::Type::NodeReference, &parentNode2);
+        node.setNodeReference("ref");
+
+        ConfigNode movedNode;
+        movedNode = std::move(node);
+        QVERIFY(movedNode.isNodeReference());
+        QCOMPARE(movedNode.parent(), &parentNode2);
+        QCOMPARE(movedNode.nodeReference(), QString("ref"));
+    }
+}
+
 // Test: clone() method ----------------------------------------------------------------------------
 
 void TestConfigNode::testCloneNull()
@@ -380,6 +412,28 @@ void TestConfigNode::testCloneObject()
     QCOMPARE(clonedNode.member("item2")->parent(), &clonedNode);
 }
 
+void TestConfigNode::testCloneNodeReference()
+{
+    // Clone without parent
+    ConfigNode node(ConfigNode::Type::NodeReference, nullptr);
+    node.setNodeReference("ref1");
+
+    ConfigNode clonedNode(node.clone());
+    QVERIFY(clonedNode.isNodeReference());
+    QCOMPARE(clonedNode.parent(), nullptr);
+    QCOMPARE(clonedNode.nodeReference(), QString("ref1"));
+
+    // Clone with parent
+    ConfigNode parentNode(ConfigNode::Type::Object);
+    node.setParent(&parentNode);
+    node.setNodeReference("ref2");
+
+    clonedNode = node.clone();
+    QVERIFY(clonedNode.isNodeReference());
+    QCOMPARE(clonedNode.parent(), nullptr);
+    QCOMPARE(clonedNode.nodeReference(), QString("ref2"));
+}
+
 // Test: rootNode() method -------------------------------------------------------------------------
 
 void TestConfigNode::testNodePath()
@@ -455,9 +509,9 @@ void TestConfigNode::testNodePath()
     QCOMPARE(level3Element1->nodeAtPath("../0"), level3Element0);
 }
 
-// Test: apply() method ----------------------------------------------------------------------------
+// Test: applyObject() method ----------------------------------------------------------------------
 
-void TestConfigNode::testApply()
+void TestConfigNode::testApplyObject()
 {
     // Create 3 level node structure
     ConfigNode node(ConfigNode::Type::Object);
@@ -492,7 +546,7 @@ void TestConfigNode::testApply()
     update.nodeAtPath("level1/level2/value")->setValue(789);
 
     // Apply the update
-    QVERIFY(node.apply(update));
+    QVERIFY(node.applyObject(update));
 
     // Check the root level
     QVERIFY(node.isObject());

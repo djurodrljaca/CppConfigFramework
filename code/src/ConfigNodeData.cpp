@@ -67,38 +67,15 @@ std::unique_ptr<ConfigNodeData> ConfigNodeData::create(const ConfigNode::Type ty
         {
             return std::make_unique<ConfigNodeObjectData>();
         }
+
+        case ConfigNode::Type::NodeReference:
+        {
+            return std::make_unique<ConfigNodeReferenceData>();
+        }
     }
 
     qFatal("Unexpected type");
     return {};
-}
-
-// -------------------------------------------------------------------------------------------------
-
-bool ConfigNodeData::isNull() const
-{
-    return (type() == ConfigNode::Type::Null);
-}
-
-// -------------------------------------------------------------------------------------------------
-
-bool ConfigNodeData::isValue() const
-{
-    return (type() == ConfigNode::Type::Value);
-}
-
-// -------------------------------------------------------------------------------------------------
-
-bool ConfigNodeData::isArray() const
-{
-    return (type() == ConfigNode::Type::Array);
-}
-
-// -------------------------------------------------------------------------------------------------
-
-bool ConfigNodeData::isObject() const
-{
-    return (type() == ConfigNode::Type::Object);
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -139,6 +116,20 @@ const ConfigNodeData::ObjectNodeData *ConfigNodeData::object() const
 // -------------------------------------------------------------------------------------------------
 
 ConfigNodeData::ObjectNodeData *ConfigNodeData::object()
+{
+    return nullptr;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+const QString *ConfigNodeData::nodeReference() const
+{
+    return nullptr;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+QString *ConfigNodeData::nodeReference()
 {
     return nullptr;
 }
@@ -211,6 +202,27 @@ const ConfigNodeData::ObjectNodeData *ConfigNodeObjectData::object() const
 ConfigNodeData::ObjectNodeData *ConfigNodeObjectData::object()
 {
     return &m_object;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+ConfigNode::Type ConfigNodeReferenceData::type() const
+{
+    return ConfigNode::Type::NodeReference;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+const QString *ConfigNodeReferenceData::nodeReference() const
+{
+    return &m_nodeReference;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+QString *ConfigNodeReferenceData::nodeReference()
+{
+    return &m_nodeReference;
 }
 
 } // namespace CppConfigFramework

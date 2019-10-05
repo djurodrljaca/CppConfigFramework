@@ -113,6 +113,11 @@ QString ConfigNode::typeToString(const ConfigNode::Type type)
         {
             return QStringLiteral("Object");
         }
+
+        case Type::NodeReference:
+        {
+            return QStringLiteral("NodeReference");
+        }
     }
 
     return {};
@@ -144,6 +149,13 @@ bool ConfigNode::isArray() const
 bool ConfigNode::isObject() const
 {
     return impl()->isObject();
+}
+
+// -------------------------------------------------------------------------------------------------
+
+bool ConfigNode::isNodeReference() const
+{
+    return impl()->isNodeReference();
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -267,6 +279,13 @@ ConfigNode *ConfigNode::nodeAtPath(const QString &nodePath)
 
 // -------------------------------------------------------------------------------------------------
 
+QString ConfigNode::nodeReference() const
+{
+    return impl()->nodeReference();
+}
+
+// -------------------------------------------------------------------------------------------------
+
 void ConfigNode::setValue(const QVariant &value)
 {
     return impl()->setValue(value);
@@ -281,6 +300,13 @@ void ConfigNode::setElement(const int index, ConfigNode &&value)
 
 // -------------------------------------------------------------------------------------------------
 
+void ConfigNode::appendElement(ConfigNode &&value)
+{
+    return impl()->appendElement(std::move(value));
+}
+
+// -------------------------------------------------------------------------------------------------
+
 void ConfigNode::setMember(const QString &name, ConfigNode &&value)
 {
     return impl()->setMember(name, std::move(value));
@@ -288,9 +314,16 @@ void ConfigNode::setMember(const QString &name, ConfigNode &&value)
 
 // -------------------------------------------------------------------------------------------------
 
-void ConfigNode::appendElement(ConfigNode &&value)
+bool ConfigNode::applyObject(const ConfigNode &otherNode)
 {
-    return impl()->appendElement(std::move(value));
+    return impl()->applyObject(otherNode);
+}
+
+// -------------------------------------------------------------------------------------------------
+
+void ConfigNode::setNodeReference(const QString &nodePath)
+{
+    impl()->setNodeReference(nodePath);
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -312,13 +345,6 @@ void ConfigNode::removeMember(const QString &name)
 void ConfigNode::removeAll()
 {
     return impl()->removeAll();
-}
-
-// -------------------------------------------------------------------------------------------------
-
-bool ConfigNode::apply(const ConfigNode &otherNode)
-{
-    return impl()->apply(otherNode);
 }
 
 // -------------------------------------------------------------------------------------------------
