@@ -197,31 +197,31 @@ std::unique_ptr<ConfigNode> ConfigReader::Impl::read(const QString &filePath,
     // TODO: add "environment variables" member?
 
     // Read 'includes' member
-    auto includesConfig = readIncludesMember(rootObject);
+    auto completeConfig = readIncludesMember(rootObject);
 
-    if (!includesConfig)
+    if (!completeConfig)
     {
-        qDebug() << DEBUG_METHOD_IMPL("read") << "Error: failed to read includes";
+        qDebug() << DEBUG_METHOD_IMPL("read") << "Error: failed to read the 'includes' member";
         return {};
     }
 
     // Read 'config' member
-    auto config = readConfigMember(rootObject);
+    auto configMember = readConfigMember(rootObject);
 
-    if (!config)
+    if (!configMember)
     {
-        qDebug() << DEBUG_METHOD_IMPL("read") << "Error: failed to read includes";
+        qDebug() << DEBUG_METHOD_IMPL("read") << "Error: failed to read the 'config' member";
         return {};
     }
 
-    if (!config->apply(*includesConfig))
+    if (!completeConfig->applyObject(*configMember))
     {
         return {};
     }
 
-    // TODO: resolve all references and inheritance?
+    // TODO: resolve all references?
 
-    return config;
+    return completeConfig;
 }
 
 // -------------------------------------------------------------------------------------------------

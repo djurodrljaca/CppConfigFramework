@@ -86,6 +86,9 @@ public:
     //! \copydoc    ConfigNode::isObject()
     bool isObject() const;
 
+    //! \copydoc    ConfigNode::isNodeReference()
+    bool isNodeReference() const;
+
     //! \copydoc    ConfigNode::isRoot()
     bool isRoot() const;
 
@@ -137,17 +140,26 @@ public:
     //! \copydoc    ConfigNode::nodeAtPath()
     ConfigNode *nodeAtPath(const QString &nodePath);
 
+    //! \copydoc    ConfigNode::nodeReference()
+    QString nodeReference() const;
+
     //! \copydoc    ConfigNode::setValue()
     void setValue(const QVariant &value);
 
     //! \copydoc    ConfigNode::setElement()
     void setElement(const int index, ConfigNode &&value);
 
+    //! \copydoc    ConfigNode::appendElement()
+    void appendElement(ConfigNode &&value);
+
     //! \copydoc    ConfigNode::setMember()
     void setMember(const QString &name, ConfigNode &&value);
 
-    //! \copydoc    ConfigNode::appendElement()
-    void appendElement(ConfigNode &&value);
+    //! \copydoc    ConfigNode::applyObject()
+    bool applyObject(const ConfigNode &otherNode);
+
+    //! \copydoc    ConfigNode::setNodeReference()
+    void setNodeReference(const QString &nodePath);
 
     //! \copydoc    ConfigNode::removeElement()
     void removeElement(const int index);
@@ -157,9 +169,6 @@ public:
 
     //! \copydoc    ConfigNode::removeAll()
     void removeAll();
-
-    //! \copydoc    ConfigNode::apply()
-    bool apply(const ConfigNode &otherNode);
 
 private:
     //! Gets the index of the specifed node

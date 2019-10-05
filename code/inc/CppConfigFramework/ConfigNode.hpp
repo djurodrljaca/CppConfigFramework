@@ -48,14 +48,24 @@ public:
     //! Enumerates different types of nodes
     enum class Type
     {
-        Null,   //!< A node with no value
-        Value,  //!< A node with a primitive value (Boolean, integer, floating-point number, string)
-        Array,  //!< An ordered list of nodes
-        Object  /*!< An unordered collection of name–value pairs (names are strings and values are
-                     configuration nodes) */
-        // TODO: add node refrence ("&name")
-        // TODO: add array inheritance ("@name")
-        // TODO: add object inheritance ("#name")
+        //! A node with no value
+        Null,
+
+        //! A node with a primitive value (Boolean, integer, floating-point number, string)
+        Value,
+
+        //! An ordered list of nodes
+        Array,
+
+        //! An unordered collection of name–value pairs (names are strings and values are
+        //! configuration nodes)
+        Object,
+
+        //! A reference to a node to be copied
+        NodeReference
+
+        // TODO: add derived array node
+        // TODO: add derived object node
     };
 
     //! Constructor
@@ -97,6 +107,9 @@ public:
     //! Checks if the node is of Object type
     bool isObject() const;
 
+    //! Checks if the node is of NodeReference type
+    bool isNodeReference() const;
+
     //! Checks if the node is the root node (has no parent)
     bool isRoot() const;
 
@@ -136,21 +149,20 @@ public:
     //! \copydoc    ConfigNode::element()
     ConfigNode *element(const int index);
 
-    // TODO: add iteration API for array?
-
     //! Gets the member at the specified index of the Object node
     const ConfigNode *member(const QString &name) const;
 
     //! \copydoc    ConfigNode::member()
     ConfigNode *member(const QString &name);
 
-    // TODO: add iteration API for object?
-
     //! Gets the member at the specified node path
     const ConfigNode *nodeAtPath(const QString &nodePath) const;
 
     //! \copydoc    ConfigNode::nodeAtPath()
     ConfigNode *nodeAtPath(const QString &nodePath);
+
+    //! Gets the path to the referenced node
+    QString nodeReference() const;
 
     //! Sets the node's value
     void setValue(const QVariant &value);
@@ -165,6 +177,9 @@ public:
      */
     void setElement(const int index, ConfigNode &&value);
 
+    //! Adds a value to the end of the Array node and updates its parent
+    void appendElement(ConfigNode &&value);
+
     /*!
      * Sets the value of the member node with the specified name in the Object node
      *
@@ -177,18 +192,6 @@ public:
      * When the node value is stored its parent is updated to point to this node.
      */
     void setMember(const QString &name, ConfigNode &&value);
-
-    //! Adds a value to the end of the Array node and updates its parent
-    void appendElement(ConfigNode &&value);
-
-    //! Removes a value with the specified index from the Array node
-    void removeElement(const int index);
-
-    //! Removes a value with the specified name from the Object node
-    void removeMember(const QString &name);
-
-    //! Removes all elements from an Array node or all members from an Object node
-    void removeAll();
 
     /*!
      * Merges the specified Object node with this Object node
@@ -204,7 +207,19 @@ public:
      *
      * \note    Items with the same name but a different underlying node type cannot be merged!
      */
-    bool apply(const ConfigNode &otherNode);
+    bool applyObject(const ConfigNode &otherNode);
+
+    //! Sets the path to the referenced node
+    void setNodeReference(const QString &nodePath);
+
+    //! Removes a value with the specified index from the Array node
+    void removeElement(const int index);
+
+    //! Removes a value with the specified name from the Object node
+    void removeMember(const QString &name);
+
+    //! Removes all elements from an Array node or all members from an Object node
+    void removeAll();
 
     /*!
      * Validates the configuration node name

@@ -113,6 +113,12 @@ ConfigNode ConfigNode::Impl::clone() const
             }
             break;
         }
+
+        case Type::NodeReference:
+        {
+            clonedNode.setNodeReference(nodeReference());
+            break;
+        }
     }
 
     return clonedNode;
@@ -129,28 +135,35 @@ ConfigNode::Type ConfigNode::Impl::type() const
 
 bool ConfigNode::Impl::isNull() const
 {
-    return m_data->isNull();
+    return (m_data->type() == ConfigNode::Type::Null);
 }
 
 // -------------------------------------------------------------------------------------------------
 
 bool ConfigNode::Impl::isValue() const
 {
-    return m_data->isValue();
+    return (m_data->type() == ConfigNode::Type::Value);
 }
 
 // -------------------------------------------------------------------------------------------------
 
 bool ConfigNode::Impl::isArray() const
 {
-    return m_data->isArray();
+    return (m_data->type() == ConfigNode::Type::Array);
 }
 
 // -------------------------------------------------------------------------------------------------
 
 bool ConfigNode::Impl::isObject() const
 {
-    return m_data->isObject();
+    return (m_data->type() == ConfigNode::Type::Object);
+}
+
+// -------------------------------------------------------------------------------------------------
+
+bool ConfigNode::Impl::isNodeReference() const
+{
+    return (m_data->type() == ConfigNode::Type::NodeReference);
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -491,6 +504,13 @@ ConfigNode *ConfigNode::Impl::nodeAtPath(const QString &nodePath)
 
 // -------------------------------------------------------------------------------------------------
 
+QString ConfigNode::Impl::nodeReference() const
+{
+    return *m_data->nodeReference();
+}
+
+// -------------------------------------------------------------------------------------------------
+
 void ConfigNode::Impl::setValue(const QVariant &value)
 {
     if (!isValue())
@@ -526,6 +546,20 @@ void ConfigNode::Impl::setElement(const int index, ConfigNode &&value)
 
 // -------------------------------------------------------------------------------------------------
 
+void ConfigNode::Impl::appendElement(ConfigNode &&value)
+{
+    if (!isArray())
+    {
+        qDebug() << DEBUG_METHOD("appendElement") << "Config node is not of an Array type";
+        return;
+    }
+
+    value.setParent(m_owner);
+    m_data->array()->push_back(std::move(value));
+}
+
+// -------------------------------------------------------------------------------------------------
+
 void ConfigNode::Impl::setMember(const QString &name, ConfigNode &&value)
 {
     if (!isObject())
@@ -557,16 +591,75 @@ void ConfigNode::Impl::setMember(const QString &name, ConfigNode &&value)
 
 // -------------------------------------------------------------------------------------------------
 
-void ConfigNode::Impl::appendElement(ConfigNode &&value)
+bool ConfigNode::Impl::applyObject(const ConfigNode &otherNode)
 {
-    if (!isArray())
+    if (!isObject())
     {
-        qDebug() << DEBUG_METHOD("appendElement") << "Config node is not of an Array type";
+        qDebug() << DEBUG_METHOD("applyObject") << "Error: this config node is not of an Object type";
+        return false;
+    }
+
+    if (!otherNode.isObject())
+    {
+        qDebug() << DEBUG_METHOD("applyObject") << "Error: other config node is not of an Object type";
+        return false;
+    }
+
+    // Merge nodes
+    for (const QString &name : otherNode.memberNames())
+    {
+        // Check if a member with the same name already exists
+        const ConfigNode *itemFromOtherNode = otherNode.member(name);
+
+        if (!containsMember(name))
+        {
+            // A member with the same name doesn't exist, copy the item and add it to this node as
+            // a new member (even if Null)
+            setMember(name, itemFromOtherNode->clone());
+            continue;
+        }
+
+        if (itemFromOtherNode->isNull())
+        {
+            // Nothing to merge, just skip the node
+            continue;
+        }
+
+        // Merge other node's item to this node
+        ConfigNode *itemFromThisNode = member(name);
+
+        // TODO: prepare special handling for derived nodes?
+
+        if (itemFromThisNode->isObject())
+        {
+            // Merge object items
+            if (!itemFromThisNode->applyObject(*itemFromOtherNode))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            // Overwrite the this node's value for non-Object types
+            *itemFromThisNode = itemFromOtherNode->clone();
+        }
+    }
+
+    return true;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+void ConfigNode::Impl::setNodeReference(const QString &nodePath)
+{
+    if (!isNodeReference())
+    {
+        qDebug() << DEBUG_METHOD("setNodeReference")
+                 << "Config node is not of a NodeReference type";
         return;
     }
 
-    value.setParent(m_owner);
-    m_data->array()->push_back(std::move(value));
+    *m_data->nodeReference() = nodePath;
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -628,84 +721,6 @@ void ConfigNode::Impl::removeAll()
     {
         qDebug() << DEBUG_METHOD("removeAll") << "Config node is not of an Array or Object type";
     }
-}
-
-// -------------------------------------------------------------------------------------------------
-
-bool ConfigNode::Impl::apply(const ConfigNode &otherNode)
-{
-    if (!isObject())
-    {
-        qDebug() << DEBUG_METHOD("apply") << "Error: this config node is not of an Object type";
-        return false;
-    }
-
-    if (!otherNode.isObject())
-    {
-        qDebug() << DEBUG_METHOD("apply") << "Error: other config node is not of an Object type";
-        return false;
-    }
-
-    // Merge nodes
-    for (const QString &name : otherNode.memberNames())
-    {
-        // Check if a member with the same name already exists
-        const ConfigNode *itemFromOtherNode = otherNode.member(name);
-
-        if (!containsMember(name))
-        {
-            // A member with the same name doesn't exist, copy the item and add it to this node as
-            // a new member (even if Null)
-            setMember(name, itemFromOtherNode->clone());
-            continue;
-        }
-
-        if (itemFromOtherNode->isNull())
-        {
-            // Nothing to merge, just skip the node
-            continue;
-        }
-
-        // Merge other node's item to this node
-        ConfigNode *itemFromThisNode = member(name);
-
-        if (itemFromThisNode->isNull())
-        {
-            // Anything can overwrite a Null node
-            *itemFromThisNode = itemFromOtherNode->clone();
-            continue;
-        }
-
-        // TODO: handle reference types?
-
-        if (itemFromThisNode->type() != itemFromOtherNode->type())
-        {
-            qDebug() << DEBUG_METHOD("apply")
-                     << QString("Error: cannot apply node [%1] with type [%2] to "
-                                "node [%3] with type [%4]!")
-                        .arg(itemFromOtherNode->absoluteNodePath(),
-                             typeToString(itemFromOtherNode->type()),
-                             itemFromThisNode->absoluteNodePath(),
-                             typeToString(itemFromThisNode->type()));
-            return false;
-        }
-
-        if (itemFromThisNode->isObject())
-        {
-            // Merge object items
-            if (!itemFromThisNode->apply(*itemFromOtherNode))
-            {
-                return false;
-            }
-        }
-        else
-        {
-            // Overwrite the this node's value for non-Object types
-            *itemFromThisNode = itemFromOtherNode->clone();
-        }
-    }
-
-    return true;
 }
 
 // -------------------------------------------------------------------------------------------------
