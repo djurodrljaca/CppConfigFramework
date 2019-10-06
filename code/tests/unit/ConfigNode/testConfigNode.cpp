@@ -603,6 +603,14 @@ void TestConfigNode::testArrayNode()
     QCOMPARE(array.element(1)->value(), QVariant("str"));
     QVERIFY(array.element(2)->isNull());
 
+    std::vector<ConfigNode*> expected = {
+        array.element(0),
+        array.element(1),
+        array.element(2)
+    };
+
+    QCOMPARE(array.elements(), expected);
+
     {
         ConfigNode value(ConfigNode::Type::Value);
         value.setValue(0.5);

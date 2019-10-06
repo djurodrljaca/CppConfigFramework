@@ -149,6 +149,12 @@ public:
     //! \copydoc    ConfigNode::element()
     ConfigNode *element(const int index);
 
+    //! Gets the elements of the Array node
+    std::vector<const ConfigNode*> elements() const;
+
+    //! \copydoc    ConfigNode::elements()
+    std::vector<ConfigNode*> elements();
+
     //! Gets the member at the specified index of the Object node
     const ConfigNode *member(const QString &name) const;
 

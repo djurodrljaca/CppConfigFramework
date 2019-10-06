@@ -368,6 +368,48 @@ ConfigNode *ConfigNode::Impl::element(const int index)
 
 // -------------------------------------------------------------------------------------------------
 
+std::vector<const ConfigNode *> ConfigNode::Impl::elements() const
+{
+    if (!isArray())
+    {
+        qDebug() << DEBUG_METHOD("elements") << "Error: config node is not of an Array type";
+        return {};
+    }
+
+    std::vector<const ConfigNode *> items;
+    items.reserve(count());
+
+    for (const ConfigNode &node : *m_data->array())
+    {
+        items.push_back(&node);
+    }
+
+    return items;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+std::vector<ConfigNode *> ConfigNode::Impl::elements()
+{
+    if (!isArray())
+    {
+        qDebug() << DEBUG_METHOD("elements") << "Error: config node is not of an Array type";
+        return {};
+    }
+
+    std::vector<ConfigNode *> items;
+    items.reserve(count());
+
+    for (ConfigNode &node : *m_data->array())
+    {
+        items.push_back(&node);
+    }
+
+    return items;
+}
+
+// -------------------------------------------------------------------------------------------------
+
 const ConfigNode *ConfigNode::Impl::member(const QString &name) const
 {
     if (!isObject())
