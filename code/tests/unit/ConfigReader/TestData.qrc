@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>TestData/ValidConfig.json</file>
+        <file>TestData/ConfigWithNodeReference.json</file>
     </qresource>
 </RCC>

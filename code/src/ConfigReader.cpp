@@ -83,6 +83,15 @@ private:
     std::unique_ptr<ConfigNode> readConfigMember(const QJsonObject &rootObject);
 
     /*!
+     * Tries to resolve all references in the specified node and all its sub-nodes
+     *
+     * \param   node    Config node
+     *
+     * \return  Number of unresolved references still left or in case of an error a "-1"
+     */
+    int resolveReferences(ConfigNode *node);
+
+    /*!
      * Reads the JSON Value
      *
      * \param   jsonValue       JSON Value
@@ -219,9 +228,24 @@ std::unique_ptr<ConfigNode> ConfigReader::Impl::read(const QString &filePath,
         return {};
     }
 
-    // TODO: resolve all references?
+    // Resolve references
+    for (int i = 0; i < 100; i++)
+    {
+        const int result = resolveReferences(completeConfig.get());
 
-    return completeConfig;
+        if (result == 0)
+        {
+            return completeConfig;
+        }
+
+        if (result < 0)
+        {
+            break;
+        }
+    }
+
+    qDebug() << DEBUG_METHOD_IMPL("read") << "Error: failed to resolve references";
+    return {};
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -319,6 +343,93 @@ std::unique_ptr<ConfigNode> ConfigReader::Impl::readConfigMember(const QJsonObje
 
 // -------------------------------------------------------------------------------------------------
 
+int ConfigReader::Impl::resolveReferences(ConfigNode *node)
+{
+    Q_ASSERT(node != nullptr);
+
+    // Process a node reference
+    if (node->isNodeReference())
+    {
+        // Try to get the referenced node
+        ConfigNode *parentNode = node->parent();
+
+        if (parentNode == nullptr)
+        {
+            qDebug() << DEBUG_METHOD_IMPL("resolveReferences")
+                     << QString("Error: reference node [%1] has no parent!")
+                        .arg(node->absoluteNodePath());
+            return -1;
+        }
+
+        const ConfigNode *referencedNode = parentNode->nodeAtPath(node->nodeReference());
+
+        if (referencedNode == nullptr)
+        {
+            // Unable to resolve the node reference
+            return 1;
+        }
+
+        *node = std::move(referencedNode->clone());
+        node->setParent(parentNode);
+
+        if (node->isNodeReference())
+        {
+            // The referenced node is another node reference
+            return 1;
+        }
+
+        // Node reference was successfully resolved
+        return 0;
+    }
+
+    // Process an Array node
+    if (node->isArray())
+    {
+        // Try to resolve all node reference within the Array's elements
+        int unresolvedReferenceCount = 0;
+
+        for (ConfigNode *element : node->elements())
+        {
+            const int result = resolveReferences(element);
+
+            if (result < 0)
+            {
+                return -1;
+            }
+
+            unresolvedReferenceCount += result;
+        }
+
+        return unresolvedReferenceCount;
+    }
+
+    // Process an Object node
+    if (node->isObject())
+    {
+        // Try to resolve all node reference within the Object's members
+        int unresolvedReferenceCount = 0;
+
+        for (const QString &name : node->memberNames())
+        {
+            const int result = resolveReferences(node->member(name));
+
+            if (result < 0)
+            {
+                return -1;
+            }
+
+            unresolvedReferenceCount += result;
+        }
+
+        return unresolvedReferenceCount;
+    }
+
+    // Other node types can't contain references
+    return 0;
+}
+
+// -------------------------------------------------------------------------------------------------
+
 std::unique_ptr<ConfigNode> ConfigReader::Impl::readJsonValue(const QJsonValue &jsonValue,
                                                               const QString &currentNodePath)
 {
@@ -394,24 +505,93 @@ std::unique_ptr<ConfigNode> ConfigReader::Impl::readJsonObject(const QJsonObject
 
     for (auto it = jsonObject.begin(); it != jsonObject.end(); it++)
     {
-        const QString memberName = it.key();
+        QString memberName = it.key();
+        std::unique_ptr<ConfigNode> memberNode;
 
-        // TODO: check for reference types first!
-        // TODO: add support for a array/map value? This would store it in a Value item as a QVariantList/QVariantMap ("final value")
-
-        if (!ConfigNode::validateNodeName(memberName))
+        // Check for "decorators" in the member name (reference or JSON value)
+        if (memberName.startsWith(QChar('&')))
         {
-            qDebug() << DEBUG_METHOD_IMPL("readJsonObject")
-                     << "Error: invalid member name:" << memberName;
-            return {};
+            // Reference value
+            memberName = memberName.mid(1);
+
+            if (!ConfigNode::validateNodeName(memberName))
+            {
+                qDebug() << DEBUG_METHOD_IMPL("readJsonObject")
+                         << QString("Error: invalid member name [%1] in path [%2]")
+                            .arg(memberName, currentNodePath);
+                return {};
+            }
+
+            if (objectNode->containsMember(memberName))
+            {
+                qDebug() << DEBUG_METHOD_IMPL("readJsonObject")
+                         << QString("Error: object already contains a member with the same name "
+                                    "[%1] in path [%2]").arg(memberName, currentNodePath);
+                return {};
+            }
+
+            if (!it.value().isString())
+            {
+                qDebug() << DEBUG_METHOD_IMPL("readJsonObject")
+                         << "Error: node reference value must be a string:"
+                         << ConfigNode::appendNodeToPath(currentNodePath, memberName);
+                return {};
+            }
+
+            memberNode = std::make_unique<ConfigNode>(ConfigNode::Type::NodeReference);
+            memberNode->setNodeReference(it.value().toString());
         }
-
-        auto memberNode = readJsonValue(it.value(),
-                                        ConfigNode::appendNodeToPath(currentNodePath, memberName));
-
-        if (!memberNode)
+        else if (memberName.startsWith(QChar('#')))
         {
-            return {};
+            // JSON value
+            memberName = memberName.mid(1);
+
+            if (!ConfigNode::validateNodeName(memberName))
+            {
+                qDebug() << DEBUG_METHOD_IMPL("readJsonObject")
+                         << QString("Error: invalid member name [%1] in path [%2]")
+                            .arg(memberName, currentNodePath);
+                return {};
+            }
+
+            if (objectNode->containsMember(memberName))
+            {
+                qDebug() << DEBUG_METHOD_IMPL("readJsonObject")
+                         << QString("Error: object already contains a member with the same name "
+                                    "[%1] in path [%2]").arg(memberName, currentNodePath);
+                return {};
+            }
+
+            memberNode = std::make_unique<ConfigNode>(ConfigNode::Type::Value);
+            memberNode->setValue(it.value().toVariant());
+        }
+        else
+        {
+            // No decorators, just an ordinary node
+            if (!ConfigNode::validateNodeName(memberName))
+            {
+                qDebug() << DEBUG_METHOD_IMPL("readJsonObject")
+                         << QString("Error: invalid member name [%1] in path [%2]")
+                            .arg(memberName, currentNodePath);
+                return {};
+            }
+
+            if (objectNode->containsMember(memberName))
+            {
+                qDebug() << DEBUG_METHOD_IMPL("readJsonObject")
+                         << QString("Error: object already contains a member with the same name "
+                                    "[%1] in path [%2]").arg(memberName, currentNodePath);
+                return {};
+            }
+
+            memberNode = readJsonValue(it.value(),
+                                       ConfigNode::appendNodeToPath(currentNodePath, memberName));
+
+            if (!memberNode)
+            {
+                return {};
+            }
+
         }
 
         objectNode->setMember(memberName, std::move(*memberNode));
