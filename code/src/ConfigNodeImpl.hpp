@@ -128,6 +128,12 @@ public:
     //! \copydoc    ConfigNode::element()
     ConfigNode *element(const int index);
 
+    //! \copydoc    ConfigNode::elements()
+    std::vector<const ConfigNode*> elements() const;
+
+    //! \copydoc    ConfigNode::elements()
+    std::vector<ConfigNode*> elements();
+
     //! \copydoc    ConfigNode::member()
     const ConfigNode *member(const QString &name) const;
 

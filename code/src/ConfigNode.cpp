@@ -251,6 +251,20 @@ ConfigNode *ConfigNode::element(const int index)
 
 // -------------------------------------------------------------------------------------------------
 
+std::vector<const ConfigNode *> ConfigNode::elements() const
+{
+    return impl()->elements();
+}
+
+// -------------------------------------------------------------------------------------------------
+
+std::vector<ConfigNode *> ConfigNode::elements()
+{
+    return impl()->elements();
+}
+
+// -------------------------------------------------------------------------------------------------
+
 const ConfigNode *ConfigNode::member(const QString &name) const
 {
     return impl()->member(name);
