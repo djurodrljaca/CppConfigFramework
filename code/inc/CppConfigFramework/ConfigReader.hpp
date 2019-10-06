@@ -49,11 +49,17 @@ public:
     //! Constructor
     ConfigReader();
 
+    //! Copy constructor
+    ConfigReader(const ConfigReader &other) = delete;
+
     //! Move constructor
     ConfigReader(ConfigReader &&other) noexcept;
 
     //! Destructor
     ~ConfigReader();
+
+    //! Copy assignment operator
+    ConfigReader &operator=(const ConfigReader &other) = delete;
 
     //! Move assignment operator
     ConfigReader &operator=(ConfigReader &&other) noexcept;
@@ -75,6 +81,7 @@ public:
                                      const QString &destinationNode = QStringLiteral("/"));
 
 private:
+    constexpr static int s_referenceResolutionMaxCycles = 100;
     CPPCONFIGFRAMEWORK_DECLARE_PIMPL()
 };
 

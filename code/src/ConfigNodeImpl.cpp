@@ -247,29 +247,24 @@ QString ConfigNode::Impl::absoluteNodePath() const
         {
             return '/' % QString::number(parent()->impl()->findNodeIndex(*this));
         }
-        else
-        {
-            return parent()->absoluteNodePath() % '/' %
-                    QString::number(parent()->impl()->findNodeIndex(*this));
-        }
+
+        return parent()->absoluteNodePath() % '/' %
+                QString::number(parent()->impl()->findNodeIndex(*this));
     }
-    else if (parent()->isObject())
+
+    if (parent()->isObject())
     {
         if (parent()->isRoot())
         {
             return '/' % parent()->impl()->findNodeName(*this);
         }
-        else
-        {
-            return parent()->absoluteNodePath() % '/' % parent()->impl()->findNodeName(*this);
-        }
+
+        return parent()->absoluteNodePath() % '/' % parent()->impl()->findNodeName(*this);
     }
-    else
-    {
-        qDebug() << DEBUG_METHOD("absoluteNodePath")
-                 << "Error: parent is not a container type (Array or Object)";
-        return {};
-    }
+
+    qDebug() << DEBUG_METHOD("absoluteNodePath")
+             << "Error: parent is not a container type (Array or Object)";
+    return {};
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -280,14 +275,13 @@ int ConfigNode::Impl::count() const
     {
         return static_cast<int>(m_data->array()->size());
     }
-    else if (isObject())
+
+    if (isObject())
     {
         return static_cast<int>(m_data->object()->size());
     }
-    else
-    {
-        return 0;
-    }
+
+    return 0;
 }
 
 // -------------------------------------------------------------------------------------------------

@@ -469,14 +469,13 @@ QString ConfigNode::appendNodeToPath(const QString &nodePath, const QString &nod
     {
         return nodeName;
     }
-    else if (nodePath.endsWith(QChar('/')))
+
+    if (nodePath.endsWith(QChar('/')))
     {
         return nodePath % nodeName;
     }
-    else
-    {
-        return nodePath % QChar('/') % nodeName;
-    }
+
+    return nodePath % QChar('/') % nodeName;
 }
 
 } // namespace CppConfigFramework
