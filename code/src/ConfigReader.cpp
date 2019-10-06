@@ -174,7 +174,7 @@ std::unique_ptr<ConfigNode> ConfigReader::Impl::read(const QString &filePath,
     }
 
     // Read the contents (JSON format)
-    QJsonParseError error;
+    QJsonParseError error {};
     const QByteArray fileContents = file.readAll();
     const auto doc = QJsonDocument::fromJson(fileContents, &error);
 
@@ -229,7 +229,7 @@ std::unique_ptr<ConfigNode> ConfigReader::Impl::read(const QString &filePath,
     }
 
     // Resolve references
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < s_referenceResolutionMaxCycles; i++)
     {
         const int result = resolveReferences(completeConfig.get());
 
