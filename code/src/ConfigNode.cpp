@@ -118,6 +118,11 @@ QString ConfigNode::typeToString(const ConfigNode::Type type)
         {
             return QStringLiteral("NodeReference");
         }
+
+        case Type::DerivedObject:
+        {
+            return QStringLiteral("DerivedObject");
+        }
     }
 
     return {};
@@ -156,6 +161,13 @@ bool ConfigNode::isObject() const
 bool ConfigNode::isNodeReference() const
 {
     return impl()->isNodeReference();
+}
+
+// -------------------------------------------------------------------------------------------------
+
+bool ConfigNode::isDerivedObject() const
+{
+    return impl()->isDerivedObject();
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -300,6 +312,13 @@ QString ConfigNode::nodeReference() const
 
 // -------------------------------------------------------------------------------------------------
 
+const DerivedObjectData *ConfigNode::derivedObject() const
+{
+    return impl()->derivedObject();
+}
+
+// -------------------------------------------------------------------------------------------------
+
 void ConfigNode::setValue(const QVariant &value)
 {
     return impl()->setValue(value);
@@ -338,6 +357,13 @@ bool ConfigNode::applyObject(const ConfigNode &otherNode)
 void ConfigNode::setNodeReference(const QString &nodePath)
 {
     impl()->setNodeReference(nodePath);
+}
+
+// -------------------------------------------------------------------------------------------------
+
+void ConfigNode::setDerivedObject(const QStringList &bases, ConfigNode &&config)
+{
+    impl()->setDerivedObject(bases, std::move(config));
 }
 
 // -------------------------------------------------------------------------------------------------

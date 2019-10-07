@@ -63,12 +63,14 @@ private slots:
     void testMoveArray();
     void testMoveObject();
     void testMoveNodeReference();
+    void testMoveDerivedObject();
 
     void testCloneNull();
     void testCloneValue();
     void testCloneArray();
     void testCloneObject();
     void testCloneNodeReference();
+    void testCloneDerivedObject();
 
     void testNodePath();
 
@@ -132,6 +134,7 @@ void TestConfigNode::testConstructor_data()
     QTest::newRow("Array")         << ConfigNode::Type::Array;
     QTest::newRow("Object")        << ConfigNode::Type::Object;
     QTest::newRow("NodeReference") << ConfigNode::Type::NodeReference;
+    QTest::newRow("DerivedObject") << ConfigNode::Type::DerivedObject;
 }
 
 // Test: Move constructor and move assignment operator ---------------------------------------------
@@ -296,6 +299,54 @@ void TestConfigNode::testMoveNodeReference()
     }
 }
 
+void TestConfigNode::testMoveDerivedObject()
+{
+    ConfigNode parentNode1(ConfigNode::Type::Object);
+    ConfigNode parentNode2(ConfigNode::Type::Object);
+    QStringList expectedBases {"base1", "base2"};
+
+    // Move constructor
+    {
+        ConfigNode node(ConfigNode::Type::DerivedObject, &parentNode1);
+
+        {
+            ConfigNode configNode(ConfigNode::Type::Object);
+            configNode.setMember("null", ConfigNode());
+            node.setDerivedObject(expectedBases, std::move(configNode));
+        }
+
+        ConfigNode movedNode(std::move(node));
+        QVERIFY(movedNode.isDerivedObject());
+        QCOMPARE(movedNode.parent(), &parentNode1);
+        QCOMPARE(movedNode.derivedObject()->bases(), expectedBases);
+        QVERIFY(movedNode.derivedObject()->config().isObject());
+        QCOMPARE(movedNode.derivedObject()->config().count(), 1);
+        QVERIFY(movedNode.derivedObject()->config().containsMember("null"));
+        QVERIFY(movedNode.derivedObject()->config().member("null")->isNull());
+    }
+
+    // Move assignement operator
+    {
+        ConfigNode node(ConfigNode::Type::DerivedObject, &parentNode2);
+
+        {
+            ConfigNode configNode(ConfigNode::Type::Object);
+            configNode.setMember("null", ConfigNode());
+            node.setDerivedObject(expectedBases, std::move(configNode));
+        }
+
+        ConfigNode movedNode;
+        movedNode = std::move(node);
+        QVERIFY(movedNode.isDerivedObject());
+        QCOMPARE(movedNode.parent(), &parentNode2);
+        QCOMPARE(movedNode.derivedObject()->bases(), expectedBases);
+        QVERIFY(movedNode.derivedObject()->config().isObject());
+        QCOMPARE(movedNode.derivedObject()->config().count(), 1);
+        QVERIFY(movedNode.derivedObject()->config().containsMember("null"));
+        QVERIFY(movedNode.derivedObject()->config().member("null")->isNull());
+    }
+}
+
 // Test: clone() method ----------------------------------------------------------------------------
 
 void TestConfigNode::testCloneNull()
@@ -432,6 +483,48 @@ void TestConfigNode::testCloneNodeReference()
     QVERIFY(clonedNode.isNodeReference());
     QCOMPARE(clonedNode.parent(), nullptr);
     QCOMPARE(clonedNode.nodeReference(), QString("ref2"));
+}
+
+void TestConfigNode::testCloneDerivedObject()
+{
+    QStringList expectedBases {"base1", "base2"};
+
+    // Clone without parent
+    ConfigNode node(ConfigNode::Type::DerivedObject, nullptr);
+
+    {
+        ConfigNode configNode(ConfigNode::Type::Object);
+        configNode.setMember("null", ConfigNode());
+        node.setDerivedObject(expectedBases, std::move(configNode));
+    }
+
+    ConfigNode clonedNode(node.clone());
+    QVERIFY(clonedNode.isDerivedObject());
+    QCOMPARE(clonedNode.parent(), nullptr);
+    QCOMPARE(clonedNode.derivedObject()->bases(), expectedBases);
+    QVERIFY(clonedNode.derivedObject()->config().isObject());
+    QCOMPARE(clonedNode.derivedObject()->config().count(), 1);
+    QVERIFY(clonedNode.derivedObject()->config().containsMember("null"));
+    QVERIFY(clonedNode.derivedObject()->config().member("null")->isNull());
+
+    // Clone with parent
+    ConfigNode parentNode(ConfigNode::Type::Object);
+    node.setParent(&parentNode);
+
+    {
+        ConfigNode configNode(ConfigNode::Type::Object);
+        configNode.setMember("value", ConfigNode(ConfigNode::Type::Value));
+        node.setDerivedObject(expectedBases, std::move(configNode));
+    }
+
+    clonedNode = node.clone();
+    QVERIFY(clonedNode.isDerivedObject());
+    QCOMPARE(clonedNode.parent(), nullptr);
+    QCOMPARE(clonedNode.derivedObject()->bases(), expectedBases);
+    QVERIFY(clonedNode.derivedObject()->config().isObject());
+    QCOMPARE(clonedNode.derivedObject()->config().count(), 1);
+    QVERIFY(clonedNode.derivedObject()->config().containsMember("value"));
+    QVERIFY(clonedNode.derivedObject()->config().member("value")->isValue());
 }
 
 // Test: rootNode() method -------------------------------------------------------------------------

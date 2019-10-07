@@ -25,6 +25,7 @@ find_package(Qt5Core REQUIRED)
 add_library(CppConfigFramework SHARED
     inc/CppConfigFramework/ConfigNode.hpp
     inc/CppConfigFramework/ConfigReader.hpp
+    inc/CppConfigFramework/DerivedObjectData.hpp
     inc/CppConfigFramework/Pimpl.hpp
 
     src/ConfigNode.cpp
@@ -34,6 +35,7 @@ add_library(CppConfigFramework SHARED
     src/ConfigNodeImpl.hpp
     src/ConfigReader.cpp
     src/DebugHelper.hpp
+    src/DerivedObjectData.cpp
     )
 
 include(GenerateExportHeader)

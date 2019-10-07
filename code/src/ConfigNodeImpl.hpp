@@ -89,6 +89,9 @@ public:
     //! \copydoc    ConfigNode::isNodeReference()
     bool isNodeReference() const;
 
+    //! \copydoc    ConfigNode::isDerivedObject()
+    bool isDerivedObject() const;
+
     //! \copydoc    ConfigNode::isRoot()
     bool isRoot() const;
 
@@ -149,6 +152,9 @@ public:
     //! \copydoc    ConfigNode::nodeReference()
     QString nodeReference() const;
 
+    //! \copydoc    ConfigNode::derivedObject()
+    const DerivedObjectData *derivedObject() const;
+
     //! \copydoc    ConfigNode::setValue()
     void setValue(const QVariant &value);
 
@@ -166,6 +172,9 @@ public:
 
     //! \copydoc    ConfigNode::setNodeReference()
     void setNodeReference(const QString &nodePath);
+
+    //! \copydoc    ConfigNode::setDerivedObject()
+    void setDerivedObject(const QStringList &bases, ConfigNode &&config);
 
     //! \copydoc    ConfigNode::removeElement()
     void removeElement(const int index);

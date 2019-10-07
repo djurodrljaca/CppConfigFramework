@@ -23,6 +23,7 @@
 
 // C++ Config Framework includes
 #include <CppConfigFramework/CppConfigFrameworkExport.hpp>
+#include <CppConfigFramework/DerivedObjectData.hpp>
 #include <CppConfigFramework/Pimpl.hpp>
 
 // Qt includes
@@ -62,12 +63,15 @@ public:
         Object,
 
         //! A reference to a node to be copied
-        NodeReference
+        NodeReference,
 
         // TODO: add derived array node
-        // TODO: add derived object node
+
+        //! An object derived from one or more other objects
+        DerivedObject
     };
 
+public:
     //! Constructor
     ConfigNode(const Type type = Type::Null, ConfigNode *parent = nullptr);
 
@@ -109,6 +113,9 @@ public:
 
     //! Checks if the node is of NodeReference type
     bool isNodeReference() const;
+
+    //! Checks if the node is of DerivedObject type
+    bool isDerivedObject() const;
 
     //! Checks if the node is the root node (has no parent)
     bool isRoot() const;
@@ -170,6 +177,9 @@ public:
     //! Gets the path to the referenced node
     QString nodeReference() const;
 
+    //! Gets the DerivedObject data
+    const DerivedObjectData *derivedObject() const;
+
     //! Sets the node's value
     void setValue(const QVariant &value);
 
@@ -217,6 +227,9 @@ public:
 
     //! Sets the path to the referenced node
     void setNodeReference(const QString &nodePath);
+
+    //! Sets the DerivedObject data
+    void setDerivedObject(const QStringList &bases, ConfigNode &&config);
 
     //! Removes a value with the specified index from the Array node
     void removeElement(const int index);

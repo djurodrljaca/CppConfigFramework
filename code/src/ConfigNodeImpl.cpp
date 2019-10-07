@@ -119,6 +119,13 @@ ConfigNode ConfigNode::Impl::clone() const
             clonedNode.setNodeReference(nodeReference());
             break;
         }
+
+        case Type::DerivedObject:
+        {
+            clonedNode.setDerivedObject(derivedObject()->bases(),
+                                        derivedObject()->config().clone());
+            break;
+        }
     }
 
     return clonedNode;
@@ -164,6 +171,13 @@ bool ConfigNode::Impl::isObject() const
 bool ConfigNode::Impl::isNodeReference() const
 {
     return (m_data->type() == ConfigNode::Type::NodeReference);
+}
+
+// -------------------------------------------------------------------------------------------------
+
+bool ConfigNode::Impl::isDerivedObject() const
+{
+    return (m_data->type() == ConfigNode::Type::DerivedObject);
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -547,6 +561,13 @@ QString ConfigNode::Impl::nodeReference() const
 
 // -------------------------------------------------------------------------------------------------
 
+const DerivedObjectData *ConfigNode::Impl::derivedObject() const
+{
+    return m_data->derivedObject();
+}
+
+// -------------------------------------------------------------------------------------------------
+
 void ConfigNode::Impl::setValue(const QVariant &value)
 {
     if (!isValue())
@@ -631,13 +652,15 @@ bool ConfigNode::Impl::applyObject(const ConfigNode &otherNode)
 {
     if (!isObject())
     {
-        qDebug() << DEBUG_METHOD("applyObject") << "Error: this config node is not of an Object type";
+        qDebug() << DEBUG_METHOD("applyObject")
+                 << "Error: this config node is not of an Object type";
         return false;
     }
 
     if (!otherNode.isObject())
     {
-        qDebug() << DEBUG_METHOD("applyObject") << "Error: other config node is not of an Object type";
+        qDebug() << DEBUG_METHOD("applyObject")
+                 << "Error: other config node is not of an Object type";
         return false;
     }
 
@@ -661,12 +684,10 @@ bool ConfigNode::Impl::applyObject(const ConfigNode &otherNode)
             continue;
         }
 
-        // Merge other node's item to this node
+        // Apply other node's item to this node
         ConfigNode *itemFromThisNode = member(name);
 
-        // TODO: prepare special handling for derived nodes?
-
-        if (itemFromThisNode->isObject())
+        if (itemFromThisNode->isObject() && itemFromOtherNode->isObject())
         {
             // Merge object items
             if (!itemFromThisNode->applyObject(*itemFromOtherNode))
@@ -696,6 +717,21 @@ void ConfigNode::Impl::setNodeReference(const QString &nodePath)
     }
 
     *m_data->nodeReference() = nodePath;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+void ConfigNode::Impl::setDerivedObject(const QStringList &bases, ConfigNode &&config)
+{
+    if (!isDerivedObject())
+    {
+        qDebug() << DEBUG_METHOD("setDerivedObject")
+                 << "Config node is not of a DerivedObject type";
+        return;
+    }
+
+    m_data->derivedObject()->setBases(bases);
+    m_data->derivedObject()->setConfig(std::move(config));
 }
 
 // -------------------------------------------------------------------------------------------------
