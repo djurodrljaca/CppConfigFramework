@@ -72,6 +72,11 @@ std::unique_ptr<ConfigNodeData> ConfigNodeData::create(const ConfigNode::Type ty
         {
             return std::make_unique<ConfigNodeReferenceData>();
         }
+
+        case ConfigNode::Type::DerivedObject:
+        {
+            return std::make_unique<ConfigNodeDerivedObjectData>();
+        }
     }
 
     qFatal("Unexpected type");
@@ -130,6 +135,20 @@ const QString *ConfigNodeData::nodeReference() const
 // -------------------------------------------------------------------------------------------------
 
 QString *ConfigNodeData::nodeReference()
+{
+    return nullptr;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+const DerivedObjectData *ConfigNodeData::derivedObject() const
+{
+    return nullptr;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+DerivedObjectData *ConfigNodeData::derivedObject()
 {
     return nullptr;
 }
@@ -223,6 +242,27 @@ const QString *ConfigNodeReferenceData::nodeReference() const
 QString *ConfigNodeReferenceData::nodeReference()
 {
     return &m_nodeReference;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+ConfigNode::Type ConfigNodeDerivedObjectData::type() const
+{
+    return ConfigNode::Type::DerivedObject;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+const DerivedObjectData *ConfigNodeDerivedObjectData::derivedObject() const
+{
+    return &m_data;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+DerivedObjectData *ConfigNodeDerivedObjectData::derivedObject()
+{
+    return &m_data;
 }
 
 } // namespace CppConfigFramework

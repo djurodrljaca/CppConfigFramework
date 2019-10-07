@@ -23,6 +23,7 @@
 
 // C++ Config Framework includes
 #include <CppConfigFramework/ConfigNode.hpp>
+#include <CppConfigFramework/DerivedObjectData.hpp>
 
 // Qt includes
 #include <QtCore/QVariant>
@@ -105,11 +106,17 @@ public:
     //! \copydoc    ConfigNodeData::object()
     virtual ObjectNodeData *object();
 
-    //! Gets a reference to the Object data
+    //! Gets a reference to the NodeReference data
     virtual const QString *nodeReference() const;
 
     //! \copydoc    ConfigNodeData::nodeReference()
     virtual QString *nodeReference();
+
+    //! Gets a reference to the DerivedObject data
+    virtual const DerivedObjectData *derivedObject() const;
+
+    //! \copydoc    ConfigNodeData::derivedObject()
+    virtual DerivedObjectData *derivedObject();
 };
 
 // -------------------------------------------------------------------------------------------------
@@ -290,6 +297,44 @@ public:
 private:
     //! Actual data
     QString m_nodeReference;
+};
+
+// -------------------------------------------------------------------------------------------------
+
+//! This is a class for an DerivedObject configuration node data
+class ConfigNodeDerivedObjectData : public ConfigNodeData
+{
+public:
+    //! Constructor
+    ConfigNodeDerivedObjectData() = default;
+
+    //! Copy constructor
+    ConfigNodeDerivedObjectData(const ConfigNodeDerivedObjectData &other) = delete;
+
+    //! Move constructor
+    ConfigNodeDerivedObjectData(ConfigNodeDerivedObjectData &&other) = delete;
+
+    //! Destructor
+    ~ConfigNodeDerivedObjectData() override = default;
+
+    //! Copy assignment operator
+    ConfigNodeDerivedObjectData &operator=(const ConfigNodeDerivedObjectData &other) = delete;
+
+    //! Move assignment operator
+    ConfigNodeDerivedObjectData &operator=(ConfigNodeDerivedObjectData &&other) = delete;
+
+    //! \copydoc    ConfigNodeData::type()
+    ConfigNode::Type type() const override;
+
+    //! \copydoc    ConfigNodeData::derivedObject()
+    const DerivedObjectData *derivedObject() const override;
+
+    //! \copydoc    ConfigNodeData::derivedObject()
+    DerivedObjectData *derivedObject() override;
+
+private:
+    //! Actual data
+    DerivedObjectData m_data;
 };
 
 } // namespace CppConfigFramework
