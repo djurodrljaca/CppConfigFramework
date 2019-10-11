@@ -34,6 +34,8 @@ add_library(CppConfigFramework SHARED
     src/ConfigNodeImpl.cpp
     src/ConfigNodeImpl.hpp
     src/ConfigReader.cpp
+    src/ConfigReaderImpl.cpp
+    src/ConfigReaderImpl.hpp
     src/DebugHelper.hpp
     src/DerivedObjectData.cpp
     )

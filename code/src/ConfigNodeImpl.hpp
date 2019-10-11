@@ -155,6 +155,9 @@ public:
     //! \copydoc    ConfigNode::derivedObject()
     const DerivedObjectData *derivedObject() const;
 
+    //! \copydoc    ConfigNode::derivedObject()
+    DerivedObjectData *derivedObject();
+
     //! \copydoc    ConfigNode::setValue()
     void setValue(const QVariant &value);
 
