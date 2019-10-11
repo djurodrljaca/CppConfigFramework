@@ -51,6 +51,7 @@ private slots:
     // Test functions
     void testReadValidConfig();
     void testReadConfigWithNodeReference();
+    void testReadConfigWithDerivedObject();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -154,7 +155,7 @@ void TestConfigReader::testReadValidConfig()
 void TestConfigReader::testReadConfigWithNodeReference()
 {
     // Read config file
-    const QString configFilePath(QStringLiteral(":/TestData/ConfigWithNodeReference.json"));
+    const QString configFilePath(QStringLiteral(":/TestData/ConfigWithNodeReferences.json"));
     ConfigReader configReader;
 
     auto config = configReader.read(configFilePath);
@@ -165,28 +166,76 @@ void TestConfigReader::testReadConfigWithNodeReference()
     QVERIFY(config->isRoot());
     QCOMPARE(config->count(), 2);
 
-    // Check "/root_node1"
+    // Check "/root_node2/ref_value1
     {
-        QVERIFY(config->containsMember("root_node1"));
-        const auto *rootNode1 = config->member("root_node1");
-        QVERIFY(rootNode1->isObject());
-        QCOMPARE(rootNode1->count(), 2);
+        // References "/root_node1/value" node
+        const auto *ref_value1 = config->nodeAtPath("/root_node2/ref_value1");
+        QVERIFY(ref_value1 != nullptr);
+        QVERIFY(ref_value1->isValue());
+        QCOMPARE(ref_value1->value(), 1);
+    }
 
-        // Check "/root_node1/value
+    // Check "/root_node2/ref_value2
+    {
+        // References "/root_node1/sub_node" node
+        const auto *ref_value2 = config->nodeAtPath("/root_node2/ref_value2");
+        QVERIFY(ref_value2 != nullptr);
+        QVERIFY(ref_value2->isObject());
+
+        // Check "/root_node1/sub_node/value"
         {
-            QVERIFY(rootNode1->containsMember("value"));
-            const auto *value = rootNode1->member("value");
+            QVERIFY(ref_value2->containsMember("value"));
+            const auto *value = ref_value2->member("value");
+            QVERIFY(value->isValue());
+            QCOMPARE(value->value(), QVariant("str"));
+        }
+    }
+
+    // Check "/root_node2/ref_value3
+    {
+        // References "/root_node2/sub_node/value" node
+        const auto *ref_value3 = config->nodeAtPath("/root_node2/ref_value3");
+        QVERIFY(ref_value3 != nullptr);
+        QVERIFY(ref_value3->isValue());
+
+        QVariantList expected = {1, 2, 3};
+        QCOMPARE(ref_value3->value(), expected);
+    }
+}
+
+// Test: read a config file with derived objects ---------------------------------------------------
+
+void TestConfigReader::testReadConfigWithDerivedObject()
+{
+    // Read config file
+    const QString configFilePath(QStringLiteral(":/TestData/ConfigWithDerivedObjects.json"));
+    ConfigReader configReader;
+
+    auto config = configReader.read(configFilePath);
+    QVERIFY(config);
+
+    // Check "/derived_object1"
+    {
+        const auto *derived_object1 = config->nodeAtPath("/derived_object1");
+        QVERIFY(derived_object1 != nullptr);
+        QVERIFY(derived_object1->isObject());
+        QCOMPARE(derived_object1->count(), 2);
+
+        // Check "/derived_object1/value
+        {
+            QVERIFY(derived_object1->containsMember("value"));
+            const auto *value = derived_object1->member("value");
             QVERIFY(value->isValue());
             QCOMPARE(value->value(), 1);
         }
 
-        // Check "/root_node1/sub_node
+        // Check "/derived_object1/sub_node
         {
-            QVERIFY(rootNode1->containsMember("sub_node"));
-            const auto *subNode = rootNode1->member("sub_node");
+            QVERIFY(derived_object1->containsMember("sub_node"));
+            const auto *subNode = derived_object1->member("sub_node");
             QVERIFY(subNode->isObject());
 
-            // Check "/root_node1/sub_node/value"
+            // Check "/derived_object1/sub_node/value"
             {
                 QVERIFY(subNode->containsMember("value"));
                 const auto *value = subNode->member("value");
@@ -196,64 +245,67 @@ void TestConfigReader::testReadConfigWithNodeReference()
         }
     }
 
-    // Check "/root_node2"
+    // Check "/derived_object2"
     {
-        QVERIFY(config->containsMember("root_node2"));
-        const auto *rootNode2 = config->member("root_node2");
-        QVERIFY(rootNode2->isObject());
-        QCOMPARE(rootNode2->count(), 4);
+        const auto *derived_object2 = config->nodeAtPath("/derived_object2");
+        QVERIFY(derived_object2 != nullptr);
+        QVERIFY(derived_object2->isObject());
+        QCOMPARE(derived_object2->count(), 2);
 
-        // Check "/root_node2/sub_node
+        // Check "/derived_object2/value
         {
-            QVERIFY(rootNode2->containsMember("sub_node"));
-            const auto *subNode = rootNode2->member("sub_node");
+            QVERIFY(derived_object2->containsMember("value"));
+            const auto *value = derived_object2->member("value");
+            QVERIFY(value->isValue());
+
+            QVariantList expected = {1, 2, 3};
+            QCOMPARE(value->value(), expected);
+        }
+
+        // Check "/derived_object2/sub_node
+        {
+            QVERIFY(derived_object2->containsMember("sub_node"));
+            const auto *subNode = derived_object2->member("sub_node");
             QVERIFY(subNode->isObject());
 
-            // Check "/root_node2/sub_node/value"
+            // Check "/derived_object2/sub_node/value"
             {
                 QVERIFY(subNode->containsMember("value"));
                 const auto *value = subNode->member("value");
                 QVERIFY(value->isValue());
-
-                QVariantList expected = {1, 2, 3};
-                QCOMPARE(value->value(), expected);
+                QCOMPARE(value->value(), QVariant("abc"));
             }
         }
+    }
 
-        // Check "/root_node2/ref_value1
+    // Check "/derived_object3"
+    {
+        const auto *derived_object3 = config->nodeAtPath("/derived_object3");
+        QVERIFY(derived_object3 != nullptr);
+        QVERIFY(derived_object3->isObject());
+        QCOMPARE(derived_object3->count(), 2);
+
+        // Check "/derived_object3/value
         {
-            // References "/root_node1/value" node
-            QVERIFY(rootNode2->containsMember("ref_value1"));
-            const auto *ref_value1 = rootNode2->member("ref_value1");
-            QVERIFY(ref_value1->isValue());
-            QCOMPARE(ref_value1->value(), 1);
+            QVERIFY(derived_object3->containsMember("value"));
+            const auto *value = derived_object3->member("value");
+            QVERIFY(value->isValue());
+            QCOMPARE(value->value(), 1);
         }
 
-        // Check "/root_node2/ref_value2
+        // Check "/derived_object3/sub_node
         {
-            // References "/root_node1/sub_node" node
-            QVERIFY(rootNode2->containsMember("ref_value2"));
-            const auto *ref_value2 = rootNode2->member("ref_value2");
-            QVERIFY(ref_value2->isObject());
+            QVERIFY(derived_object3->containsMember("sub_node"));
+            const auto *subNode = derived_object3->member("sub_node");
+            QVERIFY(subNode->isObject());
 
-            // Check "/root_node1/sub_node/value"
+            // Check "/derived_object3/sub_node/value"
             {
-                QVERIFY(ref_value2->containsMember("value"));
-                const auto *value = ref_value2->member("value");
+                QVERIFY(subNode->containsMember("value"));
+                const auto *value = subNode->member("value");
                 QVERIFY(value->isValue());
-                QCOMPARE(value->value(), QVariant("str"));
+                QCOMPARE(value->value(), QVariant("abc"));
             }
-        }
-
-        // Check "/root_node2/ref_value3
-        {
-            // References "/root_node2/sub_node/value" node
-            QVERIFY(rootNode2->containsMember("ref_value3"));
-            const auto *ref_value3 = rootNode2->member("ref_value3");
-            QVERIFY(ref_value3->isValue());
-
-            QVariantList expected = {1, 2, 3};
-            QCOMPARE(ref_value3->value(), expected);
         }
     }
 }

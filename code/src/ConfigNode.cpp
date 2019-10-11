@@ -319,6 +319,13 @@ const DerivedObjectData *ConfigNode::derivedObject() const
 
 // -------------------------------------------------------------------------------------------------
 
+DerivedObjectData *ConfigNode::derivedObject()
+{
+    return impl()->derivedObject();
+}
+
+// -------------------------------------------------------------------------------------------------
+
 void ConfigNode::setValue(const QVariant &value)
 {
     return impl()->setValue(value);
@@ -415,6 +422,14 @@ bool ConfigNode::isRelativeNodePath(const QString &nodePath)
 
 bool ConfigNode::validateNodePath(const QString &nodePath, const QString &currentNodePath)
 {
+    // Check for an empty
+    if (nodePath.isEmpty())
+    {
+        qDebug() << DEBUG_METHOD("validateNodePath")
+                 << "Error: an empty path is not valid";
+        return false;
+    }
+
     // Check for "root" path
     if (nodePath == QStringLiteral("/"))
     {
@@ -439,11 +454,7 @@ bool ConfigNode::validateNodePath(const QString &nodePath, const QString &curren
             return false;
         }
 
-        if (nodePath.isEmpty())
-        {
-            fullNodePath = currentNodePath;
-        }
-        else if (currentNodePath == QStringLiteral("/"))
+        if (currentNodePath == QStringLiteral("/"))
         {
             fullNodePath = QChar('/') % nodePath;
         }

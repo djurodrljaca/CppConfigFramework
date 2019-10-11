@@ -64,6 +64,12 @@ public:
     //! Move assignment operator
     ConfigReader &operator=(ConfigReader &&other) noexcept;
 
+    //! Gets the max number of cycles for reference resolution procedure (default: 100 cycles)
+    uint32_t referenceResolutionMaxCycles() const;
+
+    //! Sets the max number of cycles for reference resolution procedure
+    void setReferenceResolutionMaxCycles(const uint32_t referenceResolutionMaxCycles);
+
     /*!
      * Read the specified config file
      *
@@ -81,7 +87,6 @@ public:
                                      const QString &destinationNode = QStringLiteral("/"));
 
 private:
-    constexpr static int s_referenceResolutionMaxCycles = 100;
     CPPCONFIGFRAMEWORK_DECLARE_PIMPL()
 };
 

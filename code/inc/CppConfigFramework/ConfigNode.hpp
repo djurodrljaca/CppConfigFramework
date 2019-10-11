@@ -180,6 +180,9 @@ public:
     //! Gets the DerivedObject data
     const DerivedObjectData *derivedObject() const;
 
+    //! \copydoc    ConfigNode::derivedObject()
+    DerivedObjectData *derivedObject();
+
     //! Sets the node's value
     void setValue(const QVariant &value);
 

@@ -568,6 +568,13 @@ const DerivedObjectData *ConfigNode::Impl::derivedObject() const
 
 // -------------------------------------------------------------------------------------------------
 
+DerivedObjectData *ConfigNode::Impl::derivedObject()
+{
+    return m_data->derivedObject();
+}
+
+// -------------------------------------------------------------------------------------------------
+
 void ConfigNode::Impl::setValue(const QVariant &value)
 {
     if (!isValue())
