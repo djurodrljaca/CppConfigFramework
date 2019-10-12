@@ -65,9 +65,10 @@ public:
         //! A reference to a node to be copied
         NodeReference,
 
-        // TODO: add derived array node
+        //! An array derived from other elements
+        DerivedArray,
 
-        //! An object derived from one or more other objects
+        //! An object derived from other objects
         DerivedObject
     };
 
@@ -113,6 +114,9 @@ public:
 
     //! Checks if the node is of NodeReference type
     bool isNodeReference() const;
+
+    //! Checks if the node is of DerivedArray type
+    bool isDerivedArray() const;
 
     //! Checks if the node is of DerivedObject type
     bool isDerivedObject() const;
@@ -177,6 +181,12 @@ public:
     //! Gets the path to the referenced node
     QString nodeReference() const;
 
+    //! Gets the DerivedArray data
+    const std::list<ConfigNode> *derivedArray() const;
+
+    //! \copydoc    ConfigNode::derivedArray()
+    std::list<ConfigNode> *derivedArray();
+
     //! Gets the DerivedObject data
     const DerivedObjectData *derivedObject() const;
 
@@ -230,9 +240,6 @@ public:
 
     //! Sets the path to the referenced node
     void setNodeReference(const QString &nodePath);
-
-    //! Sets the DerivedObject data
-    void setDerivedObject(const QStringList &bases, ConfigNode &&config);
 
     //! Removes a value with the specified index from the Array node
     void removeElement(const int index);

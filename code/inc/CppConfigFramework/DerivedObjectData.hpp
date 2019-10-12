@@ -76,8 +76,8 @@ public:
     //! Gets the node that needs to be applied over the bases of the DerivedObject node
     const ConfigNode &config() const;
 
-    //! Sets the node that needs to be applied over the bases of the DerivedObject node
-    void setConfig(ConfigNode &&node);
+    //! \copydoc    DerivedObjectData::config()
+    ConfigNode &config();
 
 private:
     CPPCONFIGFRAMEWORK_DECLARE_PIMPL()

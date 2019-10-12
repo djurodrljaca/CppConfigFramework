@@ -73,6 +73,11 @@ std::unique_ptr<ConfigNodeData> ConfigNodeData::create(const ConfigNode::Type ty
             return std::make_unique<ConfigNodeReferenceData>();
         }
 
+        case ConfigNode::Type::DerivedArray:
+        {
+            return std::make_unique<ConfigNodeDerivedArrayData>();
+        }
+
         case ConfigNode::Type::DerivedObject:
         {
             return std::make_unique<ConfigNodeDerivedObjectData>();
@@ -135,6 +140,20 @@ const QString *ConfigNodeData::nodeReference() const
 // -------------------------------------------------------------------------------------------------
 
 QString *ConfigNodeData::nodeReference()
+{
+    return nullptr;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+const std::list<ConfigNode> *ConfigNodeData::derivedArray() const
+{
+    return nullptr;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+std::list<ConfigNode> *ConfigNodeData::derivedArray()
 {
     return nullptr;
 }
@@ -242,6 +261,27 @@ const QString *ConfigNodeReferenceData::nodeReference() const
 QString *ConfigNodeReferenceData::nodeReference()
 {
     return &m_nodeReference;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+ConfigNode::Type ConfigNodeDerivedArrayData::type() const
+{
+    return ConfigNode::Type::DerivedArray;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+const std::list<ConfigNode> *ConfigNodeDerivedArrayData::derivedArray() const
+{
+    return &m_data;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+std::list<ConfigNode> *ConfigNodeDerivedArrayData::derivedArray()
+{
+    return &m_data;
 }
 
 // -------------------------------------------------------------------------------------------------

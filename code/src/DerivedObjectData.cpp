@@ -85,10 +85,10 @@ public:
         return m_config;
     }
 
-    //! \copydoc    DerivedObject::setConfig()
-    inline void setConfig(ConfigNode &&node)
+    //! \copydoc    DerivedObject::config()
+    inline ConfigNode &config()
     {
-        m_config = std::move(node);
+        return m_config;
     }
 
 private:
@@ -143,9 +143,9 @@ const ConfigNode &DerivedObjectData::config() const
 
 // -------------------------------------------------------------------------------------------------
 
-void DerivedObjectData::setConfig(ConfigNode &&node)
+ConfigNode &DerivedObjectData::config()
 {
-    impl()->setConfig(std::move(node));
+    return impl()->config();
 }
 
 } // namespace CppConfigFramework

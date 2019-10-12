@@ -23,7 +23,6 @@
 
 // C++ Config Framework includes
 #include <CppConfigFramework/ConfigNode.hpp>
-#include <CppConfigFramework/DerivedObjectData.hpp>
 
 // Qt includes
 #include <QtCore/QVariant>
@@ -111,6 +110,12 @@ public:
 
     //! \copydoc    ConfigNodeData::nodeReference()
     virtual QString *nodeReference();
+
+    //! \copydoc    ConfigNodeData::derivedArray()
+    virtual const std::list<ConfigNode> *derivedArray() const;
+
+    //! \copydoc    ConfigNodeData::derivedArray()
+    virtual std::list<ConfigNode> *derivedArray();
 
     //! Gets a reference to the DerivedObject data
     virtual const DerivedObjectData *derivedObject() const;
@@ -297,6 +302,44 @@ public:
 private:
     //! Actual data
     QString m_nodeReference;
+};
+
+// -------------------------------------------------------------------------------------------------
+
+//! This is a class for an DerivedArray configuration node data
+class ConfigNodeDerivedArrayData : public ConfigNodeData
+{
+public:
+    //! Constructor
+    ConfigNodeDerivedArrayData() = default;
+
+    //! Copy constructor
+    ConfigNodeDerivedArrayData(const ConfigNodeDerivedArrayData &other) = delete;
+
+    //! Move constructor
+    ConfigNodeDerivedArrayData(ConfigNodeDerivedArrayData &&other) = delete;
+
+    //! Destructor
+    ~ConfigNodeDerivedArrayData() override = default;
+
+    //! Copy assignment operator
+    ConfigNodeDerivedArrayData &operator=(const ConfigNodeDerivedArrayData &other) = delete;
+
+    //! Move assignment operator
+    ConfigNodeDerivedArrayData &operator=(ConfigNodeDerivedArrayData &&other) = delete;
+
+    //! \copydoc    ConfigNodeData::type()
+    ConfigNode::Type type() const override;
+
+    //! \copydoc    ConfigNodeData::derivedArray()
+    const std::list<ConfigNode> *derivedArray() const override;
+
+    //! \copydoc    ConfigNodeData::derivedArray()
+    std::list<ConfigNode> *derivedArray() override;
+
+private:
+    //! Actual data
+    std::list<ConfigNode> m_data;
 };
 
 // -------------------------------------------------------------------------------------------------
