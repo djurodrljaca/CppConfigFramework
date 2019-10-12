@@ -546,7 +546,8 @@ std::unique_ptr<ConfigNode> ConfigReader::Impl::readDerivedObjectNode(
     }
 
     auto node = std::make_unique<ConfigNode>(ConfigNode::Type::DerivedObject);
-    node->setDerivedObject(bases, std::move(*config));
+    node->derivedObject()->setBases(bases);
+    node->derivedObject()->config() = std::move(*config);
 
     return node;
 }
@@ -778,14 +779,14 @@ ConfigReader::Impl::ReferenceResolutionResult ConfigReader::Impl::resolveDerived
             case ReferenceResolutionResult::Resolved:
             {
                 // Update the config override with the fully resolved node and continue
-                node->derivedObject()->setConfig(std::move(configOverride));
+                node->derivedObject()->config() = std::move(configOverride);
                 break;
             }
 
             case ReferenceResolutionResult::Unresolved:
             {
                 // Update the config override with the partially resolved node and exit
-                node->derivedObject()->setConfig(std::move(configOverride));
+                node->derivedObject()->config() = std::move(configOverride);
                 return ReferenceResolutionResult::Unresolved;
             }
 

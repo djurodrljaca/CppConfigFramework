@@ -120,10 +120,21 @@ ConfigNode ConfigNode::Impl::clone() const
             break;
         }
 
+        case Type::DerivedArray:
+        {
+            clonedNode.derivedArray()->clear();
+
+            for (const auto &element : *derivedArray())
+            {
+                clonedNode.derivedArray()->push_back(element.clone());
+            }
+            break;
+        }
+
         case Type::DerivedObject:
         {
-            clonedNode.setDerivedObject(derivedObject()->bases(),
-                                        derivedObject()->config().clone());
+            clonedNode.derivedObject()->setBases(derivedObject()->bases());
+            clonedNode.derivedObject()->config() = derivedObject()->config().clone();
             break;
         }
     }
@@ -171,6 +182,13 @@ bool ConfigNode::Impl::isObject() const
 bool ConfigNode::Impl::isNodeReference() const
 {
     return (m_data->type() == ConfigNode::Type::NodeReference);
+}
+
+// -------------------------------------------------------------------------------------------------
+
+bool ConfigNode::Impl::isDerivedArray() const
+{
+    return (m_data->type() == ConfigNode::Type::DerivedArray);
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -561,6 +579,20 @@ QString ConfigNode::Impl::nodeReference() const
 
 // -------------------------------------------------------------------------------------------------
 
+const std::list<ConfigNode> *ConfigNode::Impl::derivedArray() const
+{
+    return m_data->derivedArray();
+}
+
+// -------------------------------------------------------------------------------------------------
+
+std::list<ConfigNode> *ConfigNode::Impl::derivedArray()
+{
+    return m_data->derivedArray();
+}
+
+// -------------------------------------------------------------------------------------------------
+
 const DerivedObjectData *ConfigNode::Impl::derivedObject() const
 {
     return m_data->derivedObject();
@@ -724,21 +756,6 @@ void ConfigNode::Impl::setNodeReference(const QString &nodePath)
     }
 
     *m_data->nodeReference() = nodePath;
-}
-
-// -------------------------------------------------------------------------------------------------
-
-void ConfigNode::Impl::setDerivedObject(const QStringList &bases, ConfigNode &&config)
-{
-    if (!isDerivedObject())
-    {
-        qDebug() << DEBUG_METHOD("setDerivedObject")
-                 << "Config node is not of a DerivedObject type";
-        return;
-    }
-
-    m_data->derivedObject()->setBases(bases);
-    m_data->derivedObject()->setConfig(std::move(config));
 }
 
 // -------------------------------------------------------------------------------------------------
