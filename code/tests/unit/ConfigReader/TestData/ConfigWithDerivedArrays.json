@@ -1,0 +1,77 @@
+{
+    "includes":
+    [
+    ],
+
+    "config":
+    {
+        "root_node1":
+        {
+            "value": 1,
+            "sub_node":
+            {
+                "value": "str"
+            }
+        },
+        "root_node2":
+        {
+            "sub_node":
+            {
+                "#value":
+                [
+                    1,
+                    2,
+                    3
+                ]
+            }
+        },
+        "&derived_array1":
+        [
+            {
+                "element": null
+            },
+            {
+                "element": 1
+            },
+            {
+                "#element":
+                [
+                    1,
+                    2,
+                    3
+                ]
+            },
+            {
+                "element":
+                {
+                    "item1": "str",
+                    "item2": -1
+                }
+            }
+        ],
+        "&derived_array2":
+        [
+            {
+                "&element": "/root_node1/value"
+            },
+            {
+                "&element":
+                [
+                    {
+                        "element": 1
+                    }
+                ]
+            },
+            {
+                "&element":
+                {
+                    "base": "/root_node1",
+                    "config":
+                    {
+                        "value": "abc"
+                    }
+                }
+            }
+        ]
+    }
+}

@@ -47,9 +47,12 @@ ConfigNode::Impl::Impl(const Type type, ConfigNode *parent, ConfigNode *owner)
 {
     if (parent != nullptr)
     {
-        Q_ASSERT_X((parent->isArray() || parent->isObject()),
+        Q_ASSERT_X((parent->isArray() ||
+                    parent->isObject() ||
+                    parent->isDerivedArray() ||
+                    parent->isDerivedObject()),
                    "ConfigNode::Impl::Impl",
-                   "Parent must be either an Array or Object!");
+                   "Parent must be either an Array, Object, DerivedArray, or DerivedObject!");
     }
 
     Q_ASSERT_X((owner != nullptr),
@@ -229,9 +232,12 @@ void ConfigNode::Impl::setParent(ConfigNode *parent)
     }
     else
     {
-        Q_ASSERT_X((parent->isArray() || parent->isObject()),
+        Q_ASSERT_X((parent->isArray() ||
+                    parent->isObject() ||
+                    parent->isDerivedArray() ||
+                    parent->isDerivedObject()),
                    "ConfigNode::Impl::setParent",
-                   "Parent must be either an Array or Object!");
+                   "Parent must be either an Array, Object, DerivedArray, or DerivedObject!");
         m_parent = parent->impl();
     }
 

@@ -51,6 +51,7 @@ private slots:
     // Test functions
     void testReadValidConfig();
     void testReadConfigWithNodeReference();
+    void testReadConfigWithDerivedArray();
     void testReadConfigWithDerivedObject();
 };
 
@@ -200,6 +201,136 @@ void TestConfigReader::testReadConfigWithNodeReference()
 
         QVariantList expected = {1, 2, 3};
         QCOMPARE(ref_value3->value(), expected);
+    }
+}
+
+// Test: read a config file with derived arrays ----------------------------------------------------
+
+void TestConfigReader::testReadConfigWithDerivedArray()
+{
+    // Read config file
+    const QString configFilePath(QStringLiteral(":/TestData/ConfigWithDerivedArrays.json"));
+    ConfigReader configReader;
+
+    auto config = configReader.read(configFilePath);
+    QVERIFY(config);
+
+    // Check "/derived_array1"
+    {
+        const auto *derived_array1 = config->nodeAtPath("/derived_array1");
+        QVERIFY(derived_array1 != nullptr);
+        QVERIFY(derived_array1->isArray());
+        QCOMPARE(derived_array1->count(), 4);
+
+        // Check "/derived_array1/0"
+        {
+            const auto *element = derived_array1->element(0);
+            QVERIFY(element != nullptr);
+            QVERIFY(element->isNull());
+        }
+
+        // Check "/derived_array1/1"
+        {
+            const auto *element = derived_array1->element(1);
+            QVERIFY(element != nullptr);
+            QVERIFY(element->isValue());
+            QCOMPARE(element->value(), 1);
+        }
+
+        // Check "/derived_array1/2"
+        {
+            const auto *element = derived_array1->element(2);
+            QVERIFY(element != nullptr);
+            QVERIFY(element->isValue());
+
+            QVariantList expected = {1, 2, 3};
+            QCOMPARE(element->value(), expected);
+        }
+
+        // Check "/derived_array1/3"
+        {
+            const auto *element = derived_array1->element(3);
+            QVERIFY(element != nullptr);
+            QVERIFY(element->isObject());
+
+            // Check "/derived_array1/3/item1"
+            {
+                QVERIFY(element->containsMember("item1"));
+                const auto *item1 = element->member("item1");
+                QVERIFY(item1->isValue());
+                QCOMPARE(item1->value(), QVariant("str"));
+            }
+
+            // Check "/derived_array1/3/item2"
+            {
+                QVERIFY(element->containsMember("item2"));
+                const auto *item2 = element->member("item2");
+                QVERIFY(item2->isValue());
+                QCOMPARE(item2->value(), QVariant(-1));
+            }
+        }
+    }
+
+    // Check "/derived_array2"
+    {
+        const auto *derived_array2 = config->nodeAtPath("/derived_array2");
+        QVERIFY(derived_array2 != nullptr);
+        QVERIFY(derived_array2->isArray());
+        QCOMPARE(derived_array2->count(), 3);
+
+        // Check "/derived_array2/0"
+        {
+            const auto *element = derived_array2->element(0);
+            QVERIFY(element != nullptr);
+            QVERIFY(element->isValue());
+            QCOMPARE(element->value(), 1);
+        }
+
+        // Check "/derived_array2/1"
+        {
+            const auto *element = derived_array2->element(1);
+            QVERIFY(element != nullptr);
+            QVERIFY(element->isArray());
+
+            // Check "/derived_array2/1/0"
+            {
+                const auto *subelement = element->element(0);
+                QVERIFY(subelement != nullptr);
+                QVERIFY(subelement->isValue());
+                QCOMPARE(subelement->value(), 1);
+            }
+        }
+
+        // Check "/derived_array2/2"
+        {
+            const auto *element = derived_array2->element(2);
+            QVERIFY(element != nullptr);
+            QVERIFY(element->isObject());
+            QCOMPARE(element->count(), 2);
+
+            // Check "/derived_array2/2/value
+            {
+                QVERIFY(element->containsMember("value"));
+                const auto *value = element->member("value");
+                QVERIFY(value->isValue());
+                QCOMPARE(value->value(), QVariant("abc"));
+            }
+
+            // Check "/derived_array2/2/sub_node
+            {
+                QVERIFY(element->containsMember("sub_node"));
+                const auto *subNode = element->member("sub_node");
+                QVERIFY(subNode->isObject());
+
+                // Check "/derived_array2/2/sub_node/value"
+                {
+                    QVERIFY(subNode->containsMember("value"));
+                    const auto *value = subNode->member("value");
+                    QVERIFY(value->isValue());
+                    QCOMPARE(value->value(), QVariant("str"));
+                }
+            }
+        }
     }
 }
 
