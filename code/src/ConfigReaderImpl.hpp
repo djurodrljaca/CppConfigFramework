@@ -134,17 +134,6 @@ private:
     static bool hasDecorator(const QString &memberName);
 
     /*!
-     * Reads a DerivedObject node
-     *
-     * \param   jsonObject      JSON Object
-     * \param   currentNodePath Current node path
-     *
-     * \return  Configuration node instance or in case of failure a null pointer
-     */
-    static std::unique_ptr<ConfigNode> readDerivedObjectNode(const QJsonObject &jsonObject,
-                                                             const QString &currentNodePath);
-
-    /*!
      * Reads a NodeReference node
      *
      * \param   nodeReference   Reference to another node
@@ -154,6 +143,28 @@ private:
      */
     static std::unique_ptr<ConfigNode> readReferenceNode(const QString &nodeReference,
                                                          const QString &currentNodePath);
+
+    /*!
+     * Reads a DerivedArray node
+     *
+     * \param   jsonArray       JSON Array
+     * \param   currentNodePath Current node path
+     *
+     * \return  Configuration node instance or in case of failure a null pointer
+     */
+    static std::unique_ptr<ConfigNode> readDerivedArrayNode(const QJsonArray &jsonArray,
+                                                            const QString &currentNodePath);
+
+    /*!
+     * Reads a DerivedObject node
+     *
+     * \param   jsonObject      JSON Object
+     * \param   currentNodePath Current node path
+     *
+     * \return  Configuration node instance or in case of failure a null pointer
+     */
+    static std::unique_ptr<ConfigNode> readDerivedObjectNode(const QJsonObject &jsonObject,
+                                                             const QString &currentNodePath);
 
     /*!
      * Tries to resolve all references in the specified node and all its sub-nodes
@@ -198,6 +209,17 @@ private:
      * \retval  ReferenceResolutionResult::Error        An error occured (no parent)
      */
     static ReferenceResolutionResult resolveNodeReference(ConfigNode *node);
+
+    /*!
+     * Tries to resolve all references in the DerivedArray node
+     *
+     * \param   node    Config node
+     *
+     * \retval  ReferenceResolutionResult::Resolved     All references were resolved
+     * \retval  ReferenceResolutionResult::Unresolved   All references were not resolved yet
+     * \retval  ReferenceResolutionResult::Error        An error occured
+     */
+    static ReferenceResolutionResult resolveDerivedArrayReferences(ConfigNode *node);
 
     /*!
      * Tries to resolve all references in the DerivedObject node

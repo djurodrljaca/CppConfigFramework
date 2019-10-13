@@ -415,8 +415,7 @@ std::unique_ptr<ConfigNode> ConfigReader::Impl::readJsonObject(const QJsonObject
                 }
                 else if (it.value().isArray())
                 {
-                    // TODO: implement "derived array"
-                    return {};
+                    memberNode = readDerivedArrayNode(it.value().toArray(), memberNodePath);
                 }
                 else if (it.value().isObject())
                 {
@@ -462,44 +461,177 @@ bool ConfigReader::Impl::hasDecorator(const QString &memberName)
 
 // -------------------------------------------------------------------------------------------------
 
+std::unique_ptr<ConfigNode> ConfigReader::Impl::readReferenceNode(const QString &nodeReference,
+                                                                  const QString &currentNodePath)
+{
+    if (!ConfigNode::validateNodePath(nodeReference, currentNodePath))
+    {
+        qDebug() << DEBUG_METHOD("readReferenceNode")
+                 << QString("Error: invalid node reference [%1] with current path [%2]")
+                    .arg(nodeReference, currentNodePath);
+        return {};
+    }
+
+    auto node = std::make_unique<ConfigNode>(ConfigNode::Type::NodeReference);
+    node->setNodeReference(nodeReference);
+
+    return node;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+std::unique_ptr<ConfigNode> ConfigReader::Impl::readDerivedArrayNode(const QJsonArray &jsonArray,
+                                                                     const QString &currentNodePath)
+{
+    auto derivedArrayNode = std::make_unique<ConfigNode>(ConfigNode::Type::DerivedArray);
+
+    for (const auto &jsonValue : jsonArray)
+    {
+        // Each item in the array must be a JSON Object with an "element" member
+        if (!jsonValue.isObject())
+        {
+            qDebug() << DEBUG_METHOD("readDerivedArrayNode")
+                     << "Error: unsupported JSON type for an item in the derived array at path:"
+                     << currentNodePath;
+            return {};
+        }
+
+        const auto arrayItem = jsonValue.toObject();
+
+        if (arrayItem.size() != 1)
+        {
+            qDebug() << DEBUG_METHOD("readDerivedArrayNode")
+                     << "Error: unsupported JSON type for an item in the derived array at path:"
+                     << currentNodePath;
+            return {};
+        }
+
+        QChar decorator('\0');
+        QString elementName = arrayItem.begin().key();
+
+        if (hasDecorator(elementName))
+        {
+            decorator = elementName.at(0);
+            elementName = elementName.mid(1);
+        }
+
+        if (elementName != QStringLiteral("element"))
+        {
+            qDebug() << DEBUG_METHOD("readDerivedArrayNode")
+                     << QString("Error: unexpected name of the derived array element [%1] "
+                                "at path [%2]").arg(elementName, currentNodePath);
+            return {};
+        }
+
+        // Extract the config node from the element
+        const auto elementValue = arrayItem.begin().value();
+        std::unique_ptr<ConfigNode> elementNode;
+
+        switch (decorator.toLatin1())
+        {
+            case '#':
+            {
+                // Explicit Value node (even if it is an Array or an Object JSON type)
+                elementNode = std::make_unique<ConfigNode>(ConfigNode::Type::Value);
+                elementNode->setValue(elementValue.toVariant());
+                break;
+            }
+
+            case '&':
+            {
+                // One of the reference types
+                if (elementValue.isString())
+                {
+                    elementNode = readReferenceNode(elementValue.toString(), currentNodePath);
+                }
+                else if (elementValue.isArray())
+                {
+                    elementNode = readDerivedArrayNode(elementValue.toArray(), currentNodePath);
+                }
+                else if (elementValue.isObject())
+                {
+                    elementNode = readDerivedObjectNode(elementValue.toObject(), currentNodePath);
+                }
+                else
+                {
+                    qDebug() << DEBUG_METHOD("readDerivedArrayNode")
+                             << "Error: unsupported reference type at path:" << currentNodePath;
+                    return {};
+                }
+                break;
+            }
+
+            default:
+            {
+                // No decorators, just an ordinary node
+                elementNode = readJsonValue(elementValue, currentNodePath);
+                break;
+            }
+        }
+
+        if (!elementNode)
+        {
+            return {};
+        }
+
+        // Add element to the array
+        derivedArrayNode->derivedArray()->push_back(std::move(*elementNode));
+    }
+
+    return derivedArrayNode;
+}
+
+// -------------------------------------------------------------------------------------------------
+
 std::unique_ptr<ConfigNode> ConfigReader::Impl::readDerivedObjectNode(
         const QJsonObject &jsonObject, const QString &currentNodePath)
 {
     // Extract bases
-    QStringList bases;
-
-    if (jsonObject.contains(QStringLiteral("base")))
+    if (!jsonObject.contains(QStringLiteral("base")))
     {
-        const auto baseValue = jsonObject.value(QStringLiteral("base"));
+        qDebug() << DEBUG_METHOD("readDerivedObjectNode")
+                 << "Error: a derived object doesn't have the 'base' member"
+                 << currentNodePath;
+        return {};
+    }
 
-        if (baseValue.isString())
+    QStringList bases;
+    const auto baseValue = jsonObject.value(QStringLiteral("base"));
+
+    if (baseValue.isString())
+    {
+        // Single base
+        bases.append(baseValue.toString());
+    }
+    else if (baseValue.isArray())
+    {
+        for (const auto &item : baseValue.toArray())
         {
-            // Single base
-            bases.append(baseValue.toString());
-        }
-        else if (baseValue.isArray())
-        {
-            for (const auto &item : baseValue.toArray())
+            if (!item.isString())
             {
-                if (!item.isString())
-                {
-                    qDebug() << DEBUG_METHOD("readDerivedObjectNode")
-                             << "Error: unsupported JSON type for an item in the 'base' member at "
-                                "path:"
-                             << currentNodePath;
-                    return {};
-                }
-
-                bases.append(item.toString());
+                qDebug() << DEBUG_METHOD("readDerivedObjectNode")
+                         << "Error: unsupported JSON type for an item in the 'base' member at "
+                            "path:"
+                         << currentNodePath;
+                return {};
             }
+
+            bases.append(item.toString());
         }
-        else
+
+        if (bases.isEmpty())
         {
             qDebug() << DEBUG_METHOD("readDerivedObjectNode")
-                     << "Error: unsupported JSON type for the 'base' member at path:"
-                     << currentNodePath;
+                     << "Error: the 'base' member is empty at path:" << currentNodePath;
             return {};
         }
+    }
+    else
+    {
+        qDebug() << DEBUG_METHOD("readDerivedObjectNode")
+                 << "Error: unsupported JSON type for the 'base' member at path:"
+                 << currentNodePath;
+        return {};
     }
 
     // Extract config
@@ -537,36 +669,9 @@ std::unique_ptr<ConfigNode> ConfigReader::Impl::readDerivedObjectNode(
     }
 
     // Create derived object node
-    if (bases.isEmpty() && (!config))
-    {
-        qDebug() << DEBUG_METHOD("readDerivedObjectNode")
-                 << "Error: a derived object doesn't have neither the 'base' nor 'config' members"
-                 << currentNodePath;
-        return {};
-    }
-
     auto node = std::make_unique<ConfigNode>(ConfigNode::Type::DerivedObject);
     node->derivedObject()->setBases(bases);
     node->derivedObject()->config() = std::move(*config);
-
-    return node;
-}
-
-// -------------------------------------------------------------------------------------------------
-
-std::unique_ptr<ConfigNode> ConfigReader::Impl::readReferenceNode(const QString &nodeReference,
-                                                                  const QString &currentNodePath)
-{
-    if (!ConfigNode::validateNodePath(nodeReference, currentNodePath))
-    {
-        qDebug() << DEBUG_METHOD("readReferenceNode")
-                 << QString("Error: invalid node reference [%1] with current path [%2]")
-                    .arg(nodeReference, currentNodePath);
-        return {};
-    }
-
-    auto node = std::make_unique<ConfigNode>(ConfigNode::Type::NodeReference);
-    node->setNodeReference(nodeReference);
 
     return node;
 }
@@ -600,6 +705,12 @@ ConfigReader::Impl::ReferenceResolutionResult ConfigReader::Impl::resolveReferen
         {
             return resolveNodeReference(node);
         }
+
+        case ConfigNode::Type::DerivedArray:
+        {
+            return resolveDerivedArrayReferences(node);
+        }
+
         case ConfigNode::Type::DerivedObject:
         {
             return resolveDerivedObjectReferences(node);
@@ -720,6 +831,78 @@ ConfigReader::Impl::ReferenceResolutionResult ConfigReader::Impl::resolveNodeRef
 
 // -------------------------------------------------------------------------------------------------
 
+ConfigReader::Impl::ReferenceResolutionResult ConfigReader::Impl::resolveDerivedArrayReferences(
+        ConfigNode *node)
+{
+    Q_ASSERT(node != nullptr);
+
+    // Try to get the parent node
+    ConfigNode *parentNode = node->parent();
+
+    if (parentNode == nullptr)
+    {
+        qDebug() << DEBUG_METHOD("resolveDerivedArrayReferences")
+                 << "Error: derived object node has no parent!";
+        return ReferenceResolutionResult::Error;
+    }
+
+    // Resolve references for each element
+    int index = 0;
+    auto result = ReferenceResolutionResult::Resolved;
+
+    for (auto &elementNode : *node->derivedArray())
+    {
+        if (elementNode.isRoot())
+        {
+            elementNode.setParent(node);
+        }
+
+        switch (resolveReferences(&elementNode))
+        {
+            case ReferenceResolutionResult::Resolved:
+            {
+                break;
+            }
+
+            case ReferenceResolutionResult::Unresolved:
+            {
+                result = ReferenceResolutionResult::Unresolved;
+                break;
+            }
+
+            case ReferenceResolutionResult::Error:
+            default:
+            {
+                qDebug() << DEBUG_METHOD("resolveDerivedArrayReferences")
+                         << QString("Error: failed to resolve the element node with index [%1] "
+                                    "at path [%2]")
+                            .arg(QString::number(index), node->absoluteNodePath());
+                return ReferenceResolutionResult::Error;
+            }
+        }
+
+        index++;
+    }
+
+    if (result != ReferenceResolutionResult::Resolved)
+    {
+        return result;
+    }
+
+    // References for all elements were resolved, convert this node to an Array node
+    auto derivedArrayNode = std::make_unique<ConfigNode>(ConfigNode::Type::Array, parentNode);
+
+    for (const auto &elementNode : *node->derivedArray())
+    {
+        derivedArrayNode->appendElement(elementNode.clone());
+    }
+
+    *node = std::move(*derivedArrayNode);
+    return ReferenceResolutionResult::Resolved;
+}
+
+// -------------------------------------------------------------------------------------------------
+
 ConfigReader::Impl::ReferenceResolutionResult ConfigReader::Impl::resolveDerivedObjectReferences(
         ConfigNode *node)
 {
@@ -736,7 +919,7 @@ ConfigReader::Impl::ReferenceResolutionResult ConfigReader::Impl::resolveDerived
     }
 
     // Derive the config node from the all of the base nodes
-    auto derivedObject = std::make_unique<ConfigNode>(ConfigNode::Type::Object, parentNode);
+    auto derivedObjectNode = std::make_unique<ConfigNode>(ConfigNode::Type::Object, parentNode);
 
     for (const QString &base : node->derivedObject()->bases())
     {
@@ -757,7 +940,7 @@ ConfigReader::Impl::ReferenceResolutionResult ConfigReader::Impl::resolveDerived
         }
 
         // Apply the base to the derived object node
-        if (!derivedObject->applyObject(*baseNode))
+        if (!derivedObjectNode->applyObject(*baseNode))
         {
             qDebug() << DEBUG_METHOD("resolveDerivedObjectReferences")
                      << QString("Error: failed to apply the base node [%1] to the derived object "
@@ -804,7 +987,7 @@ ConfigReader::Impl::ReferenceResolutionResult ConfigReader::Impl::resolveDerived
     // Apply overrides to the derived object
     if (!node->derivedObject()->config().isNull())
     {
-        if (!derivedObject->applyObject(node->derivedObject()->config()))
+        if (!derivedObjectNode->applyObject(node->derivedObject()->config()))
         {
             qDebug() << DEBUG_METHOD("resolveDerivedObjectReferences")
                      << QString("Error: failed to apply the config override node to the derived "
@@ -814,7 +997,7 @@ ConfigReader::Impl::ReferenceResolutionResult ConfigReader::Impl::resolveDerived
         }
     }
 
-    *node = std::move(*derivedObject);
+    *node = std::move(*derivedObjectNode);
     return ReferenceResolutionResult::Resolved;
 }
 
@@ -857,6 +1040,7 @@ bool ConfigReader::Impl::isFullyResolved(const ConfigNode &node)
         }
 
         case ConfigNode::Type::NodeReference:
+        case ConfigNode::Type::DerivedArray:
         case ConfigNode::Type::DerivedObject:
         {
             return false;

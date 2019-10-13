@@ -3,5 +3,6 @@
         <file>TestData/ValidConfig.json</file>
         <file>TestData/ConfigWithNodeReferences.json</file>
         <file>TestData/ConfigWithDerivedObjects.json</file>
+        <file>TestData/ConfigWithDerivedArrays.json</file>
     </qresource>
 </RCC>
