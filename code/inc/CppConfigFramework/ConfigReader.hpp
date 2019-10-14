@@ -79,8 +79,7 @@ public:
      * \param   destinationNode Node path to the destination node where the result needs to be
      *                          stored (must be absolute node path)
      *
-     * \retval  true    Success
-     * \retval  false   Failure
+     * \return  Configuration node instance or in case of failure a null pointer
      */
     std::unique_ptr<ConfigNode> read(const QString &filePath,
                                      const QString &sourceNode = QStringLiteral("/"),
