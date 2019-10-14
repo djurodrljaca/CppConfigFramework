@@ -47,10 +47,11 @@ namespace CppConfigFramework
 {
 
 ConfigReader::Impl::Impl()
-    : m_sourceNode(),
-      m_destinationNode(),
-      m_referenceResolutionMaxCycles(100u)
+    : m_referenceResolutionMaxCycles(100u)
 {
+    Q_ASSERT_X(m_referenceResolutionMaxCycles > 0,
+               "ConfigReader::Impl::Impl",
+               "Reference resolution max cycles must be bigger than zero");
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -65,6 +66,10 @@ uint32_t ConfigReader::Impl::referenceResolutionMaxCycles() const
 void ConfigReader::Impl::setReferenceResolutionMaxCycles(
         const uint32_t referenceResolutionMaxCycles)
 {
+    Q_ASSERT_X(referenceResolutionMaxCycles > 0,
+               "ConfigReader::Impl::Impl",
+               "Reference resolution max cycles must be bigger than zero");
+
     m_referenceResolutionMaxCycles = referenceResolutionMaxCycles;
 }
 
@@ -82,8 +87,6 @@ std::unique_ptr<ConfigNode> ConfigReader::Impl::read(const QString &filePath,
         return {};
     }
 
-    m_sourceNode = sourceNode;
-
     // Validate destination node
     if ((!ConfigNode::isAbsoluteNodePath(destinationNode)) ||
         (!ConfigNode::validateNodePath(destinationNode)))
@@ -92,8 +95,6 @@ std::unique_ptr<ConfigNode> ConfigReader::Impl::read(const QString &filePath,
                  << "Error: invalid destination node path:" << destinationNode;
         return {};
     }
-
-    m_destinationNode = destinationNode;
 
     // Open file
     if (!QFile::exists(filePath))
@@ -166,14 +167,19 @@ std::unique_ptr<ConfigNode> ConfigReader::Impl::read(const QString &filePath,
     }
 
     // Resolve references
-    for (uint32_t i = 0; i < m_referenceResolutionMaxCycles; i++)
+    auto result = ReferenceResolutionResult::Unresolved;
+
+    for (uint32_t i = 0;
+         (i < m_referenceResolutionMaxCycles) && (result == ReferenceResolutionResult::Unresolved);
+         i++)
     {
         switch (resolveReferences(completeConfig.get()))
         {
             case ReferenceResolutionResult::Resolved:
             {
                 // Successfully resolved all references, return the fully resolved config
-                return completeConfig;
+                result = ReferenceResolutionResult::Resolved;
+                break;
             }
 
             case ReferenceResolutionResult::Unresolved:
@@ -182,15 +188,22 @@ std::unique_ptr<ConfigNode> ConfigReader::Impl::read(const QString &filePath,
             }
 
             case ReferenceResolutionResult::Error:
+            default:
             {
                 qDebug() << DEBUG_METHOD("read") << "Error: failed to resolve references";
-                break;
+                return {};
             }
         }
     }
 
-    qDebug() << DEBUG_METHOD("read") << "Error: failed to fully resolve references";
-    return {};
+    if (result == ReferenceResolutionResult::Unresolved)
+    {
+        qDebug() << DEBUG_METHOD("read") << "Error: failed to fully resolve references";
+        return {};
+    }
+
+    // Transform the configuration node based on source and destination node paths
+    return transformConfig(std::move(*completeConfig), sourceNode, destinationNode);
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -225,29 +238,117 @@ std::unique_ptr<ConfigNode> ConfigReader::Impl::readIncludesMember(const QJsonOb
         if (!includeValue.isObject())
         {
             qDebug() << DEBUG_METHOD("readIncludesMember")
-                     << QString("Error: element at index [%1] is not a JSON Object!").arg(i);
+                     << QString("Error: include at index [%1] is not a JSON Object!").arg(i);
             return {};
         }
 
-        // TODO: implement
-        //const auto include = includeValue.toObject();
+        const auto includeObject = includeValue.toObject();
 
-        // TODO: check configuration file type
+        // Extract configuration file type
+        QString type = QStringLiteral("CppConfigFramework");
+
+        if (includeObject.contains(QStringLiteral("type")))
+        {
+            const auto value = includeObject.value(QStringLiteral("type"));
+
+            if (value.isNull())
+            {
+                // Type is not set, use the default value
+            }
+            else if (value.isString())
+            {
+                // Extract the type
+                type = value.toString();
+            }
+            else
+            {
+                qDebug() << DEBUG_METHOD("readIncludesMember")
+                         << "Error: 'type' member is not a string for include at index:" << i;
+                return {};
+            }
+        }
+
+        if (type != QStringLiteral("CppConfigFramework"))
+        {
+            qDebug() << DEBUG_METHOD("readIncludesMember")
+                     << QString("Error: unsupported type [%1] for include at index [%2]")
+                        .arg(type, QString::number(i));
+            return {};
+        }
 
         // Extract file path
-        // TODO: implement
+        if (!includeObject.contains(QStringLiteral("file_path")))
+        {
+            qDebug() << DEBUG_METHOD("readIncludesMember")
+                     << "Error: 'file_path' member is missing for include at index:" << i;
+            return {};
+        }
+
+        const auto filePathValue = includeObject.value(QStringLiteral("file_path"));
+
+        if (!filePathValue.isString())
+        {
+            qDebug() << DEBUG_METHOD("readIncludesMember")
+                     << "Error: 'file_path' member must be a string for include at index:" << i;
+            return {};
+        }
+
+        const QString filePath = filePathValue.toString();
 
         // Extract source node
-        // TODO: implement
+        QString sourceNode = QStringLiteral("/");
+
+        if (includeObject.contains(QStringLiteral("source_node")))
+        {
+            const auto value = includeObject.value(QStringLiteral("source_node"));
+
+            if (!value.isString())
+            {
+                qDebug() << DEBUG_METHOD("readIncludesMember")
+                         << "Error: 'source_node' member must be a string for include at index:"
+                         << i;
+                return {};
+            }
+
+            sourceNode = value.toString();
+        }
 
         // Extract destination node
-        // TODO: implement
+        QString destinationNode = QStringLiteral("/");
+
+        if (includeObject.contains(QStringLiteral("destination_node")))
+        {
+            const auto value = includeObject.value(QStringLiteral("destination_node"));
+
+            if (!value.isString())
+            {
+                qDebug() << DEBUG_METHOD("readIncludesMember")
+                         << "Error: 'destination_node' member must be a string for include at "
+                            "index:" << i;
+                return {};
+            }
+
+            destinationNode = value.toString();
+        }
 
         // Read config file
-        // TODO: implement
+        // TODO: check for an endless include loop?
+        auto config = read(filePath, sourceNode, destinationNode);
+
+        if (!config)
+        {
+            qDebug() << DEBUG_METHOD("readIncludesMember")
+                     << "Error: failed to read config for include at index:" << i;
+            return {};
+        }
 
         // Merge the config file contents to our own configuration parameter data structure
-        // TODO: implement --> includesConfig->apply(config)
+        if (!includesConfig->applyObject(*config))
+        {
+            qDebug() << DEBUG_METHOD("readIncludesMember")
+                     << "Error: failed to apply config for include at index:" << i;
+            return {};
+        }
     }
 
     return includesConfig;
@@ -284,6 +385,83 @@ std::unique_ptr<ConfigNode> ConfigReader::Impl::readConfigMember(const QJsonObje
     }
 
     return config;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+std::unique_ptr<ConfigNode> ConfigReader::Impl::transformConfig(ConfigNode &&config,
+                                                                const QString &sourceNode,
+                                                                const QString &destinationNode)
+{
+    // Check if transformation is needed
+    if ((sourceNode == QStringLiteral("/")) && (destinationNode == QStringLiteral("/")))
+    {
+        // Transformation is not needed, just return the original configuration node
+        return std::make_unique<ConfigNode>(std::move(config));
+    }
+
+    // Take the source node
+    ConfigNode sourceConfig;
+
+    if (sourceNode == QStringLiteral("/"))
+    {
+        sourceConfig = std::move(config);
+    }
+    else
+    {
+        const auto *node = config.nodeAtPath(sourceNode);
+
+        if (node == nullptr)
+        {
+            qDebug() << DEBUG_METHOD("transformConfig")
+                     << "Error: failed to get the source config node at node path:" << sourceNode;
+            return {};
+        }
+
+        sourceConfig = std::move(node->clone());
+    }
+
+    // For "root" destination just return the source node
+    if (destinationNode == QStringLiteral("/"))
+    {
+        return std::make_unique<ConfigNode>(std::move(sourceConfig));
+    }
+
+    // Create a new config node from the destination node path and set the source config node to it
+    auto transformedConfig = std::make_unique<ConfigNode>(ConfigNode::Type::Object);
+
+    const QStringList nodeNames = destinationNode.mid(1).split(QChar('/'));
+    ConfigNode *currentNode = transformedConfig.get();
+
+    for (int i = 0; i < nodeNames.size(); i++)
+    {
+        // Create the next node in the node path
+        const QString nodeName = nodeNames.at(i);
+
+        if (!ConfigNode::validateNodeName(nodeName))
+        {
+            qDebug() << DEBUG_METHOD("transformConfig")
+                     << QString("Error: invalid node name [%1] in destination node path [%2] for a "
+                                "member in an Object config node")
+                        .arg(nodeName, destinationNode);
+            return {};
+        }
+
+        if (i == (nodeNames.size() - 1))
+        {
+            // For the last element just store the source config node
+            currentNode->setMember(nodeName, std::move(sourceConfig));
+        }
+        else
+        {
+            // For all intermediate node create an empty Object config node
+            currentNode->setMember(nodeName, ConfigNode(ConfigNode::Type::Object));
+            currentNode = currentNode->member(nodeName);
+            Q_ASSERT(currentNode != nullptr);
+        }
+    }
+
+    return transformedConfig;
 }
 
 // -------------------------------------------------------------------------------------------------

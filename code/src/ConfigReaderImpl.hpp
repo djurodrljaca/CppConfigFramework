@@ -71,8 +71,7 @@ private:
      *
      * \param   rootObject  Root JSON Object
      *
-     * \retval  true    Success
-     * \retval  false   Failure
+     * \return  Configuration node instance or in case of failure a null pointer
      */
     std::unique_ptr<ConfigNode> readIncludesMember(const QJsonObject &rootObject);
 
@@ -81,10 +80,25 @@ private:
      *
      * \param   rootObject  Root JSON Object
      *
-     * \retval  true    Success
-     * \retval  false   Failure
+     * \return  Configuration node instance or in case of failure a null pointer
      */
     std::unique_ptr<ConfigNode> readConfigMember(const QJsonObject &rootObject);
+
+    /*!
+     * Transforms the configuration node by taking the node referenced by the source node path and
+     * moving it to the destination node path
+     *
+     * \param   config          Configuration node to transform
+     * \param   sourceNode      Node path to the node that needs to be extracted from this
+     *                          configuration file (must be absolute node path)
+     * \param   destinationNode Node path to the destination node where the result needs to be
+     *                          stored (must be absolute node path)
+     *
+     * \return  Configuration node instance or in case of failure a null pointer
+     */
+    std::unique_ptr<ConfigNode> transformConfig(ConfigNode &&config,
+                                                const QString &sourceNode,
+                                                const QString &destinationNode);
 
     /*!
      * Reads the JSON Value
@@ -234,12 +248,6 @@ private:
 
     //! Checks if the node is fully resolved (has no references)
     static bool isFullyResolved(const ConfigNode &node);
-
-    //! Node path to the node that needs to be extracted from this configuration file
-    QString m_sourceNode;
-
-    //! Node path to the destination node where the result needs to be stored
-    QString m_destinationNode;
 
     //! Holds the max number of cycles for reference resolution procedure
     uint32_t m_referenceResolutionMaxCycles;
