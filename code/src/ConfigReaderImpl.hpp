@@ -54,6 +54,7 @@ public:
 
     //! \copydoc    ConfigReader::read()
     std::unique_ptr<ConfigNode> read(const QString &filePath,
+                                     const QDir &workingDir,
                                      const QString &sourceNode,
                                      const QString &destinationNode);
 
@@ -70,10 +71,12 @@ private:
      * Reads the 'includes' member of the configuration file
      *
      * \param   rootObject  Root JSON Object
+     * \param   workingDir  Path to the working directory
      *
      * \return  Configuration node instance or in case of failure a null pointer
      */
-    std::unique_ptr<ConfigNode> readIncludesMember(const QJsonObject &rootObject);
+    std::unique_ptr<ConfigNode> readIncludesMember(const QJsonObject &rootObject,
+                                                   const QDir &workingDir);
 
     /*!
      * Reads the 'config' member of the configuration file

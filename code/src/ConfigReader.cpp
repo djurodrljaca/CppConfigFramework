@@ -75,10 +75,11 @@ ConfigReader &ConfigReader::operator=(ConfigReader &&other) noexcept = default;
 // -------------------------------------------------------------------------------------------------
 
 std::unique_ptr<ConfigNode> ConfigReader::read(const QString &filePath,
+                                               const QDir &workingDir,
                                                const QString &sourceNode,
                                                const QString &destinationNode)
 {
-    return impl()->read(filePath, sourceNode, destinationNode);
+    return impl()->read(filePath, workingDir, sourceNode, destinationNode);
 }
 
 } // namespace CppConfigFramework
