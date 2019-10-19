@@ -53,6 +53,7 @@ private slots:
     void testReadConfigWithNodeReference();
     void testReadConfigWithDerivedArray();
     void testReadConfigWithDerivedObject();
+    void testReadConfigWithIncludes();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -438,6 +439,76 @@ void TestConfigReader::testReadConfigWithDerivedObject()
                 QCOMPARE(value->value(), QVariant("abc"));
             }
         }
+    }
+}
+
+// Test: read a config file with derived objects ---------------------------------------------------
+
+void TestConfigReader::testReadConfigWithIncludes()
+{
+    // Read config file
+    const QString configFilePath(QStringLiteral(":/TestData/ConfigWithIncludes.json"));
+    ConfigReader configReader;
+
+    auto config = configReader.read(configFilePath);
+    QVERIFY(config);
+    QVERIFY(config->isObject());
+    QCOMPARE(config->count(), 3);
+
+    // Check "/included_config1"
+    {
+        const auto *included_config1 = config->nodeAtPath("/included_config1");
+        QVERIFY(included_config1 != nullptr);
+        QVERIFY(included_config1->isObject());
+        QCOMPARE(included_config1->count(), 2);
+
+        // Check "/included_config1/value
+        {
+            QVERIFY(included_config1->containsMember("value"));
+            const auto *value = included_config1->member("value");
+            QVERIFY(value->isValue());
+            QCOMPARE(value->value(), 99);
+        }
+
+        // Check "/included_config1/new_item
+        {
+            QVERIFY(included_config1->containsMember("new_item"));
+            const auto *new_item = included_config1->member("new_item");
+            QVERIFY(new_item->isValue());
+            QCOMPARE(new_item->value(), QVariant("str"));
+        }
+    }
+
+    // Check "/included_config2_subnode"
+    {
+        const auto *included_config2_subnode = config->nodeAtPath("/included_config2_subnode");
+        QVERIFY(included_config2_subnode != nullptr);
+        QVERIFY(included_config2_subnode->isObject());
+        QCOMPARE(included_config2_subnode->count(), 2);
+
+        // Check "/included_config2_subnode/value
+        {
+            QVERIFY(included_config2_subnode->containsMember("value"));
+            const auto *value = included_config2_subnode->member("value");
+            QVERIFY(value->isValue());
+            QCOMPARE(value->value(), 2);
+        }
+
+        // Check "/included_config2_subnode/included_value1
+        {
+            QVERIFY(included_config2_subnode->containsMember("included_value1"));
+            const auto *included_value1 = included_config2_subnode->member("included_value1");
+            QVERIFY(included_value1->isValue());
+            QCOMPARE(included_value1->value(), 1);
+        }
+    }
+
+    // Check "/included_value3"
+    {
+        const auto *included_value3 = config->nodeAtPath("/included_value3");
+        QVERIFY(included_value3 != nullptr);
+        QVERIFY(included_value3->isValue());
+        QCOMPARE(included_value3->value(), 3);
     }
 }
 

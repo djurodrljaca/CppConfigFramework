@@ -415,6 +415,8 @@ void ConfigNode::removeAll()
 
 // -------------------------------------------------------------------------------------------------
 
+// TODO: move these methods either to Impl class or to some helper class
+
 bool ConfigNode::validateNodeName(const QString &name)
 {
     const QRegularExpression regex(QStringLiteral("^[a-zA-Z][a-zA-Z0-9_]*$|^\\d+$"));

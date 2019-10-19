@@ -28,6 +28,7 @@
 
 // Qt includes
 #include <QtCore/QString>
+#include <QtCore/QDir>
 
 // System includes
 
@@ -74,6 +75,7 @@ public:
      * Read the specified config file
      *
      * \param   filePath        Path to the configuration file
+     * \param   workingDir      Path to the working directory
      * \param   sourceNode      Node path to the node that needs to be extracted from this
      *                          configuration file (must be absolute node path)
      * \param   destinationNode Node path to the destination node where the result needs to be
@@ -82,6 +84,7 @@ public:
      * \return  Configuration node instance or in case of failure a null pointer
      */
     std::unique_ptr<ConfigNode> read(const QString &filePath,
+                                     const QDir &workingDir = QDir(),
                                      const QString &sourceNode = QStringLiteral("/"),
                                      const QString &destinationNode = QStringLiteral("/"));
 

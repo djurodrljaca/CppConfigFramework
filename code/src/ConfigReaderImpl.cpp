@@ -76,6 +76,7 @@ void ConfigReader::Impl::setReferenceResolutionMaxCycles(
 // -------------------------------------------------------------------------------------------------
 
 std::unique_ptr<ConfigNode> ConfigReader::Impl::read(const QString &filePath,
+                                                     const QDir &workingDir,
                                                      const QString &sourceNode,
                                                      const QString &destinationNode)
 {
@@ -96,18 +97,32 @@ std::unique_ptr<ConfigNode> ConfigReader::Impl::read(const QString &filePath,
         return {};
     }
 
-    // Open file
-    if (!QFile::exists(filePath))
+    // Prepare absolute path to the file using the working path if needed
+    QString absoluteFilePath;
+
+    if (QDir::isAbsolutePath(filePath))
     {
-        qDebug() << DEBUG_METHOD("read") << "Error: file at path was not found:" << filePath;
+        absoluteFilePath = QDir::cleanPath(filePath);
+    }
+    else
+    {
+        absoluteFilePath = QDir::cleanPath(workingDir.absoluteFilePath(filePath));
+    }
+
+    // Open file
+    if (!QFile::exists(absoluteFilePath))
+    {
+        qDebug() << DEBUG_METHOD("read") << "Error: file at path was not found:"
+                 << absoluteFilePath;
         return {};
     }
 
-    QFile file(filePath);
+    QFile file(absoluteFilePath);
 
     if (!file.open(QIODevice::ReadOnly))
     {
-        qDebug() << DEBUG_METHOD("read") << "Error: failed to open file at path:" << filePath;
+        qDebug() << DEBUG_METHOD("read") << "Error: failed to open file at path:"
+                 << absoluteFilePath;
         return {};
     }
 
@@ -124,7 +139,7 @@ std::unique_ptr<ConfigNode> ConfigReader::Impl::read(const QString &filePath,
 
         qDebug() << DEBUG_METHOD("read")
                  << "Error: failed to parse the file contents:"
-                    "\n    file path:" << filePath
+                    "\n    file path:" << absoluteFilePath
                  << "\n    offset:" << error.offset
                  << "\n    error:" << error.errorString()
                  << "\n    context before error:" << fileContents.mid(contextBeforeIndex,
@@ -144,11 +159,13 @@ std::unique_ptr<ConfigNode> ConfigReader::Impl::read(const QString &filePath,
     // TODO: add "environment variables" member?
 
     // Read 'includes' member
-    auto completeConfig = readIncludesMember(rootObject);
+    auto completeConfig = readIncludesMember(rootObject, QFileInfo(absoluteFilePath).absoluteDir());
 
     if (!completeConfig)
     {
-        qDebug() << DEBUG_METHOD("read") << "Error: failed to read the 'includes' member";
+        qDebug() << DEBUG_METHOD("read")
+                 << "Error: failed to read the 'includes' member for file at path:"
+                 << absoluteFilePath;
         return {};
     }
 
@@ -157,12 +174,17 @@ std::unique_ptr<ConfigNode> ConfigReader::Impl::read(const QString &filePath,
 
     if (!configMember)
     {
-        qDebug() << DEBUG_METHOD("read") << "Error: failed to read the 'config' member";
+        qDebug() << DEBUG_METHOD("read")
+                 << "Error: failed to read the 'config' member for file at path:"
+                 << absoluteFilePath;
         return {};
     }
 
     if (!completeConfig->applyObject(*configMember))
     {
+        qDebug() << DEBUG_METHOD("read")
+                 << "Error: failed to apply the 'config' member for file at path:"
+                 << absoluteFilePath;
         return {};
     }
 
@@ -208,15 +230,16 @@ std::unique_ptr<ConfigNode> ConfigReader::Impl::read(const QString &filePath,
 
 // -------------------------------------------------------------------------------------------------
 
-std::unique_ptr<ConfigNode> ConfigReader::Impl::readIncludesMember(const QJsonObject &rootObject)
+std::unique_ptr<ConfigNode> ConfigReader::Impl::readIncludesMember(const QJsonObject &rootObject,
+                                                                   const QDir &workingDir)
 {
     // Check if the root object has any includes
     const auto includesValue = rootObject.value(QStringLiteral("includes"));
 
-    if (includesValue.isNull())
+    if (includesValue.isNull() || includesValue.isUndefined())
     {
         // No includes
-        return std::make_unique<ConfigNode>(ConfigNode::Type::Null);
+        return std::make_unique<ConfigNode>(ConfigNode::Type::Object);
     }
 
     if (!includesValue.isArray())
@@ -333,7 +356,7 @@ std::unique_ptr<ConfigNode> ConfigReader::Impl::readIncludesMember(const QJsonOb
 
         // Read config file
         // TODO: check for an endless include loop?
-        auto config = read(filePath, sourceNode, destinationNode);
+        auto config = read(filePath, workingDir, sourceNode, destinationNode);
 
         if (!config)
         {

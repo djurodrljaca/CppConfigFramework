@@ -1,8 +1,12 @@
 <RCC>
     <qresource prefix="/">
-        <file>TestData/ValidConfig.json</file>
-        <file>TestData/ConfigWithNodeReferences.json</file>
         <file>TestData/ConfigWithDerivedObjects.json</file>
         <file>TestData/ConfigWithDerivedArrays.json</file>
+        <file>TestData/ConfigWithIncludes.json</file>
+        <file>TestData/ConfigWithNodeReferences.json</file>
+        <file>TestData/Include1.json</file>
+        <file>TestData/Include2.json</file>
+        <file>TestData/Include3.json</file>
+        <file>TestData/ValidConfig.json</file>
     </qresource>
 </RCC>
