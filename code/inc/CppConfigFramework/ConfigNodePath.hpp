@@ -62,25 +62,59 @@ public:
      */
     ConfigNodePath(QString &&path);
 
-    //! Copy constructor
+    /*!
+     * Copy constructor
+     *
+     * \param   other   Node path to copy
+     */
     ConfigNodePath(const ConfigNodePath &other) = default;
 
-    //! Move constructor
+    /*!
+     * Move constructor
+     *
+     * \param   other   Node path to move
+     */
     ConfigNodePath(ConfigNodePath &&other) = default;
 
     //! Destructor
     ~ConfigNodePath() = default;
 
-    //! Copy assignment operator
+    /*!
+     * Copy assignment operator
+     *
+     * \param   other   Node path to copy assign
+     *
+     * \return  Reference to this instance after the assignment is made
+     */
     ConfigNodePath &operator=(const ConfigNodePath &other) = default;
 
-    //! Move assignment operator
+    /*!
+     * Move assignment operator
+     *
+     * \param   other   Node path to move assign
+     *
+     * \return  Reference to this instance after the assignment is made
+     */
     ConfigNodePath &operator=(ConfigNodePath &&other) noexcept = default;
 
-    //! Operator "equal to"
+    /*!
+     * Operator "equal to"
+     *
+     * \param   other   Node path to compare
+     *
+     * \retval  true    This instance is equal to the other instance
+     * \retval  false   This instance is not equal to the other instance
+     */
     bool operator==(const ConfigNodePath &other) const;
 
-    //! Operator "not equal to"
+    /*!
+     * Operator "not equal to"
+     *
+     * \param   other   Node path to compare
+     *
+     * \retval  true    This instance is not equal to the other instance
+     * \retval  false   This instance is equal to the other instance
+     */
     bool operator!=(const ConfigNodePath &other) const;
 
     /*!
