@@ -125,10 +125,9 @@ bool ConfigNodePath::isValid() const
     {
         // Make sure that the individual node names are valid and that there is no attempt to access
         // the parent node of the root node
-        const QStringList nodeNames = m_path.mid(1).split(NODE_PATH_SEPARATOR);
         QStringList workingNodeNames;
 
-        for (const QString &nodeName : nodeNames)
+        for (const QString &nodeName : nodeNames())
         {
             if (nodeName == PARENT_PATH_VALUE)
             {
@@ -154,9 +153,7 @@ bool ConfigNodePath::isValid() const
     else
     {
         // Make sure that just the individual node names are valid
-        const QStringList nodeNames = m_path.split(NODE_PATH_SEPARATOR);
-
-        for (const QString &nodeName : nodeNames)
+        for (const QString &nodeName : nodeNames())
         {
             if ((nodeName != PARENT_PATH_VALUE) && (!validateNodeName(nodeName)))
             {
@@ -208,10 +205,9 @@ bool ConfigNodePath::resolveReferences()
     {
         // Make sure that the individual node names are valid and that there is no attempt to access
         // the parent node of the root node
-        const QStringList nodeNames = m_path.mid(1).split(NODE_PATH_SEPARATOR);
         QStringList workingNodeNames;
 
-        for (const QString &nodeName : nodeNames)
+        for (const QString &nodeName : nodeNames())
         {
             if (nodeName.isEmpty())
             {
@@ -246,10 +242,9 @@ bool ConfigNodePath::resolveReferences()
     else
     {
         // Make sure that just the individual node names are valid
-        const QStringList nodeNames = m_path.split(NODE_PATH_SEPARATOR);
         QStringList workingNodeNames;
 
-        for (const QString &nodeName : nodeNames)
+        for (const QString &nodeName : nodeNames())
         {
             if (nodeName.isEmpty())
             {
@@ -287,6 +282,14 @@ bool ConfigNodePath::resolveReferences()
 QString ConfigNodePath::path() const
 {
     return m_path;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+QStringList ConfigNodePath::nodeNames() const
+{
+    return (isAbsolute() ? m_path.mid(1).split(NODE_PATH_SEPARATOR)
+                         : m_path.split(NODE_PATH_SEPARATOR));
 }
 
 // -------------------------------------------------------------------------------------------------

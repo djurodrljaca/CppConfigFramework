@@ -72,7 +72,7 @@ public:
      *
      * \param   other   Node path to move
      */
-    ConfigNodePath(ConfigNodePath &&other) = default;
+    ConfigNodePath(ConfigNodePath &&other) noexcept = default;
 
     //! Destructor
     ~ConfigNodePath() = default;
@@ -176,6 +176,13 @@ public:
      * \return  Node path's value
      */
     QString path() const;
+
+    /*!
+     * Splits the node path to individual node names
+     *
+     * \return  Node names
+     */
+    QStringList nodeNames() const;
 
     /*!
      * Creates a new path from this path and (if needed) the working path
