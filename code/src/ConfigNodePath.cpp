@@ -15,7 +15,7 @@
 /*!
  * \file
  *
- * Contains a class for storing a configuration node
+ * Contains a class for the configuration node path
  */
 
 // Own header
