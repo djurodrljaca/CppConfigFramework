@@ -15,11 +15,11 @@
 /*!
  * \file
  *
- * Contains a class for storing a configuration node path
+ * Contains a class for the configuration node path
  */
 
-#ifndef CPPCONFIGFRAMEWORK_CONFIGNODE_HPP
-#define CPPCONFIGFRAMEWORK_CONFIGNODE_HPP
+#ifndef CPPCONFIGFRAMEWORK_CONFIGNODEPATH_HPP
+#define CPPCONFIGFRAMEWORK_CONFIGNODEPATH_HPP
 
 // C++ Config Framework includes
 #include <CppConfigFramework/CppConfigFrameworkExport.hpp>
@@ -39,9 +39,7 @@
 namespace CppConfigFramework
 {
 
-/*!
- * This class holds a configuration node path
- */
+//! This class holds the configuration node path
 class CPPCONFIGFRAMEWORK_EXPORT ConfigNodePath
 {
 public:
@@ -257,4 +255,4 @@ private:
 
 } // namespace CppConfigFramework
 
-#endif // CPPCONFIGFRAMEWORK_CONFIGNODE_HPP
+#endif // CPPCONFIGFRAMEWORK_CONFIGNODEPATH_HPP
