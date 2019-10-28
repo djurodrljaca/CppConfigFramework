@@ -1,7 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>TestData/ConfigWithDerivedObjects.json</file>
-        <file>TestData/ConfigWithDerivedArrays.json</file>
         <file>TestData/ConfigWithIncludes.json</file>
         <file>TestData/ConfigWithNodeReferences.json</file>
         <file>TestData/Include1.json</file>
