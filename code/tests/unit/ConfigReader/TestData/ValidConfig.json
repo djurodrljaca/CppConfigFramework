@@ -1,0 +1,24 @@
+{
+    "includes":
+    [
+    ],
+
+    "config":
+    {
+        "root_node":
+        {
+            "sub_node":
+            {
+                "sub_node1":
+                {
+                    "bool_param": true,
+                    "array_param": [5, 6, 7]
+                },
+                "sub_node2":
+                {
+                    "int_param": 1
+                }
+            }
+        }
+    }
+}

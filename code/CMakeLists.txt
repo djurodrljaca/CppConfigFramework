@@ -28,6 +28,7 @@ add_library(CppConfigFramework SHARED
     inc/CppConfigFramework/ConfigNodePath.hpp
     inc/CppConfigFramework/ConfigNodeReference.hpp
     inc/CppConfigFramework/ConfigObjectNode.hpp
+    inc/CppConfigFramework/ConfigReader.hpp
     inc/CppConfigFramework/ConfigValueNode.hpp
 
     src/ConfigDerivedObjectNode.cpp
@@ -35,6 +36,7 @@ add_library(CppConfigFramework SHARED
     src/ConfigNodePath.cpp
     src/ConfigNodeReference.cpp
     src/ConfigObjectNode.cpp
+    src/ConfigReader.cpp
     src/ConfigValueNode.cpp
     )
 

@@ -39,6 +39,7 @@ endfunction()
 # --------------------------------------------------------------------------------------------------
 add_subdirectory(ConfigNode)
 add_subdirectory(ConfigNodePath)
+add_subdirectory(ConfigReader)
 
 # --------------------------------------------------------------------------------------------------
 # Code Coverage
