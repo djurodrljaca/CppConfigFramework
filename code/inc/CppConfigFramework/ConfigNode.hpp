@@ -78,27 +78,11 @@ public:
     //! Copy constructor is disabled
     ConfigNode(const ConfigNode &other) = delete;
 
-    /*!
-     * Move constructor
-     *
-     * \param   other   Node path to move
-     */
-    ConfigNode(ConfigNode &&other) noexcept = default;
-
     //! Destructor
     virtual ~ConfigNode() = default;
 
     //! Copy assignment operator is disabled
     ConfigNode &operator=(const ConfigNode &other) = delete;
-
-    /*!
-     * Move assignment operator
-     *
-     * \param   other   Node path to move assign
-     *
-     * \return  Reference to this instance after the assignment is made
-     */
-    ConfigNode &operator=(ConfigNode &&other) noexcept = default;
 
     /*!
      * Clones just the configuration node contents and not the parent
@@ -250,6 +234,23 @@ public:
      * \return  String representation of the type
      */
     static QString typeToString(const Type type);
+
+protected:
+    /*!
+     * Move constructor
+     *
+     * \param   other   Node path to move
+     */
+    ConfigNode(ConfigNode &&other) noexcept = default;
+
+    /*!
+     * Move assignment operator
+     *
+     * \param   other   Node path to move assign
+     *
+     * \return  Reference to this instance after the assignment is made
+     */
+    ConfigNode &operator=(ConfigNode &&other) noexcept = default;
 
 private:
     ConfigObjectNode *m_parent;
