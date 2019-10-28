@@ -73,6 +73,8 @@ private slots:
     void testResolveReferences();
     void testResolveReferences_data();
 
+    void testNodeNames();
+
     void testToAbsolute();
     void testToAbsolute_data();
 
@@ -375,6 +377,19 @@ void TestConfigNodePath::testResolveReferences_data()
             << "/asd/aaa/../" << false << "/asd/aaa/../";
     QTest::newRow("Relative path with parent ref and following slash")
             << "asd/aaa/../" << false << "asd/aaa/../";
+}
+
+// Test: nodeNames() method ------------------------------------------------------------------------
+
+void TestConfigNodePath::testNodeNames()
+{
+    ConfigNodePath nodePath("/a/b/c");
+    QStringList nodeNames = { "a", "b", "c" };
+    QCOMPARE(nodePath.nodeNames(), nodeNames);
+
+    nodePath.setPath("d/e/f");
+    nodeNames = QStringList { "d", "e", "f" };
+    QCOMPARE(nodePath.nodeNames(), nodeNames);
 }
 
 // Test: toAbsolute() method -----------------------------------------------------------------------
