@@ -54,23 +54,16 @@ public:
     ConfigNodePath(const QString &path);
 
     /*!
-     * Constructor
-     *
-     * \param   path    Node path
-     */
-    ConfigNodePath(QString &&path);
-
-    /*!
      * Copy constructor
      *
-     * \param   other   Node path to copy
+     * \param   other   Instance to copy
      */
     ConfigNodePath(const ConfigNodePath &other) = default;
 
     /*!
      * Move constructor
      *
-     * \param   other   Node path to move
+     * \param   other   Instance to move
      */
     ConfigNodePath(ConfigNodePath &&other) noexcept = default;
 
@@ -80,7 +73,7 @@ public:
     /*!
      * Copy assignment operator
      *
-     * \param   other   Node path to copy assign
+     * \param   other   Instance to copy assign
      *
      * \return  Reference to this instance after the assignment is made
      */
@@ -89,7 +82,7 @@ public:
     /*!
      * Move assignment operator
      *
-     * \param   other   Node path to move assign
+     * \param   other   Instance to move assign
      *
      * \return  Reference to this instance after the assignment is made
      */
@@ -176,6 +169,13 @@ public:
      * \return  Node path's value
      */
     QString path() const;
+
+    /*!
+     * Sets the node path's value
+     *
+     * \param   path    New node path value
+     */
+    void setPath(const QString &path);
 
     /*!
      * Splits the node path to individual node names

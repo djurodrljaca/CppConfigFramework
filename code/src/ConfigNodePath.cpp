@@ -56,13 +56,6 @@ ConfigNodePath::ConfigNodePath(const QString &path)
 
 // -------------------------------------------------------------------------------------------------
 
-ConfigNodePath::ConfigNodePath(QString &&path)
-    : m_path(std::move(path))
-{
-}
-
-// -------------------------------------------------------------------------------------------------
-
 bool ConfigNodePath::operator==(const ConfigNodePath &other) const
 {
     return (m_path == other.m_path);
@@ -282,6 +275,13 @@ bool ConfigNodePath::resolveReferences()
 QString ConfigNodePath::path() const
 {
     return m_path;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+void ConfigNodePath::setPath(const QString &path)
+{
+    m_path = path;
 }
 
 // -------------------------------------------------------------------------------------------------
