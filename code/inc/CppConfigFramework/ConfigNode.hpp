@@ -15,23 +15,29 @@
 /*!
  * \file
  *
- * Contains a class for storing a configuration node
+ * Contains a class for the configuration node
  */
 
 #ifndef CPPCONFIGFRAMEWORK_CONFIGNODE_HPP
 #define CPPCONFIGFRAMEWORK_CONFIGNODE_HPP
 
 // C++ Config Framework includes
-#include <CppConfigFramework/CppConfigFrameworkExport.hpp>
-#include <CppConfigFramework/DerivedObjectData.hpp>
-#include <CppConfigFramework/Pimpl.hpp>
+#include <CppConfigFramework/ConfigNodePath.hpp>
 
 // Qt includes
-#include <QtCore/QVariant>
 
 // System includes
 
 // Forward declarations
+namespace CppConfigFramework
+{
+
+class ConfigDerivedObjectNode;
+class ConfigNodeReference;
+class ConfigObjectNode;
+class ConfigValueNode;
+
+}
 
 // Macros
 
@@ -40,23 +46,15 @@
 namespace CppConfigFramework
 {
 
-/*!
- * This class holds a configuration node
- */
+//! This class holds the configuration node
 class CPPCONFIGFRAMEWORK_EXPORT ConfigNode
 {
 public:
     //! Enumerates different types of nodes
     enum class Type
     {
-        //! A node with no value
-        Null,
-
         //! A node with a primitive value (Boolean, integer, floating-point number, string)
         Value,
-
-        //! An ordered list of nodes
-        Array,
 
         //! An unordered collection of name–value pairs (names are strings and values are
         //! configuration nodes)
@@ -65,229 +63,197 @@ public:
         //! A reference to a node to be copied
         NodeReference,
 
-        //! An array derived from other elements
-        DerivedArray,
-
         //! An object derived from other objects
         DerivedObject
     };
 
 public:
-    //! Constructor
-    ConfigNode(const Type type = Type::Null, ConfigNode *parent = nullptr);
+    /*!
+     * Constructor
+     *
+     * \param   parent  Parent for this configuration node
+     */
+    ConfigNode(ConfigObjectNode *parent);
 
-    //! Copy constructor
+    //! Copy constructor is disabled
     ConfigNode(const ConfigNode &other) = delete;
 
-    //! Move constructor
-    ConfigNode(ConfigNode &&other) noexcept;
-
     //! Destructor
-    ~ConfigNode();
+    virtual ~ConfigNode() = default;
 
-    //! Copy assignment operator
+    //! Copy assignment operator is disabled
     ConfigNode &operator=(const ConfigNode &other) = delete;
 
-    //! Move assignment operator
-    ConfigNode &operator=(ConfigNode &&other) noexcept;
+    /*!
+     * Clones just the configuration node contents and not the parent
+     *
+     * \return  Cloned configuration node
+     */
+    virtual std::unique_ptr<ConfigNode> clone() const = 0;
 
-    //! Clones just the node data (and not the parent!)
-    ConfigNode clone() const;
+    /*!
+     * Gets the configuration node's type
+     *
+     * \return  Configuration node's type
+     */
+    virtual Type type() const = 0;
 
-    //! Gets the node's type
-    Type type() const;
-
-    //! Converts the Type value to string
-    static QString typeToString(const Type type);
-
-    //! Checks if the node is of Null type
-    bool isNull() const;
-
-    //! Checks if the node is of Value type
+    /*!
+     * Checks if the configuration node is of Value type
+     *
+     * \retval  true    This is a Value configuration node
+     * \retval  false   This is not a Value configuration node
+     */
     bool isValue() const;
 
-    //! Checks if the node is of Array type
-    bool isArray() const;
-
-    //! Checks if the node is of Object type
+    /*!
+     * Checks if the configuration node is of Object type
+     *
+     * \retval  true    This is a Object configuration node
+     * \retval  false   This is not a Object configuration node
+     */
     bool isObject() const;
 
-    //! Checks if the node is of NodeReference type
+    /*!
+     * Checks if the configuration node is of NodeReference type
+     *
+     * \retval  true    This is a NodeReference configuration node
+     * \retval  false   This is not a NodeReference configuration node
+     */
     bool isNodeReference() const;
 
-    //! Checks if the node is of DerivedArray type
-    bool isDerivedArray() const;
-
-    //! Checks if the node is of DerivedObject type
+    /*!
+     * Checks if the configuration node is of DerivedObject type
+     *
+     * \retval  true    This is a DerivedObject configuration node
+     * \retval  false   This is not a DerivedObject configuration node
+     */
     bool isDerivedObject() const;
 
-    //! Checks if the node is the root node (has no parent)
+    /*!
+     * Checks if the configuration node is the root node (has no parent)
+     *
+     * \retval  true    This is a DerivedObject configuration node
+     * \retval  false   This is not a DerivedObject configuration node
+     */
     bool isRoot() const;
 
-    //! Gets the parent node (nullptr if this is a root node)
-    const ConfigNode *parent() const;
+    /*!
+     * Gets the parent node (nullptr if this is a root node)
+     *
+     * \return  Parent of this configuration node
+     */
+    const ConfigObjectNode *parent() const;
 
     //! \copydoc    ConfigNode::parent()
-    ConfigNode *parent();
+    ConfigObjectNode *parent();
 
-    //! Changes the node's parent
-    void setParent(ConfigNode *parent);
+    /*!
+     * Sets the parent of this configuration node
+     *
+     * \param   parent  New parent of this configuration node
+     */
+    void setParent(ConfigObjectNode *parent);
 
-    //! Gets the root node
-    const ConfigNode *rootNode() const;
+    /*!
+     * Gets the root node
+     *
+     * \return  Root configuration node
+     */
+    const ConfigObjectNode *rootNode() const;
 
     //! \copydoc    ConfigNode::rootNode()
-    ConfigNode *rootNode();
+    ConfigObjectNode *rootNode();
 
-    //! Gets the absolute node path
-    QString absoluteNodePath() const;
+    /*!
+     * Converts this configuration node to the Value configuration node
+     *
+     * \return  Value configuration node
+     *
+     * \note    This method asserts if the configuration node is not of a Value type!
+     */
+    const ConfigValueNode &toValue() const;
 
-    //! Gets the number of elements in the Array node or number of members in the Object node
-    int count() const;
+    //! \copydoc    ConfigNode::toValue()
+    ConfigValueNode &toValue();
 
-    //! Checks if the node contains a member with the specified name
-    bool containsMember(const QString &name) const;
+    /*!
+     * Converts this configuration node to the Object configuration node
+     *
+     * \return  Object configuration node
+     *
+     * \note    This method asserts if the configuration node is not of a Object type!
+     */
+    const ConfigObjectNode &toObject() const;
 
-    //! Gets the names of the member nodes in the Object node
-    QStringList memberNames() const;
+    //! \copydoc    ConfigNode::toObject()
+    ConfigObjectNode &toObject();
 
-    //! Gets the value of the node
-    QVariant value() const;
+    /*!
+     * Converts this configuration node to the NodeReference configuration node
+     *
+     * \return  NodeReference configuration node
+     *
+     * \note    This method asserts if the configuration node is not of a NodeReference type!
+     */
+    const ConfigNodeReference &toNodeReference() const;
 
-    //! Gets the element at the specified index of the Array node
-    const ConfigNode *element(const int index) const;
+    //! \copydoc    ConfigNode::toNodeReference()
+    ConfigNodeReference &toNodeReference();
 
-    //! \copydoc    ConfigNode::element()
-    ConfigNode *element(const int index);
+    /*!
+     * Converts this configuration node to the DerivedObject configuration node
+     *
+     * \return  DerivedObject configuration node
+     *
+     * \note    This method asserts if the configuration node is not of a DerivedObject type!
+     */
+    const ConfigDerivedObjectNode &toDerivedObject() const;
 
-    //! Gets the elements of the Array node
-    std::vector<const ConfigNode*> elements() const;
+    //! \copydoc    ConfigNode::toDerivedObject()
+    ConfigDerivedObjectNode &toDerivedObject();
 
-    //! \copydoc    ConfigNode::elements()
-    std::vector<ConfigNode*> elements();
-
-    //! Gets the member at the specified index of the Object node
-    const ConfigNode *member(const QString &name) const;
-
-    //! \copydoc    ConfigNode::member()
-    ConfigNode *member(const QString &name);
+    /*!
+     * Gets the absolute node path of this configuration node
+     *
+     * \return  Node path
+     */
+    ConfigNodePath nodePath() const;
 
     //! Gets the member at the specified node path
-    const ConfigNode *nodeAtPath(const QString &nodePath) const;
+    const ConfigNode *nodeAtPath(const ConfigNodePath &nodePath) const;
 
     //! \copydoc    ConfigNode::nodeAtPath()
-    ConfigNode *nodeAtPath(const QString &nodePath);
-
-    //! Gets the path to the referenced node
-    QString nodeReference() const;
-
-    //! Gets the DerivedArray data
-    const std::list<ConfigNode> *derivedArray() const;
-
-    //! \copydoc    ConfigNode::derivedArray()
-    std::list<ConfigNode> *derivedArray();
-
-    //! Gets the DerivedObject data
-    const DerivedObjectData *derivedObject() const;
-
-    //! \copydoc    ConfigNode::derivedObject()
-    DerivedObjectData *derivedObject();
-
-    //! Sets the node's value
-    void setValue(const QVariant &value);
+    ConfigNode *nodeAtPath(const ConfigNodePath &nodePath);
 
     /*!
-     * Sets the value of the element node at the specified index in the Array node
+     * Converts the Type value to string
      *
-     * \param   index   Index of the element node where the value needs to be stored
-     * \param   value   Node value
+     * \param   type    Configuration node type
      *
-     * When the node value is stored its parent is updated to point to this node.
+     * \return  String representation of the type
      */
-    void setElement(const int index, ConfigNode &&value);
+    static QString typeToString(const Type type);
 
-    //! Adds a value to the end of the Array node and updates its parent
-    void appendElement(ConfigNode &&value);
+protected:
+    /*!
+     * Move constructor
+     *
+     * \param   other   Node path to move
+     */
+    ConfigNode(ConfigNode &&other) noexcept = default;
 
     /*!
-     * Sets the value of the member node with the specified name in the Object node
+     * Move assignment operator
      *
-     * \param   name    Name of the member node
-     * \param   value   Node value
+     * \param   other   Node path to move assign
      *
-     * If a node with the same name already exists it is replaced with the new node value otherwise
-     * it is added as a new member node,
-     *
-     * When the node value is stored its parent is updated to point to this node.
+     * \return  Reference to this instance after the assignment is made
      */
-    void setMember(const QString &name, ConfigNode &&value);
-
-    /*!
-     * Merges the specified Object node with this Object node
-     *
-     * \param   otherNode   Configuration node to apply
-     *
-     * \retval  true    Success
-     * \retval  false   Failure
-     *
-     * All items from the other node that are not found in this node are added but items with the
-     * same name are applied recursively with values from the new node overwriting the ones from
-     * this node.
-     *
-     * \note    Items with the same name but a different underlying node type cannot be merged!
-     */
-    bool applyObject(const ConfigNode &otherNode);
-
-    //! Sets the path to the referenced node
-    void setNodeReference(const QString &nodePath);
-
-    //! Removes a value with the specified index from the Array node
-    void removeElement(const int index);
-
-    //! Removes a value with the specified name from the Object node
-    void removeMember(const QString &name);
-
-    //! Removes all elements from an Array node or all members from an Object node
-    void removeAll();
-
-    /*!
-     * Validates the configuration node name
-     *
-     * \param   name    Node name to validate
-     *
-     * \return  true    Valid node name
-     * \return  false   Invalid node name
-     *
-     * The node name must match the regular expression "^[a-zA-Z][a-zA-Z0-9_]*$" or it must be a
-     * decimal integer.
-     */
-    static bool validateNodeName(const QString &name);
-
-    //! Checks if the node path is an absolute path
-    static bool isAbsoluteNodePath(const QString &nodePath);
-
-    //! Checks if the node path is a relative path
-    static bool isRelativeNodePath(const QString &nodePath);
-
-    /*!
-     * Validates the configuration node path
-     *
-     * \param   nodePath        Node path to validate
-     * \param   currentNodePath Absolute node path to the current node
-     *
-     * \return  true    Node path is valid
-     * \return  false   Node path is not valid
-     *
-     * \note    Current node path is needed only for relative paths.
-     */
-    static bool validateNodePath(const QString &nodePath,
-                                 const QString &currentNodePath = QString());
-
-    //! Appends a node to the node path
-    static QString appendNodeToPath(const QString &nodePath, const QString &nodeName);
+    ConfigNode &operator=(ConfigNode &&other) noexcept = default;
 
 private:
-    CPPCONFIGFRAMEWORK_DECLARE_PIMPL()
+    ConfigObjectNode *m_parent;
 };
 
 } // namespace CppConfigFramework

@@ -19,7 +19,10 @@
  */
 
 // C++ Config Framework includes
-#include <CppConfigFramework/ConfigNode.hpp>
+#include <CppConfigFramework/ConfigDerivedObjectNode.hpp>
+#include <CppConfigFramework/ConfigNodeReference.hpp>
+#include <CppConfigFramework/ConfigObjectNode.hpp>
+#include <CppConfigFramework/ConfigValueNode.hpp>
 
 // Qt includes
 #include <QtCore/QDebug>
@@ -34,8 +37,6 @@
 // Test class declaration --------------------------------------------------------------------------
 
 Q_DECLARE_METATYPE(CppConfigFramework::ConfigNode::Type);
-
-// Test class declaration --------------------------------------------------------------------------
 
 using namespace CppConfigFramework;
 
@@ -53,33 +54,30 @@ private slots:
     void cleanup();
 
     // Test functions
-    void testDefaultConstructor();
+    void testTypeToString();
+    void testTypeToString_data();
 
-    void testConstructor();
-    void testConstructor_data();
+    void testConstructorValue();
+    void testConstructorObject();
+    void testConstructorNodeReference();
+    void testConstructorDerivedObject();
 
-    void testMoveNull();
     void testMoveValue();
-    void testMoveArray();
     void testMoveObject();
     void testMoveNodeReference();
-    void testMoveDerivedArray();
     void testMoveDerivedObject();
 
-    void testCloneNull();
     void testCloneValue();
-    void testCloneArray();
     void testCloneObject();
     void testCloneNodeReference();
-    void testCloneDerivedArray();
     void testCloneDerivedObject();
 
     void testNodePath();
 
+    void testObjectNode();
     void testApplyObject();
 
-    void testArrayNode();
-    void testObjectNode();
+    void testDerivedObjectNode();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -102,151 +100,197 @@ void TestConfigNode::cleanup()
 {
 }
 
-// Test: Default constructor -----------------------------------------------------------------------
+// Test: ConfigNodetypeToString() method -----------------------------------------------------------
 
-void TestConfigNode::testDefaultConstructor()
+void TestConfigNode::testTypeToString()
 {
-    ConfigNode node;
-    QVERIFY(node.isNull());
-    QCOMPARE(node.parent(), nullptr);
+    QFETCH(CppConfigFramework::ConfigNode::Type, type);
+    QFETCH(QString, expectedResult);
+
+    QCOMPARE(ConfigNode::typeToString(type), expectedResult);
+}
+
+void TestConfigNode::testTypeToString_data()
+{
+    QTest::addColumn<CppConfigFramework::ConfigNode::Type>("type");
+    QTest::addColumn<QString>("expectedResult");
+
+    QTest::newRow("Value") << ConfigNode::Type::Value << "Value";
+    QTest::newRow("Object") << ConfigNode::Type::Object << "Object";
+    QTest::newRow("NodeReference") << ConfigNode::Type::NodeReference << "NodeReference";
+    QTest::newRow("DerivedObject") << ConfigNode::Type::DerivedObject << "DerivedObject";
 }
 
 // Test: Constructor -------------------------------------------------------------------------------
 
-void TestConfigNode::testConstructor()
+void TestConfigNode::testConstructorValue()
 {
-    QFETCH(ConfigNode::Type, nodeType);
+    ConfigValueNode node1(1);
+    QCOMPARE(node1.type(), ConfigNode::Type::Value);
+    QVERIFY(node1.isValue());
+    QVERIFY(!node1.isObject());
+    QVERIFY(!node1.isNodeReference());
+    QVERIFY(!node1.isDerivedObject());
+    QVERIFY(node1.isRoot());
+    QCOMPARE(node1.rootNode(), nullptr);
+    QCOMPARE(node1.parent(), nullptr);
+    QCOMPARE(node1.value(), 1);
 
-    ConfigNode nodeWithoutParent(nodeType);
-    QCOMPARE(nodeWithoutParent.type(), nodeType);
-    QCOMPARE(nodeWithoutParent.parent(), nullptr);
-
-    ConfigNode parent(ConfigNode::Type::Object);
-    ConfigNode nodeWithParent(nodeType, &parent);
-    QCOMPARE(nodeWithParent.type(), nodeType);
-    QCOMPARE(nodeWithParent.parent(), &parent);
+    ConfigObjectNode root;
+    ConfigValueNode node2(QVariant("str"), &root);
+    QCOMPARE(node2.type(), ConfigNode::Type::Value);
+    QVERIFY(node2.isValue());
+    QVERIFY(!node2.isObject());
+    QVERIFY(!node2.isNodeReference());
+    QVERIFY(!node2.isDerivedObject());
+    QVERIFY(!node2.isRoot());
+    QCOMPARE(node2.rootNode(), &root);
+    QCOMPARE(node2.parent(), &root);
+    QCOMPARE(node2.value(), QVariant("str"));
 }
 
-void TestConfigNode::testConstructor_data()
+void TestConfigNode::testConstructorObject()
 {
-    QTest::addColumn<ConfigNode::Type>("nodeType");
+    ConfigObjectNode node1;
+    QCOMPARE(node1.type(), ConfigNode::Type::Object);
+    QVERIFY(!node1.isValue());
+    QVERIFY(node1.isObject());
+    QVERIFY(!node1.isNodeReference());
+    QVERIFY(!node1.isDerivedObject());
+    QVERIFY(node1.isRoot());
+    QCOMPARE(node1.rootNode(), &node1);
+    QCOMPARE(node1.parent(), nullptr);
+    QCOMPARE(node1.count(), 0);
 
-    QTest::newRow("Null")          << ConfigNode::Type::Null;
-    QTest::newRow("Value")         << ConfigNode::Type::Value;
-    QTest::newRow("Array")         << ConfigNode::Type::Array;
-    QTest::newRow("Object")        << ConfigNode::Type::Object;
-    QTest::newRow("NodeReference") << ConfigNode::Type::NodeReference;
-    QTest::newRow("DerivedArray")  << ConfigNode::Type::DerivedArray;
-    QTest::newRow("DerivedObject") << ConfigNode::Type::DerivedObject;
+    ConfigObjectNode root;
+    ConfigObjectNode node2(&root);
+    QCOMPARE(node2.type(), ConfigNode::Type::Object);
+    QVERIFY(!node2.isValue());
+    QVERIFY(node2.isObject());
+    QVERIFY(!node2.isNodeReference());
+    QVERIFY(!node2.isDerivedObject());
+    QVERIFY(!node2.isRoot());
+    QCOMPARE(node2.rootNode(), &root);
+    QCOMPARE(node2.parent(), &root);
+    QCOMPARE(node2.count(), 0);
+}
+
+void TestConfigNode::testConstructorNodeReference()
+{
+    ConfigNodeReference node1(ConfigNodePath("/aaa/bbb"));
+    QCOMPARE(node1.type(), ConfigNode::Type::NodeReference);
+    QVERIFY(!node1.isValue());
+    QVERIFY(!node1.isObject());
+    QVERIFY(node1.isNodeReference());
+    QVERIFY(!node1.isDerivedObject());
+    QVERIFY(node1.isRoot());
+    QCOMPARE(node1.rootNode(), nullptr);
+    QCOMPARE(node1.parent(), nullptr);
+    QCOMPARE(node1.reference(), ConfigNodePath("/aaa/bbb"));
+
+    ConfigObjectNode root;
+    ConfigNodeReference node2(ConfigNodePath("ccc/ddd"), &root);
+    QCOMPARE(node2.type(), ConfigNode::Type::NodeReference);
+    QVERIFY(!node2.isValue());
+    QVERIFY(!node2.isObject());
+    QVERIFY(node2.isNodeReference());
+    QVERIFY(!node2.isDerivedObject());
+    QVERIFY(!node2.isRoot());
+    QCOMPARE(node2.rootNode(), &root);
+    QCOMPARE(node2.parent(), &root);
+    QCOMPARE(node2.reference(), ConfigNodePath("ccc/ddd"));
+}
+
+void TestConfigNode::testConstructorDerivedObject()
+{
+    QList<ConfigNodePath> bases = {
+        ConfigNodePath("/aaa/bbb"),
+        ConfigNodePath("ccc/ddd")
+    };
+
+    ConfigObjectNode config;
+    config.setMember("a", ConfigValueNode(1));
+    config.setMember("b", ConfigValueNode("str"));
+
+    ConfigDerivedObjectNode node1(bases, config, nullptr);
+    QCOMPARE(node1.type(), ConfigNode::Type::DerivedObject);
+    QVERIFY(!node1.isValue());
+    QVERIFY(!node1.isObject());
+    QVERIFY(!node1.isNodeReference());
+    QVERIFY(node1.isDerivedObject());
+    QVERIFY(node1.isRoot());
+    QCOMPARE(node1.rootNode(), nullptr);
+    QCOMPARE(node1.parent(), nullptr);
+    QCOMPARE(node1.bases(), bases);
+    QCOMPARE(node1.config().count(), 2);
+
+    ConfigObjectNode root;
+    bases.append(ConfigNodePath("eee"));
+    config.setMember("c", ConfigValueNode(true));
+    ConfigDerivedObjectNode node2(bases, config, &root);
+    QCOMPARE(node2.type(), ConfigNode::Type::DerivedObject);
+    QVERIFY(!node2.isValue());
+    QVERIFY(!node2.isObject());
+    QVERIFY(!node2.isNodeReference());
+    QVERIFY(node2.isDerivedObject());
+    QVERIFY(!node2.isRoot());
+    QCOMPARE(node2.rootNode(), &root);
+    QCOMPARE(node2.parent(), &root);
+    QCOMPARE(node2.config().count(), 3);
 }
 
 // Test: Move constructor and move assignment operator ---------------------------------------------
 
-void TestConfigNode::testMoveNull()
-{
-    ConfigNode parentNode1(ConfigNode::Type::Object);
-    ConfigNode parentNode2(ConfigNode::Type::Object);
-
-    // Move constructor
-    ConfigNode movedNode(ConfigNode(ConfigNode::Type::Null, &parentNode1));
-    QVERIFY(movedNode.isNull());
-    QCOMPARE(movedNode.parent(), &parentNode1);
-
-    // Move assignement operator
-    movedNode = ConfigNode(ConfigNode::Type::Null, &parentNode2);
-    QVERIFY(movedNode.isNull());
-    QCOMPARE(movedNode.parent(), &parentNode2);
-}
-
 void TestConfigNode::testMoveValue()
 {
-    ConfigNode parentNode1(ConfigNode::Type::Object);
-    ConfigNode parentNode2(ConfigNode::Type::Object);
+    ConfigObjectNode parentNode1;
+    ConfigObjectNode parentNode2;
 
     // Move constructor
     {
-        ConfigNode node(ConfigNode::Type::Value, &parentNode1);
-        node.setValue(123);
+        ConfigValueNode node(123, &parentNode1);
 
-        ConfigNode movedNode(std::move(node));
+        ConfigValueNode movedNode(std::move(node));
         QVERIFY(movedNode.isValue());
         QCOMPARE(movedNode.parent(), &parentNode1);
-        QCOMPARE(movedNode.value(), QVariant(123));
+        QCOMPARE(movedNode.value(), 123);
     }
 
     // Move assignement operator
     {
-        ConfigNode node(ConfigNode::Type::Value, &parentNode2);
-        node.setValue(456);
+        ConfigValueNode node(456, &parentNode2);
 
-        ConfigNode movedNode;
+        ConfigValueNode movedNode;
         movedNode = std::move(node);
         QVERIFY(movedNode.isValue());
         QCOMPARE(movedNode.parent(), &parentNode2);
-        QCOMPARE(movedNode.value(), QVariant(456));
-    }
-}
+        QCOMPARE(movedNode.value(), 456);
 
-void TestConfigNode::testMoveArray()
-{
-    ConfigNode parentNode1(ConfigNode::Type::Object);
-    ConfigNode parentNode2(ConfigNode::Type::Object);
-
-    // Move constructor
-    {
-        ConfigNode node(ConfigNode::Type::Array, &parentNode1);
-        node.appendElement(ConfigNode(ConfigNode::Type::Null));
-        node.appendElement(ConfigNode(ConfigNode::Type::Value));
-
-        ConfigNode movedNode(std::move(node));
-        QVERIFY(movedNode.isArray());
-        QCOMPARE(movedNode.parent(), &parentNode1);
-        QCOMPARE(movedNode.count(), 2);
-
-        QCOMPARE(movedNode.element(0)->type(), ConfigNode::Type::Null);
-        QCOMPARE(movedNode.element(0)->parent(), &movedNode);
-
-        QCOMPARE(movedNode.element(1)->type(), ConfigNode::Type::Value);
-        QCOMPARE(movedNode.element(1)->parent(), &movedNode);
-    }
-
-    // Move assignement operator
-    {
-        ConfigNode node(ConfigNode::Type::Array, &parentNode1);
-        node.appendElement(ConfigNode(ConfigNode::Type::Array));
-        node.appendElement(ConfigNode(ConfigNode::Type::Object));
-
-        ConfigNode movedNode;
-        movedNode = std::move(node);
-        QVERIFY(movedNode.isArray());
-        QCOMPARE(movedNode.parent(), &parentNode1);
-        QCOMPARE(movedNode.count(), 2);
-
-        QCOMPARE(movedNode.element(0)->type(), ConfigNode::Type::Array);
-        QCOMPARE(movedNode.element(0)->parent(), &movedNode);
-
-        QCOMPARE(movedNode.element(1)->type(), ConfigNode::Type::Object);
-        QCOMPARE(movedNode.element(1)->parent(), &movedNode);
+        // Self assignment
+        movedNode = std::move(movedNode);
+        QVERIFY(movedNode.isValue());
+        QCOMPARE(movedNode.parent(), &parentNode2);
+        QCOMPARE(movedNode.value(), 456);
     }
 }
 
 void TestConfigNode::testMoveObject()
 {
-    ConfigNode parentNode1(ConfigNode::Type::Object);
-    ConfigNode parentNode2(ConfigNode::Type::Object);
+    ConfigObjectNode parentNode1;
+    ConfigObjectNode parentNode2;
 
     // Move constructor
     {
-        ConfigNode node(ConfigNode::Type::Object, &parentNode1);
-        node.setMember("item1", ConfigNode(ConfigNode::Type::Null));
-        node.setMember("item2", ConfigNode(ConfigNode::Type::Value));
+        ConfigObjectNode node(&parentNode1);
+        node.setMember("item1", ConfigValueNode(1));
+        node.setMember("item2", ConfigValueNode("str"));
 
-        ConfigNode movedNode(std::move(node));
+        ConfigObjectNode movedNode(std::move(node));
         QVERIFY(movedNode.isObject());
         QCOMPARE(movedNode.parent(), &parentNode1);
         QCOMPARE(movedNode.count(), 2);
 
-        QCOMPARE(movedNode.member("item1")->type(), ConfigNode::Type::Null);
+        QCOMPARE(movedNode.member("item1")->type(), ConfigNode::Type::Value);
         QCOMPARE(movedNode.member("item1")->parent(), &movedNode);
 
         QCOMPARE(movedNode.member("item2")->type(), ConfigNode::Type::Value);
@@ -255,17 +299,29 @@ void TestConfigNode::testMoveObject()
 
     // Move assignement operator
     {
-        ConfigNode node(ConfigNode::Type::Object, &parentNode1);
-        node.setMember("item1", ConfigNode(ConfigNode::Type::Null));
-        node.setMember("item2", ConfigNode(ConfigNode::Type::Value));
+        ConfigObjectNode node(&parentNode1);
+        node.setMember("item1", ConfigValueNode(1));
+        node.setMember("item2", ConfigValueNode("str"));
 
-        ConfigNode movedNode;
+        ConfigObjectNode movedNode;
         movedNode = std::move(node);
         QVERIFY(movedNode.isObject());
         QCOMPARE(movedNode.parent(), &parentNode1);
         QCOMPARE(movedNode.count(), 2);
 
-        QCOMPARE(movedNode.member("item1")->type(), ConfigNode::Type::Null);
+        QCOMPARE(movedNode.member("item1")->type(), ConfigNode::Type::Value);
+        QCOMPARE(movedNode.member("item1")->parent(), &movedNode);
+
+        QCOMPARE(movedNode.member("item2")->type(), ConfigNode::Type::Value);
+        QCOMPARE(movedNode.member("item2")->parent(), &movedNode);
+
+        // Self assignment
+        movedNode = std::move(movedNode);
+        QVERIFY(movedNode.isObject());
+        QCOMPARE(movedNode.parent(), &parentNode1);
+        QCOMPARE(movedNode.count(), 2);
+
+        QCOMPARE(movedNode.member("item1")->type(), ConfigNode::Type::Value);
         QCOMPARE(movedNode.member("item1")->parent(), &movedNode);
 
         QCOMPARE(movedNode.member("item2")->type(), ConfigNode::Type::Value);
@@ -275,463 +331,202 @@ void TestConfigNode::testMoveObject()
 
 void TestConfigNode::testMoveNodeReference()
 {
-    ConfigNode parentNode1(ConfigNode::Type::Object);
-    ConfigNode parentNode2(ConfigNode::Type::Object);
+    ConfigObjectNode parentNode1;
+    ConfigObjectNode parentNode2;
 
     // Move constructor
     {
-        ConfigNode node(ConfigNode::Type::NodeReference, &parentNode1);
-        node.setNodeReference("ref");
+        ConfigNodeReference node(ConfigNodePath("ref"), &parentNode1);
 
-        ConfigNode movedNode(std::move(node));
+        ConfigNodeReference movedNode(std::move(node));
         QVERIFY(movedNode.isNodeReference());
         QCOMPARE(movedNode.parent(), &parentNode1);
-        QCOMPARE(movedNode.nodeReference(), QString("ref"));
+        QCOMPARE(movedNode.reference(), ConfigNodePath("ref"));
     }
 
     // Move assignement operator
     {
-        ConfigNode node(ConfigNode::Type::NodeReference, &parentNode2);
-        node.setNodeReference("ref");
+        ConfigNodeReference node(ConfigNodePath("ref"), &parentNode2);
 
-        ConfigNode movedNode;
+        ConfigNodeReference movedNode;
         movedNode = std::move(node);
         QVERIFY(movedNode.isNodeReference());
         QCOMPARE(movedNode.parent(), &parentNode2);
-        QCOMPARE(movedNode.nodeReference(), QString("ref"));
-    }
-}
+        QCOMPARE(movedNode.reference(), ConfigNodePath("ref"));
 
-void TestConfigNode::testMoveDerivedArray()
-{
-    ConfigNode parentNode1(ConfigNode::Type::Object);
-    ConfigNode parentNode2(ConfigNode::Type::Object);
-
-    // Move constructor
-    {
-        ConfigNode node(ConfigNode::Type::DerivedArray, &parentNode1);
-        node.derivedArray()->emplace_back(ConfigNode::Type::Null);
-        node.derivedArray()->emplace_back(ConfigNode::Type::Value);
-        node.derivedArray()->emplace_back(ConfigNode::Type::Array);
-        node.derivedArray()->emplace_back(ConfigNode::Type::Object);
-        node.derivedArray()->emplace_back(ConfigNode::Type::NodeReference);
-        node.derivedArray()->emplace_back(ConfigNode::Type::DerivedArray);
-        node.derivedArray()->emplace_back(ConfigNode::Type::DerivedObject);
-
-        ConfigNode movedNode(std::move(node));
-        QVERIFY(movedNode.isDerivedArray());
-        QCOMPARE(movedNode.parent(), &parentNode1);
-        QCOMPARE(movedNode.derivedArray()->size(), 7u);
-
-        auto it = movedNode.derivedArray()->begin();
-        auto it_end = movedNode.derivedArray()->end();
-
-        QVERIFY(it != it_end);
-        QVERIFY(it->isNull());
-        it++;
-
-        QVERIFY(it != it_end);
-        QVERIFY(it->isValue());
-        it++;
-
-        QVERIFY(it != it_end);
-        QVERIFY(it->isArray());
-        it++;
-
-        QVERIFY(it != it_end);
-        QVERIFY(it->isObject());
-        it++;
-
-        QVERIFY(it != it_end);
-        QVERIFY(it->isNodeReference());
-        it++;
-
-        QVERIFY(it != it_end);
-        QVERIFY(it->isDerivedArray());
-        it++;
-
-        QVERIFY(it != it_end);
-        QVERIFY(it->isDerivedObject());
-        it++;
-
-        QVERIFY(it == it_end);
-    }
-
-    // Move assignement operator
-    {
-        ConfigNode node(ConfigNode::Type::DerivedArray, &parentNode2);
-        node.derivedArray()->emplace_back(ConfigNode::Type::Null);
-        node.derivedArray()->emplace_back(ConfigNode::Type::Value);
-        node.derivedArray()->emplace_back(ConfigNode::Type::Array);
-        node.derivedArray()->emplace_back(ConfigNode::Type::Object);
-        node.derivedArray()->emplace_back(ConfigNode::Type::NodeReference);
-        node.derivedArray()->emplace_back(ConfigNode::Type::DerivedArray);
-        node.derivedArray()->emplace_back(ConfigNode::Type::DerivedObject);
-
-        ConfigNode movedNode;
-        movedNode = std::move(node);
-        QVERIFY(movedNode.isDerivedArray());
+        // Self assignment
+        movedNode = std::move(movedNode);
+        QVERIFY(movedNode.isNodeReference());
         QCOMPARE(movedNode.parent(), &parentNode2);
-        QCOMPARE(movedNode.derivedArray()->size(), 7u);
-
-        auto it = movedNode.derivedArray()->begin();
-        auto it_end = movedNode.derivedArray()->end();
-
-        QVERIFY(it != it_end);
-        QVERIFY(it->isNull());
-        it++;
-
-        QVERIFY(it != it_end);
-        QVERIFY(it->isValue());
-        it++;
-
-        QVERIFY(it != it_end);
-        QVERIFY(it->isArray());
-        it++;
-
-        QVERIFY(it != it_end);
-        QVERIFY(it->isObject());
-        it++;
-
-        QVERIFY(it != it_end);
-        QVERIFY(it->isNodeReference());
-        it++;
-
-        QVERIFY(it != it_end);
-        QVERIFY(it->isDerivedArray());
-        it++;
-
-        QVERIFY(it != it_end);
-        QVERIFY(it->isDerivedObject());
-        it++;
-
-        QVERIFY(it == it_end);
+        QCOMPARE(movedNode.reference(), ConfigNodePath("ref"));
     }
 }
 
 void TestConfigNode::testMoveDerivedObject()
 {
-    ConfigNode parentNode1(ConfigNode::Type::Object);
-    ConfigNode parentNode2(ConfigNode::Type::Object);
-    QStringList expectedBases {"base1", "base2"};
+    ConfigObjectNode parentNode1;
+    ConfigObjectNode parentNode2;
+
+    QList<ConfigNodePath> expectedBases { ConfigNodePath("base1"), ConfigNodePath("base2")};
+    ConfigObjectNode config;
+    config.setMember("null", ConfigValueNode());
 
     // Move constructor
     {
-        ConfigNode node(ConfigNode::Type::DerivedObject, &parentNode1);
+        ConfigDerivedObjectNode node(expectedBases, config, &parentNode1);
 
-        {
-            ConfigNode configNode(ConfigNode::Type::Object);
-            configNode.setMember("null", ConfigNode());
-            node.derivedObject()->setBases(expectedBases);
-            node.derivedObject()->config() = std::move(configNode);
-        }
-
-        ConfigNode movedNode(std::move(node));
+        ConfigDerivedObjectNode movedNode(std::move(node));
         QVERIFY(movedNode.isDerivedObject());
         QCOMPARE(movedNode.parent(), &parentNode1);
-        QCOMPARE(movedNode.derivedObject()->bases(), expectedBases);
-        QVERIFY(movedNode.derivedObject()->config().isObject());
-        QCOMPARE(movedNode.derivedObject()->config().count(), 1);
-        QVERIFY(movedNode.derivedObject()->config().containsMember("null"));
-        QVERIFY(movedNode.derivedObject()->config().member("null")->isNull());
+        QCOMPARE(movedNode.bases(), expectedBases);
+        QVERIFY(movedNode.config().isObject());
+        QCOMPARE(movedNode.config().count(), 1);
+        QVERIFY(movedNode.config().contains("null"));
+        QVERIFY(movedNode.config().member("null")->isValue());
     }
 
     // Move assignement operator
     {
-        ConfigNode node(ConfigNode::Type::DerivedObject, &parentNode2);
+        ConfigDerivedObjectNode node(expectedBases, config, &parentNode2);
 
-        {
-            ConfigNode configNode(ConfigNode::Type::Object);
-            configNode.setMember("null", ConfigNode());
-            node.derivedObject()->setBases(expectedBases);
-            node.derivedObject()->config() = std::move(configNode);
-        }
-
-        ConfigNode movedNode;
+        ConfigDerivedObjectNode movedNode;
         movedNode = std::move(node);
         QVERIFY(movedNode.isDerivedObject());
         QCOMPARE(movedNode.parent(), &parentNode2);
-        QCOMPARE(movedNode.derivedObject()->bases(), expectedBases);
-        QVERIFY(movedNode.derivedObject()->config().isObject());
-        QCOMPARE(movedNode.derivedObject()->config().count(), 1);
-        QVERIFY(movedNode.derivedObject()->config().containsMember("null"));
-        QVERIFY(movedNode.derivedObject()->config().member("null")->isNull());
+        QCOMPARE(movedNode.bases(), expectedBases);
+        QVERIFY(movedNode.config().isObject());
+        QCOMPARE(movedNode.config().count(), 1);
+        QVERIFY(movedNode.config().contains("null"));
+        QVERIFY(movedNode.config().member("null")->isValue());
+
+        // Self assignment
+        movedNode = std::move(movedNode);
+        QVERIFY(movedNode.isDerivedObject());
+        QCOMPARE(movedNode.parent(), &parentNode2);
+        QCOMPARE(movedNode.bases(), expectedBases);
+        QVERIFY(movedNode.config().isObject());
+        QCOMPARE(movedNode.config().count(), 1);
+        QVERIFY(movedNode.config().contains("null"));
+        QVERIFY(movedNode.config().member("null")->isValue());
     }
 }
 
 // Test: clone() method ----------------------------------------------------------------------------
 
-void TestConfigNode::testCloneNull()
-{
-    // Clone without parent
-    ConfigNode node(ConfigNode::Type::Null, nullptr);
-
-    ConfigNode clonedNode(node.clone());
-    QVERIFY(clonedNode.isNull());
-    QCOMPARE(clonedNode.parent(), nullptr);
-
-    // Clone with parent
-    ConfigNode parentNode(ConfigNode::Type::Object);
-    node.setParent(&parentNode);
-
-    clonedNode = node.clone();
-    QVERIFY(clonedNode.isNull());
-    QCOMPARE(clonedNode.parent(), nullptr);
-}
-
 void TestConfigNode::testCloneValue()
 {
     // Clone without parent
-    ConfigNode node(ConfigNode::Type::Value, nullptr);
-    node.setValue(123);
+    ConfigValueNode node(123);
 
-    ConfigNode clonedNode(node.clone());
-    QVERIFY(clonedNode.isValue());
-    QCOMPARE(clonedNode.parent(), nullptr);
-    QCOMPARE(clonedNode.value(), QVariant(123));
+    auto clonedNode = node.clone();
+    QVERIFY(clonedNode->isValue());
+    QCOMPARE(clonedNode->parent(), nullptr);
+    QCOMPARE(clonedNode->toValue().value(), 123);
 
     // Clone with parent
-    ConfigNode parentNode(ConfigNode::Type::Object);
+    ConfigObjectNode parentNode;
     node.setParent(&parentNode);
     node.setValue(456);
 
     clonedNode = node.clone();
-    QVERIFY(clonedNode.isValue());
-    QCOMPARE(clonedNode.parent(), nullptr);
-    QCOMPARE(clonedNode.value(), QVariant(456));
-}
-
-void TestConfigNode::testCloneArray()
-{
-    // Clone without parent
-    ConfigNode node(ConfigNode::Type::Array, nullptr);
-    node.appendElement(ConfigNode(ConfigNode::Type::Null));
-    node.appendElement(ConfigNode(ConfigNode::Type::Value));
-
-    ConfigNode clonedNode(node.clone());
-    QVERIFY(clonedNode.isArray());
-    QCOMPARE(clonedNode.parent(), nullptr);
-    QCOMPARE(clonedNode.count(), 2);
-
-    QCOMPARE(clonedNode.element(0)->type(), ConfigNode::Type::Null);
-    QCOMPARE(clonedNode.element(0)->parent(), &clonedNode);
-
-    QCOMPARE(clonedNode.element(1)->type(), ConfigNode::Type::Value);
-    QCOMPARE(clonedNode.element(1)->parent(), &clonedNode);
-
-    // Clone with parent
-    ConfigNode parentNode(ConfigNode::Type::Object);
-    node.setParent(&parentNode);
-    node.removeAll();
-    node.appendElement(ConfigNode(ConfigNode::Type::Array));
-    node.appendElement(ConfigNode(ConfigNode::Type::Object));
-
-    clonedNode = node.clone();
-    QVERIFY(clonedNode.isArray());
-    QCOMPARE(clonedNode.parent(), nullptr);
-    QCOMPARE(clonedNode.count(), 2);
-
-    QCOMPARE(clonedNode.element(0)->type(), ConfigNode::Type::Array);
-    QCOMPARE(clonedNode.element(0)->parent(), &clonedNode);
-
-    QCOMPARE(clonedNode.element(1)->type(), ConfigNode::Type::Object);
-    QCOMPARE(clonedNode.element(1)->parent(), &clonedNode);
+    QVERIFY(clonedNode->isValue());
+    QCOMPARE(clonedNode->parent(), nullptr);
+    QCOMPARE(clonedNode->toValue().value(), 456);
 }
 
 void TestConfigNode::testCloneObject()
 {
     // Clone without parent
-    ConfigNode node(ConfigNode::Type::Object, nullptr);
-    node.setMember("item1", ConfigNode(ConfigNode::Type::Null));
-    node.setMember("item2", ConfigNode(ConfigNode::Type::Value));
+    ConfigObjectNode node;
+    node.setMember("item1", ConfigValueNode(1));
+    node.setMember("item2", ConfigValueNode("str"));
 
-    ConfigNode clonedNode(node.clone());
-    QVERIFY(clonedNode.isObject());
-    QCOMPARE(clonedNode.parent(), nullptr);
-    QCOMPARE(clonedNode.count(), 2);
+    auto clonedNode = node.clone();
+    QVERIFY(clonedNode->isObject());
+    QCOMPARE(clonedNode->parent(), nullptr);
+    QCOMPARE(clonedNode->toObject().count(), 2);
 
-    QCOMPARE(clonedNode.member("item1")->type(), ConfigNode::Type::Null);
-    QCOMPARE(clonedNode.member("item1")->parent(), &clonedNode);
+    QCOMPARE(clonedNode->toObject().member("item1")->type(), ConfigNode::Type::Value);
+    QCOMPARE(clonedNode->toObject().member("item1")->parent(), clonedNode.get());
+    QCOMPARE(clonedNode->toObject().member("item1")->toValue().value(), 1);
 
-    QCOMPARE(clonedNode.member("item2")->type(), ConfigNode::Type::Value);
-    QCOMPARE(clonedNode.member("item2")->parent(), &clonedNode);
+    QCOMPARE(clonedNode->toObject().member("item2")->type(), ConfigNode::Type::Value);
+    QCOMPARE(clonedNode->toObject().member("item2")->parent(), clonedNode.get());
+    QCOMPARE(clonedNode->toObject().member("item2")->toValue().value(), QVariant("str"));
 
     // Clone with parent
-    ConfigNode parentNode(ConfigNode::Type::Object);
+    ConfigObjectNode parentNode;
     node.setParent(&parentNode);
     node.removeAll();
-    node.setMember("item1", ConfigNode(ConfigNode::Type::Array));
-    node.setMember("item2", ConfigNode(ConfigNode::Type::Object));
+    node.setMember("item1", ConfigValueNode(2));
+    node.setMember("item2", ConfigValueNode("asd"));
 
     clonedNode = node.clone();
-    QVERIFY(clonedNode.isObject());
-    QCOMPARE(clonedNode.parent(), nullptr);
-    QCOMPARE(clonedNode.count(), 2);
+    QVERIFY(clonedNode->isObject());
+    QCOMPARE(clonedNode->parent(), nullptr);
+    QCOMPARE(clonedNode->toObject().count(), 2);
 
-    QCOMPARE(clonedNode.member("item1")->type(), ConfigNode::Type::Array);
-    QCOMPARE(clonedNode.member("item1")->parent(), &clonedNode);
+    QCOMPARE(clonedNode->toObject().member("item1")->type(), ConfigNode::Type::Value);
+    QCOMPARE(clonedNode->toObject().member("item1")->parent(), clonedNode.get());
+    QCOMPARE(clonedNode->toObject().member("item1")->toValue().value(), 2);
 
-    QCOMPARE(clonedNode.member("item2")->type(), ConfigNode::Type::Object);
-    QCOMPARE(clonedNode.member("item2")->parent(), &clonedNode);
+    QCOMPARE(clonedNode->toObject().member("item2")->type(), ConfigNode::Type::Value);
+    QCOMPARE(clonedNode->toObject().member("item2")->parent(), clonedNode.get());
+    QCOMPARE(clonedNode->toObject().member("item2")->toValue().value(), QVariant("asd"));
 }
 
 void TestConfigNode::testCloneNodeReference()
 {
     // Clone without parent
-    ConfigNode node(ConfigNode::Type::NodeReference, nullptr);
-    node.setNodeReference("ref1");
+    ConfigNodeReference node;
+    node.setReference(ConfigNodePath("ref1"));
 
-    ConfigNode clonedNode(node.clone());
-    QVERIFY(clonedNode.isNodeReference());
-    QCOMPARE(clonedNode.parent(), nullptr);
-    QCOMPARE(clonedNode.nodeReference(), QString("ref1"));
-
-    // Clone with parent
-    ConfigNode parentNode(ConfigNode::Type::Object);
-    node.setParent(&parentNode);
-    node.setNodeReference("ref2");
-
-    clonedNode = node.clone();
-    QVERIFY(clonedNode.isNodeReference());
-    QCOMPARE(clonedNode.parent(), nullptr);
-    QCOMPARE(clonedNode.nodeReference(), QString("ref2"));
-}
-
-void TestConfigNode::testCloneDerivedArray()
-{
-    // Clone without parent
-    ConfigNode node(ConfigNode::Type::DerivedArray, nullptr);
-    node.derivedArray()->emplace_back(ConfigNode::Type::Null);
-    node.derivedArray()->emplace_back(ConfigNode::Type::Value);
-    node.derivedArray()->emplace_back(ConfigNode::Type::Array);
-    node.derivedArray()->emplace_back(ConfigNode::Type::Object);
-    node.derivedArray()->emplace_back(ConfigNode::Type::NodeReference);
-    node.derivedArray()->emplace_back(ConfigNode::Type::DerivedArray);
-    node.derivedArray()->emplace_back(ConfigNode::Type::DerivedObject);
-
-    ConfigNode clonedNode(node.clone());
-    QVERIFY(clonedNode.isDerivedArray());
-    QCOMPARE(clonedNode.parent(), nullptr);
-    QCOMPARE(clonedNode.derivedArray()->size(), 7u);
-
-    auto it = clonedNode.derivedArray()->begin();
-    auto it_end = clonedNode.derivedArray()->end();
-
-    QVERIFY(it != it_end);
-    QVERIFY(it->isNull());
-    it++;
-
-    QVERIFY(it != it_end);
-    QVERIFY(it->isValue());
-    it++;
-
-    QVERIFY(it != it_end);
-    QVERIFY(it->isArray());
-    it++;
-
-    QVERIFY(it != it_end);
-    QVERIFY(it->isObject());
-    it++;
-
-    QVERIFY(it != it_end);
-    QVERIFY(it->isNodeReference());
-    it++;
-
-    QVERIFY(it != it_end);
-    QVERIFY(it->isDerivedArray());
-    it++;
-
-    QVERIFY(it != it_end);
-    QVERIFY(it->isDerivedObject());
-    it++;
-
-    QVERIFY(it == it_end);
+    auto clonedNode = node.clone();
+    QVERIFY(clonedNode->isNodeReference());
+    QCOMPARE(clonedNode->parent(), nullptr);
+    QCOMPARE(clonedNode->toNodeReference().reference(), ConfigNodePath("ref1"));
 
     // Clone with parent
-    ConfigNode parentNode(ConfigNode::Type::Object);
+    ConfigObjectNode parentNode;
     node.setParent(&parentNode);
+    node.setReference(ConfigNodePath("ref2"));
 
     clonedNode = node.clone();
-    QVERIFY(clonedNode.isDerivedArray());
-    QCOMPARE(clonedNode.parent(), nullptr);
-    QCOMPARE(clonedNode.derivedArray()->size(), 7u);
-
-    it = clonedNode.derivedArray()->begin();
-    it_end = clonedNode.derivedArray()->end();
-
-    QVERIFY(it != it_end);
-    QVERIFY(it->isNull());
-    it++;
-
-    QVERIFY(it != it_end);
-    QVERIFY(it->isValue());
-    it++;
-
-    QVERIFY(it != it_end);
-    QVERIFY(it->isArray());
-    it++;
-
-    QVERIFY(it != it_end);
-    QVERIFY(it->isObject());
-    it++;
-
-    QVERIFY(it != it_end);
-    QVERIFY(it->isNodeReference());
-    it++;
-
-    QVERIFY(it != it_end);
-    QVERIFY(it->isDerivedArray());
-    it++;
-
-    QVERIFY(it != it_end);
-    QVERIFY(it->isDerivedObject());
-    it++;
-
-    QVERIFY(it == it_end);
+    QVERIFY(clonedNode->isNodeReference());
+    QCOMPARE(clonedNode->parent(), nullptr);
+    QCOMPARE(clonedNode->toNodeReference().reference(), ConfigNodePath("ref2"));
 }
 
 void TestConfigNode::testCloneDerivedObject()
 {
-    QStringList expectedBases {"base1", "base2"};
+    QList<ConfigNodePath> expectedBases { ConfigNodePath("base1"), ConfigNodePath("base2")};
+    ConfigObjectNode config;
+    config.setMember("null", ConfigValueNode());
 
     // Clone without parent
-    ConfigNode node(ConfigNode::Type::DerivedObject, nullptr);
+    ConfigDerivedObjectNode node(expectedBases, config);
 
-    {
-        ConfigNode configNode(ConfigNode::Type::Object);
-        configNode.setMember("null", ConfigNode());
-        node.derivedObject()->setBases(expectedBases);
-        node.derivedObject()->config() = std::move(configNode);
-    }
-
-    ConfigNode clonedNode(node.clone());
-    QVERIFY(clonedNode.isDerivedObject());
-    QCOMPARE(clonedNode.parent(), nullptr);
-    QCOMPARE(clonedNode.derivedObject()->bases(), expectedBases);
-    QVERIFY(clonedNode.derivedObject()->config().isObject());
-    QCOMPARE(clonedNode.derivedObject()->config().count(), 1);
-    QVERIFY(clonedNode.derivedObject()->config().containsMember("null"));
-    QVERIFY(clonedNode.derivedObject()->config().member("null")->isNull());
+    auto clonedNode = node.clone();
+    QVERIFY(clonedNode->isDerivedObject());
+    QCOMPARE(clonedNode->parent(), nullptr);
+    QCOMPARE(clonedNode->toDerivedObject().bases(), expectedBases);
+    QVERIFY(clonedNode->toDerivedObject().config().isObject());
+    QCOMPARE(clonedNode->toDerivedObject().config().count(), 1);
+    QVERIFY(clonedNode->toDerivedObject().config().contains("null"));
+    QVERIFY(clonedNode->toDerivedObject().config().member("null")->isValue());
 
     // Clone with parent
-    ConfigNode parentNode(ConfigNode::Type::Object);
+    ConfigObjectNode parentNode;
     node.setParent(&parentNode);
 
-    {
-        ConfigNode configNode(ConfigNode::Type::Object);
-        configNode.setMember("value", ConfigNode(ConfigNode::Type::Value));
-        node.derivedObject()->setBases(expectedBases);
-        node.derivedObject()->config() = std::move(configNode);
-    }
-
     clonedNode = node.clone();
-    QVERIFY(clonedNode.isDerivedObject());
-    QCOMPARE(clonedNode.parent(), nullptr);
-    QCOMPARE(clonedNode.derivedObject()->bases(), expectedBases);
-    QVERIFY(clonedNode.derivedObject()->config().isObject());
-    QCOMPARE(clonedNode.derivedObject()->config().count(), 1);
-    QVERIFY(clonedNode.derivedObject()->config().containsMember("value"));
-    QVERIFY(clonedNode.derivedObject()->config().member("value")->isValue());
+    QVERIFY(clonedNode->isDerivedObject());
+    QCOMPARE(clonedNode->parent(), nullptr);
+    QCOMPARE(clonedNode->toDerivedObject().bases(), expectedBases);
+    QVERIFY(clonedNode->toDerivedObject().config().isObject());
+    QCOMPARE(clonedNode->toDerivedObject().config().count(), 1);
+    QVERIFY(clonedNode->toDerivedObject().config().contains("null"));
+    QVERIFY(clonedNode->toDerivedObject().config().member("null")->isValue());
 }
 
 // Test: nodePath() method -------------------------------------------------------------------------
@@ -739,229 +534,249 @@ void TestConfigNode::testCloneDerivedObject()
 void TestConfigNode::testNodePath()
 {
     // Root node
-    ConfigNode rootNode(ConfigNode::Type::Object);
+    ConfigObjectNode rootNode;
 
     QVERIFY(rootNode.isRoot());
     QCOMPARE(rootNode.rootNode(), &rootNode);
-    QCOMPARE(rootNode.absoluteNodePath(), "/");
-    QCOMPARE(rootNode.nodeAtPath("/"), &rootNode);
+    QCOMPARE(rootNode.nodePath(), ConfigNodePath::ROOT_PATH);
+    QCOMPARE(rootNode.nodeAtPath(ConfigNodePath::ROOT_PATH), &rootNode);
 
     // Level 1
-    rootNode.setMember("level1", ConfigNode(ConfigNode::Type::Object));
+    rootNode.setMember("level1", ConfigObjectNode());
     ConfigNode *level1 = rootNode.member("level1");
     QVERIFY(level1 != nullptr);
+    QVERIFY(level1->isObject());
     QCOMPARE(level1->rootNode(), &rootNode);
-    QCOMPARE(level1->absoluteNodePath(), "/level1");
-    QCOMPARE(rootNode.nodeAtPath("/level1"), level1);
+    QCOMPARE(level1->nodePath(), ConfigNodePath("/level1"));
+    QCOMPARE(rootNode.nodeAtPath(ConfigNodePath("/level1")), level1);
 
     // Level 2
-    level1->setMember("level2", ConfigNode(ConfigNode::Type::Object));
-    ConfigNode *level2 = level1->member("level2");
+    level1->toObject().setMember("level2", ConfigObjectNode());
+    ConfigNode *level2 = level1->toObject().member("level2");
     QVERIFY(level2 != nullptr);
+    QVERIFY(level2->isObject());
     QCOMPARE(level2->rootNode(), &rootNode);
-    QCOMPARE(level2->absoluteNodePath(), "/level1/level2");
-    QCOMPARE(rootNode.nodeAtPath("/level1/level2"), level2);
+    QCOMPARE(level2->nodePath(), ConfigNodePath("/level1/level2"));
+    QCOMPARE(rootNode.nodeAtPath(ConfigNodePath("/level1/level2")), level2);
 
     // Level 3
-    level2->setMember("level3", ConfigNode(ConfigNode::Type::Array));
-    ConfigNode *level3 = level2->member("level3");
+    level2->toObject().setMember("level3", ConfigObjectNode());
+    ConfigNode *level3 = level2->toObject().member("level3");
     QVERIFY(level3 != nullptr);
+    QVERIFY(level3->isObject());
     QCOMPARE(level3->rootNode(), &rootNode);
-    QCOMPARE(level3->absoluteNodePath(), "/level1/level2/level3");
-    QCOMPARE(rootNode.nodeAtPath("/level1/level2/level3"), level3);
+    QCOMPARE(level3->nodePath(), ConfigNodePath("/level1/level2/level3"));
+    QCOMPARE(rootNode.nodeAtPath(ConfigNodePath("/level1/level2/level3")), level3);
 
-    // Level 3 elements
-    level3->appendElement(ConfigNode(ConfigNode::Type::Null));
-    ConfigNode *level3Element0 = level3->element(0);
-    QVERIFY(level3Element0 != nullptr);
-    QCOMPARE(level3Element0->rootNode(), &rootNode);
-    QCOMPARE(level3Element0->absoluteNodePath(), "/level1/level2/level3/0");
-    QCOMPARE(level3Element0, rootNode.nodeAtPath("/level1/level2/level3/0"));
-    QCOMPARE(rootNode.nodeAtPath("/level1/level2/level3/0"), level3Element0);
+    // Level 3 members
+    level3->toObject().setMember("item1", ConfigValueNode(1));
+    ConfigNode *level3Item1 = level3->toObject().member("item1");
+    QVERIFY(level3Item1 != nullptr);
+    QVERIFY(level3Item1->isValue());
+    QCOMPARE(level3Item1->toValue().value(), 1);
+    QCOMPARE(level3Item1->rootNode(), &rootNode);
+    QCOMPARE(level3Item1->nodePath(), ConfigNodePath("/level1/level2/level3/item1"));
+    QCOMPARE(rootNode.nodeAtPath(ConfigNodePath("/level1/level2/level3/item1")), level3Item1);
 
-    level3->appendElement(ConfigNode(ConfigNode::Type::Value));
-    ConfigNode *level3Element1 = level3->element(1);
-    QVERIFY(level3Element1 != nullptr);
-    QCOMPARE(level3Element1->rootNode(), &rootNode);
-    QCOMPARE(level3Element1->absoluteNodePath(), "/level1/level2/level3/1");
-    QCOMPARE(rootNode.nodeAtPath("/level1/level2/level3/1"), level3Element1);
+    level3->toObject().setMember("item2", ConfigValueNode("str"));
+    ConfigNode *level3Item2 = level3->toObject().member("item2");
+    QVERIFY(level3Item2 != nullptr);
+    QVERIFY(level3Item2->isValue());
+    QCOMPARE(level3Item2->toValue().value(), QVariant("str"));
+    QCOMPARE(level3Item2->rootNode(), &rootNode);
+    QCOMPARE(level3Item2->nodePath(), ConfigNodePath("/level1/level2/level3/item2"));
+    QCOMPARE(rootNode.nodeAtPath(ConfigNodePath("/level1/level2/level3/item2")), level3Item2);
 
     // Test absolute paths on non-root items
-    QCOMPARE(level3Element0->nodeAtPath("/"), &rootNode);
-    QCOMPARE(level3Element1->nodeAtPath("/"), &rootNode);
+    QCOMPARE(level3Item1->nodeAtPath(ConfigNodePath::ROOT_PATH), &rootNode);
+    QCOMPARE(level3Item2->nodeAtPath(ConfigNodePath::ROOT_PATH), &rootNode);
 
-    QCOMPARE(level3Element0->nodeAtPath("/level1"), level1);
-    QCOMPARE(level3Element1->nodeAtPath("/level1/level2"), level2);
+    QCOMPARE(level3Item1->nodeAtPath(ConfigNodePath("/level1")), level1);
+    QCOMPARE(level3Item2->nodeAtPath(ConfigNodePath("/level1/level2")), level2);
 
     // Test relative paths
-    QCOMPARE(rootNode.nodeAtPath("/level1/.."), &rootNode);
-    QCOMPARE(rootNode.nodeAtPath("level1/.."), &rootNode);
+    QCOMPARE(rootNode.nodeAtPath(ConfigNodePath("/level1/..")), &rootNode);
+    QCOMPARE(rootNode.nodeAtPath(ConfigNodePath("level1/..")), &rootNode);
 
-    QCOMPARE(rootNode.nodeAtPath("level1"), level1);
-    QCOMPARE(rootNode.nodeAtPath("/level1/level2/.."), level1);
-    QCOMPARE(rootNode.nodeAtPath("/level1/../level1/level2/.."), level1);
-    QCOMPARE(rootNode.nodeAtPath("level1/level2/.."), level1);
+    QCOMPARE(rootNode.nodeAtPath(ConfigNodePath("level1")), level1);
+    QCOMPARE(rootNode.nodeAtPath(ConfigNodePath("/level1/level2/..")), level1);
+    QCOMPARE(rootNode.nodeAtPath(ConfigNodePath("/level1/../level1/level2/..")), level1);
+    QCOMPARE(rootNode.nodeAtPath(ConfigNodePath("level1/level2/..")), level1);
 
-    QCOMPARE(level1->nodeAtPath(".."), &rootNode);
-    QCOMPARE(level1->nodeAtPath("level2/.."), level1);
-    QCOMPARE(level1->nodeAtPath("level2"), level2);
+    QCOMPARE(level1->nodeAtPath(ConfigNodePath("..")), &rootNode);
+    QCOMPARE(level1->nodeAtPath(ConfigNodePath("level2/..")), level1);
+    QCOMPARE(level1->nodeAtPath(ConfigNodePath("level2")), level2);
 
-    QCOMPARE(level3Element1->nodeAtPath("../0"), level3Element0);
-}
+    QCOMPARE(level3Item2->nodeAtPath(ConfigNodePath("../item1")), level3Item1);
 
-// Test: applyObject() method ----------------------------------------------------------------------
+    QCOMPARE(level1->nodeAtPath(ConfigNodePath()), nullptr);
+    QCOMPARE(level1->nodeAtPath(ConfigNodePath("../..")), nullptr);
+    QCOMPARE(level3->nodeAtPath(ConfigNodePath("error")), nullptr);
+    QCOMPARE(level3->nodeAtPath(ConfigNodePath("item1/error")), nullptr);
 
-void TestConfigNode::testApplyObject()
-{
-    // Create 3 level node structure
-    ConfigNode node(ConfigNode::Type::Object);
-    node.setMember("value", ConfigNode(ConfigNode::Type::Value));
-    node.member("value")->setValue(111);
-    node.setMember("array", ConfigNode(ConfigNode::Type::Array));
-    node.member("array")->appendElement(ConfigNode(ConfigNode::Type::Value));
-    node.member("array")->appendElement(ConfigNode(ConfigNode::Type::Value));
-
-    node.setMember("level1", ConfigNode(ConfigNode::Type::Object));
-
-    node.member("level1")->setMember("level2", ConfigNode(ConfigNode::Type::Object));
-    node.nodeAtPath("level1/level2")->setMember("null", ConfigNode());
-    node.nodeAtPath("level1/level2")->setMember("value", ConfigNode());
-
-    // Create a compatible node structure for the update
-    ConfigNode update(ConfigNode::Type::Object);
-    update.setMember("null", ConfigNode());
-    update.setMember("value", ConfigNode(ConfigNode::Type::Value));
-    update.member("value")->setValue(123);
-    update.setMember("array", ConfigNode(ConfigNode::Type::Array));
-    update.member("array")->appendElement(ConfigNode(ConfigNode::Type::Object));
-
-    update.setMember("level1", ConfigNode(ConfigNode::Type::Object));
-    update.member("level1")->setMember("null", ConfigNode());
-    update.member("level1")->setMember("value", ConfigNode(ConfigNode::Type::Value));
-    update.nodeAtPath("level1/value")->setValue(456);
-
-    update.member("level1")->setMember("level2", ConfigNode(ConfigNode::Type::Object));
-    update.nodeAtPath("level1/level2")->setMember("null", ConfigNode());
-    update.nodeAtPath("level1/level2")->setMember("value", ConfigNode(ConfigNode::Type::Value));
-    update.nodeAtPath("level1/level2/value")->setValue(789);
-
-    // Apply the update
-    QVERIFY(node.applyObject(update));
-
-    // Check the root level
-    QVERIFY(node.isObject());
-
-    QVERIFY(node.containsMember("null"));
-    QVERIFY(node.member("null")->isNull());
-
-    QVERIFY(node.containsMember("value"));
-    QVERIFY(node.member("value")->isValue());
-    QCOMPARE(node.member("value")->value(), QVariant(123));
-
-    QVERIFY(node.containsMember("array"));
-    QVERIFY(node.member("array")->isArray());
-    QCOMPARE(node.member("array")->count(), 1);
-    QVERIFY(node.member("array")->element(0)->isObject());
-    QCOMPARE(node.member("array")->element(0)->count(), 0);
-
-    // Check the level 1
-    QVERIFY(node.containsMember("level1"));
-    QVERIFY(node.member("level1")->isObject());
-
-    QVERIFY(node.member("level1")->containsMember("null"));
-    QVERIFY(node.nodeAtPath("level1/null")->isNull());
-
-    QVERIFY(node.nodeAtPath("level1/value")->isValue());
-    QCOMPARE(node.nodeAtPath("level1/value")->value(), QVariant(456));
-
-    // Check the level 2
-    QVERIFY(node.member("level1")->containsMember("level2"));
-    QVERIFY(node.nodeAtPath("level1/level2")->isObject());
-
-    QVERIFY(node.nodeAtPath("level1/level2")->containsMember("null"));
-    QVERIFY(node.nodeAtPath("level1/level2/null")->isNull());
-
-    QVERIFY(node.nodeAtPath("level1/level2")->containsMember("value"));
-    QVERIFY(node.nodeAtPath("level1/level2/value")->isValue());
-    QCOMPARE(node.nodeAtPath("level1/level2/value")->value(), QVariant(789));
-}
-
-// Test: Array node --------------------------------------------------------------------------------
-
-void TestConfigNode::testArrayNode()
-{
-    ConfigNode array(ConfigNode::Type::Array);
-    array.appendElement(ConfigNode(ConfigNode::Type::Value));
-    array.appendElement(ConfigNode(ConfigNode::Type::Value));
-    array.appendElement(ConfigNode(ConfigNode::Type::Null));
-
-    array.element(0)->setValue(123);
-    array.element(1)->setValue("str");
-
-    QCOMPARE(array.count(), 3);
-    QCOMPARE(array.element(0)->value(), QVariant(123));
-    QCOMPARE(array.element(1)->value(), QVariant("str"));
-    QVERIFY(array.element(2)->isNull());
-
-    std::vector<ConfigNode*> expected = {
-        array.element(0),
-        array.element(1),
-        array.element(2)
+    // Test non-Object "root" nodes
+    std::unique_ptr<ConfigNode> nonObjectRootNodes[] =
+    {
+        ConfigValueNode().clone(),
+        ConfigNodeReference().clone(),
+        ConfigDerivedObjectNode().clone()
     };
 
-    QCOMPARE(array.elements(), expected);
-
+    for (const auto &item : nonObjectRootNodes)
     {
-        ConfigNode value(ConfigNode::Type::Value);
-        value.setValue(0.5);
-        array.setElement(1, std::move(value));
+        QVERIFY(item->isRoot());
+        QCOMPARE(item->rootNode(), nullptr);
+        QCOMPARE(item->nodeAtPath(ConfigNodePath::ROOT_PATH), nullptr);
+        QCOMPARE(item->nodeAtPath(ConfigNodePath("/anything")), nullptr);
     }
-
-    QCOMPARE(array.element(0)->value(), QVariant(123));
-    QCOMPARE(array.element(1)->value(), QVariant(0.5));
-    QVERIFY(array.element(2)->isNull());
-
-    array.removeElement(1);
-    QCOMPARE(array.count(), 2);
-    QCOMPARE(array.element(0)->value(), QVariant(123));
-    QVERIFY(array.element(1)->isNull());
-
-    array.removeAll();
-    QCOMPARE(array.count(), 0);
 }
 
 // Test: Object node -------------------------------------------------------------------------------
 
 void TestConfigNode::testObjectNode()
 {
-    ConfigNode object(ConfigNode::Type::Object);
-    object.setMember("item1", ConfigNode(ConfigNode::Type::Null));
-    object.setMember("item2", ConfigNode(ConfigNode::Type::Value));
-    object.member("item2")->setValue(123);
-    object.setMember("item3", ConfigNode(ConfigNode::Type::Object));
+    ConfigObjectNode object;
+    const auto &objectConst = static_cast<const ConfigObjectNode&>(object);
+    QVERIFY(object.setMember("item1", ConfigValueNode(true)));
+    QVERIFY(object.setMember("item2", ConfigValueNode(123)));
+    QVERIFY(object.setMember("item3", ConfigObjectNode()));
+
+    QVERIFY(!object.setMember("0item", ConfigValueNode()));
 
     QCOMPARE(object.count(), 3);
-    QVERIFY(object.member("item1")->isNull());
+    QCOMPARE(object.names().toSet(), QSet<QString>({"item1", "item2", "item3"}));
+    QVERIFY(object.member("item1")->isValue());
+    QCOMPARE(object.member("item1")->toValue().value(), true);
     QVERIFY(object.member("item2")->isValue());
-    QCOMPARE(object.member("item2")->value(), QVariant(123));
+    QCOMPARE(object.member("item2")->toValue().value(), 123);
     QVERIFY(object.member("item3")->isObject());
 
-    {
-        ConfigNode item2(ConfigNode::Type::Value);
-        item2.setValue("str");
-        object.setMember("item2", std::move(item2));
-    }
+    QCOMPARE(object.member("item1"), objectConst.member("item1"));
 
-    QCOMPARE(object.member("item2")->value(), QVariant("str"));
+    QCOMPARE(object.member("item9"), nullptr);
+    QCOMPARE(objectConst.member("item9"), nullptr);
 
-    object.removeMember("item2");
+    object.setMember("item2", ConfigValueNode("str"));
+    QCOMPARE(object.member("item2")->toValue().value(), QVariant("str"));
+
+    QVERIFY(object.remove("item2"));
+    QVERIFY(!object.remove("item9"));
 
     QCOMPARE(object.count(), 2);
-    QVERIFY(object.member("item1")->isNull());
+    QCOMPARE(object.names().toSet(), QSet<QString>({"item1", "item3"}));
+    QVERIFY(object.member("item1")->isValue());
     QVERIFY(object.member("item3")->isObject());
+
+    QCOMPARE(object.name(*object.member("item1")), QString("item1"));
+    QCOMPARE(object.name(object), QString());
 
     object.removeAll();
     QCOMPARE(object.count(), 0);
+}
+
+// Test: ConfigObjectNode::apply() method ----------------------------------------------------------
+
+void TestConfigNode::testApplyObject()
+{
+    // Create 3 level node structure
+    ConfigObjectNode node;
+    node.setMember("value", ConfigValueNode(111));
+    node.setMember("valueToObject", ConfigValueNode(1));
+
+    node.setMember("level1", ConfigObjectNode());
+
+    node.member("level1")->toObject().setMember("level2", ConfigObjectNode());
+    node.nodeAtPath(ConfigNodePath("level1/level2"))->toObject().setMember("null",
+                                                                           ConfigValueNode());
+    node.nodeAtPath(ConfigNodePath("level1/level2"))->toObject().setMember("value",
+                                                                           ConfigValueNode(123));
+
+    // Create a compatible node structure for the update
+    ConfigObjectNode update;
+    update.setMember("null", ConfigValueNode());
+    update.setMember("value", ConfigValueNode(123));
+    update.setMember("valueToObject", ConfigObjectNode());
+
+    update.setMember("level1", ConfigObjectNode());
+    update.member("level1")->toObject().setMember("null", ConfigValueNode());
+    update.member("level1")->toObject().setMember("value", ConfigValueNode(456));
+
+    update.member("level1")->toObject().setMember("level2", ConfigObjectNode());
+    update.nodeAtPath(ConfigNodePath("level1/level2"))->toObject().setMember("value",
+                                                                             ConfigValueNode(789));
+
+    // Apply the update
+    node.apply(update);
+
+    // Check the root level
+    QVERIFY(node.isObject());
+
+    QVERIFY(node.contains("null"));
+    QVERIFY(node.member("null")->isValue());
+    QCOMPARE(node.member("null")->toValue().value(), QVariant());
+
+    QVERIFY(node.contains("value"));
+    QVERIFY(node.member("value")->isValue());
+    QCOMPARE(node.member("value")->toValue().value(), 123);
+
+    QVERIFY(node.contains("valueToObject"));
+    QVERIFY(node.member("valueToObject")->isObject());
+
+    // Check the level 1
+    QVERIFY(node.contains("level1"));
+    QVERIFY(node.member("level1")->isObject());
+
+    QVERIFY(node.member("level1")->toObject().contains("null"));
+    QVERIFY(node.nodeAtPath(ConfigNodePath("level1/null"))->isValue());
+    QCOMPARE(node.nodeAtPath(ConfigNodePath("level1/null"))->toValue().value(), QVariant());
+
+    QVERIFY(node.nodeAtPath(ConfigNodePath("level1/value"))->isValue());
+    QCOMPARE(node.nodeAtPath(ConfigNodePath("level1/value"))->toValue().value(), 456);
+
+    // Check the level 2
+    QVERIFY(node.member("level1")->toObject().contains("level2"));
+    QVERIFY(node.nodeAtPath(ConfigNodePath("level1/level2"))->isObject());
+
+    QVERIFY(node.nodeAtPath(ConfigNodePath("level1/level2"))->toObject().contains("null"));
+    QVERIFY(node.nodeAtPath(ConfigNodePath("level1/level2/null"))->isValue());
+    QCOMPARE(node.nodeAtPath(ConfigNodePath("level1/level2/null"))->toValue().value(), QVariant());
+
+    QVERIFY(node.nodeAtPath(ConfigNodePath("level1/level2"))->toObject().contains("value"));
+    QVERIFY(node.nodeAtPath(ConfigNodePath("level1/level2/value"))->isValue());
+    QCOMPARE(node.nodeAtPath(ConfigNodePath("level1/level2/value"))->toValue().value(), 789);
+}
+
+// Test: DerivedObject node ------------------------------------------------------------------------
+
+void TestConfigNode::testDerivedObjectNode()
+{
+    ConfigDerivedObjectNode derivedObject;
+
+    QVERIFY(derivedObject.bases().isEmpty());
+    QCOMPARE(derivedObject.config().count(), 0);
+
+    QList<ConfigNodePath> bases = {
+        ConfigNodePath("/aaa/bbb"),
+        ConfigNodePath("ccc/ddd")
+    };
+
+    derivedObject.setBases(bases);
+    QCOMPARE(derivedObject.bases(), bases);
+
+    ConfigObjectNode config;
+    config.setMember("a", ConfigValueNode(1));
+    config.setMember("b", ConfigValueNode("str"));
+
+    derivedObject.setConfig(config);
+    QCOMPARE(derivedObject.config().count(), config.count());
+
+    QVERIFY(derivedObject.config().contains("a"));
+    QVERIFY(derivedObject.config().member("a")->isValue());
+    QCOMPARE(derivedObject.config().member("a")->toValue().value(), 1);
+
+    QVERIFY(derivedObject.config().contains("b"));
+    QVERIFY(derivedObject.config().member("b")->isValue());
+    QCOMPARE(derivedObject.config().member("b")->toValue().value(), QVariant("str"));
 }
 
 // Main function -----------------------------------------------------------------------------------

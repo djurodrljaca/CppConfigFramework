@@ -15,77 +15,291 @@
 /*!
  * \file
  *
- * Contains a class for storing a configuration node
+ * Contains a class for the configuration node
  */
 
 // Own header
 #include <CppConfigFramework/ConfigNode.hpp>
 
 // C++ Config Framework includes
-#include "ConfigNodeImpl.hpp"
-#include "DebugHelper.hpp"
+#include <CppConfigFramework/ConfigDerivedObjectNode.hpp>
+#include <CppConfigFramework/ConfigNodeReference.hpp>
+#include <CppConfigFramework/ConfigObjectNode.hpp>
+#include <CppConfigFramework/ConfigValueNode.hpp>
 
 // Qt includes
-#include <QtCore/QRegularExpression>
-#include <QtCore/QStringBuilder>
-#include <QtCore/QtDebug>
 
 // System includes
 
 // Forward declarations
 
 // Macros
-#define DEBUG_METHOD(METHOD)    CPPCONFIGFRAMEWORK_DEBUG_METHOD("ConfigNode::" METHOD)
 
 // -------------------------------------------------------------------------------------------------
 
 namespace CppConfigFramework
 {
 
-ConfigNode::ConfigNode(const ConfigNode::Type type, ConfigNode *parent)
-    : m_pimpl(std::make_unique<Impl>(type, parent, this))
+ConfigNode::ConfigNode(ConfigObjectNode *parent)
+    : m_parent(parent)
 {
 }
 
 // -------------------------------------------------------------------------------------------------
 
-ConfigNode::ConfigNode(ConfigNode &&other) noexcept
-    : m_pimpl(std::move(other.m_pimpl))
+bool ConfigNode::isValue() const
 {
-    // Take ownership of the moved implementation instance
-    m_pimpl->setOwner(this);
+    return (type() == Type::Value);
 }
 
 // -------------------------------------------------------------------------------------------------
 
-ConfigNode::~ConfigNode() = default;
+bool ConfigNode::isObject() const
+{
+    return (type() == Type::Object);
+}
 
 // -------------------------------------------------------------------------------------------------
 
-ConfigNode &ConfigNode::operator=(ConfigNode &&other) noexcept
+bool ConfigNode::isNodeReference() const
 {
-    if (&other == this)
+    return (type() == Type::NodeReference);
+}
+
+// -------------------------------------------------------------------------------------------------
+
+bool ConfigNode::isDerivedObject() const
+{
+    return (type() == Type::DerivedObject);
+}
+
+// -------------------------------------------------------------------------------------------------
+
+bool ConfigNode::isRoot() const
+{
+    return (parent() == nullptr);
+}
+
+// -------------------------------------------------------------------------------------------------
+
+const ConfigObjectNode *ConfigNode::parent() const
+{
+    return m_parent;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+ConfigObjectNode *ConfigNode::parent()
+{
+    return m_parent;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+void ConfigNode::setParent(ConfigObjectNode *parent)
+{
+    m_parent = parent;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+const ConfigObjectNode *ConfigNode::rootNode() const
+{
+    // Check if this is the root node
+    if (isRoot())
     {
-        return *this;
+        return isObject() ? &toObject()
+                          : nullptr;
     }
 
-    m_pimpl = std::move(other.m_pimpl);
-    m_pimpl->setOwner(this);
-    return *this;
+    // Find the root node
+    const ConfigObjectNode *node = parent();
+
+    while (!node->isRoot())
+    {
+        node = node->parent();
+    }
+
+    return node;
 }
 
 // -------------------------------------------------------------------------------------------------
 
-ConfigNode ConfigNode::clone() const
+ConfigObjectNode *ConfigNode::rootNode()
 {
-    return impl()->clone();
+    // Check if this is the root node
+    if (isRoot())
+    {
+        return isObject() ? &toObject()
+                          : nullptr;
+    }
+
+    // Find the root node
+    ConfigObjectNode *node = parent();
+
+    while (!node->isRoot())
+    {
+        node = node->parent();
+    }
+
+    return node;
 }
 
 // -------------------------------------------------------------------------------------------------
 
-ConfigNode::Type ConfigNode::type() const
+const ConfigValueNode &ConfigNode::toValue() const
 {
-    return impl()->type();
+    Q_ASSERT(isValue());
+    return static_cast<const ConfigValueNode &>(*this);
+}
+
+// -------------------------------------------------------------------------------------------------
+
+ConfigValueNode &ConfigNode::toValue()
+{
+    Q_ASSERT(isValue());
+    return static_cast<ConfigValueNode &>(*this);
+}
+
+// -------------------------------------------------------------------------------------------------
+
+const ConfigObjectNode &ConfigNode::toObject() const
+{
+    Q_ASSERT(isObject());
+    return static_cast<const ConfigObjectNode &>(*this);
+}
+
+// -------------------------------------------------------------------------------------------------
+
+ConfigObjectNode &ConfigNode::toObject()
+{
+    Q_ASSERT(isObject());
+    return static_cast<ConfigObjectNode &>(*this);
+}
+
+// -------------------------------------------------------------------------------------------------
+
+const ConfigNodeReference &ConfigNode::toNodeReference() const
+{
+    Q_ASSERT(isNodeReference());
+    return static_cast<const ConfigNodeReference &>(*this);
+}
+
+// -------------------------------------------------------------------------------------------------
+
+ConfigNodeReference &ConfigNode::toNodeReference()
+{
+    Q_ASSERT(isNodeReference());
+    return static_cast<ConfigNodeReference &>(*this);
+}
+
+// -------------------------------------------------------------------------------------------------
+
+const ConfigDerivedObjectNode &ConfigNode::toDerivedObject() const
+{
+    Q_ASSERT(isDerivedObject());
+    return static_cast<const ConfigDerivedObjectNode &>(*this);
+}
+
+// -------------------------------------------------------------------------------------------------
+
+ConfigDerivedObjectNode &ConfigNode::toDerivedObject()
+{
+    Q_ASSERT(isDerivedObject());
+    return static_cast<ConfigDerivedObjectNode &>(*this);
+}
+
+// -------------------------------------------------------------------------------------------------
+
+ConfigNodePath ConfigNode::nodePath() const
+{
+    // Check for root node
+    if (isRoot())
+    {
+        return ConfigNodePath::ROOT_PATH;
+    }
+
+    // Get the base path
+    auto basePath = parent()->isRoot() ? ConfigNodePath::ROOT_PATH
+                                       : parent()->nodePath();
+
+    // Append the name of this node to the path
+    return basePath.append(parent()->name(*this));
+}
+
+// -------------------------------------------------------------------------------------------------
+
+const ConfigNode *ConfigNode::nodeAtPath(const ConfigNodePath &nodePath) const
+{
+    // Validate node path
+    if (!nodePath.isValid())
+    {
+        return nullptr;
+    }
+
+    // Try to find the node at the specified path
+    if (nodePath.isRoot())
+    {
+        return rootNode();
+    }
+
+    const ConfigNode *currentNode = nullptr;
+
+    if (nodePath.isAbsolute())
+    {
+        currentNode = rootNode();
+
+        if (currentNode == nullptr)
+        {
+            // Error, the root node is not an Object
+            return nullptr;
+        }
+    }
+    else
+    {
+        currentNode = this;
+    }
+
+    for (const QString &nodeName : nodePath.nodeNames())
+    {
+        // Check if parent node is referenced
+        if (nodeName == ConfigNodePath::PARENT_PATH_VALUE)
+        {
+            if (currentNode->isRoot())
+            {
+                // Error: parent of the root node was requested
+                return nullptr;
+            }
+
+            currentNode = currentNode->parent();
+            continue;
+        }
+
+        // Get the specified member node
+        if (!currentNode->isObject())
+        {
+            // Error, invalid node type
+            return nullptr;
+        }
+
+        currentNode = currentNode->toObject().member(nodeName);
+
+        if (currentNode == nullptr)
+        {
+            // Error, node was not found
+            return nullptr;
+        }
+    }
+
+    return currentNode;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+ConfigNode *ConfigNode::nodeAtPath(const ConfigNodePath &nodePath)
+{
+    auto constThis = static_cast<const ConfigNode*>(this);
+    return const_cast<ConfigNode *>(constThis->nodeAtPath(nodePath));
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -94,19 +308,9 @@ QString ConfigNode::typeToString(const ConfigNode::Type type)
 {
     switch (type)
     {
-        case Type::Null:
-        {
-            return QStringLiteral("Null");
-        }
-
         case Type::Value:
         {
             return QStringLiteral("Value");
-        }
-
-        case Type::Array:
-        {
-            return QStringLiteral("Array");
         }
 
         case Type::Object:
@@ -119,11 +323,6 @@ QString ConfigNode::typeToString(const ConfigNode::Type type)
             return QStringLiteral("NodeReference");
         }
 
-        case Type::DerivedArray:
-        {
-            return QStringLiteral("DerivedArray");
-        }
-
         case Type::DerivedObject:
         {
             return QStringLiteral("DerivedObject");
@@ -131,409 +330,6 @@ QString ConfigNode::typeToString(const ConfigNode::Type type)
     }
 
     return {};
-}
-
-// -------------------------------------------------------------------------------------------------
-
-bool ConfigNode::isNull() const
-{
-    return impl()->isNull();
-}
-
-// -------------------------------------------------------------------------------------------------
-
-bool ConfigNode::isValue() const
-{
-    return impl()->isValue();
-}
-
-// -------------------------------------------------------------------------------------------------
-
-bool ConfigNode::isArray() const
-{
-    return impl()->isArray();
-}
-
-// -------------------------------------------------------------------------------------------------
-
-bool ConfigNode::isObject() const
-{
-    return impl()->isObject();
-}
-
-// -------------------------------------------------------------------------------------------------
-
-bool ConfigNode::isNodeReference() const
-{
-    return impl()->isNodeReference();
-}
-
-// -------------------------------------------------------------------------------------------------
-
-bool ConfigNode::isDerivedArray() const
-{
-    return impl()->isDerivedArray();
-}
-
-// -------------------------------------------------------------------------------------------------
-
-bool ConfigNode::isDerivedObject() const
-{
-    return impl()->isDerivedObject();
-}
-
-// -------------------------------------------------------------------------------------------------
-
-bool ConfigNode::isRoot() const
-{
-    return impl()->isRoot();
-}
-
-// -------------------------------------------------------------------------------------------------
-
-const ConfigNode *ConfigNode::parent() const
-{
-    return impl()->parent();
-}
-
-// -------------------------------------------------------------------------------------------------
-
-ConfigNode *ConfigNode::parent()
-{
-    return impl()->parent();
-}
-
-// -------------------------------------------------------------------------------------------------
-
-void ConfigNode::setParent(ConfigNode *parent)
-{
-    impl()->setParent(parent);
-}
-
-// -------------------------------------------------------------------------------------------------
-
-const ConfigNode *ConfigNode::rootNode() const
-{
-    return impl()->rootNode();
-}
-
-// -------------------------------------------------------------------------------------------------
-
-ConfigNode *ConfigNode::rootNode()
-{
-    return impl()->rootNode();
-}
-
-// -------------------------------------------------------------------------------------------------
-
-QString ConfigNode::absoluteNodePath() const
-{
-    return impl()->absoluteNodePath();
-}
-
-// -------------------------------------------------------------------------------------------------
-
-int ConfigNode::count() const
-{
-    return impl()->count();
-}
-
-// -------------------------------------------------------------------------------------------------
-
-bool ConfigNode::containsMember(const QString &name) const
-{
-    return impl()->containsMember(name);
-}
-
-// -------------------------------------------------------------------------------------------------
-
-QStringList ConfigNode::memberNames() const
-{
-    return impl()->memberNames();
-}
-
-// -------------------------------------------------------------------------------------------------
-
-QVariant ConfigNode::value() const
-{
-    return impl()->value();
-}
-
-// -------------------------------------------------------------------------------------------------
-
-const ConfigNode *ConfigNode::element(const int index) const
-{
-    return impl()->element(index);
-}
-
-// -------------------------------------------------------------------------------------------------
-
-ConfigNode *ConfigNode::element(const int index)
-{
-    return impl()->element(index);
-}
-
-// -------------------------------------------------------------------------------------------------
-
-std::vector<const ConfigNode *> ConfigNode::elements() const
-{
-    return impl()->elements();
-}
-
-// -------------------------------------------------------------------------------------------------
-
-std::vector<ConfigNode *> ConfigNode::elements()
-{
-    return impl()->elements();
-}
-
-// -------------------------------------------------------------------------------------------------
-
-const ConfigNode *ConfigNode::member(const QString &name) const
-{
-    return impl()->member(name);
-}
-
-// -------------------------------------------------------------------------------------------------
-
-ConfigNode *ConfigNode::member(const QString &name)
-{
-    return impl()->member(name);
-}
-
-// -------------------------------------------------------------------------------------------------
-
-const ConfigNode *ConfigNode::nodeAtPath(const QString &nodePath) const
-{
-    return impl()->nodeAtPath(nodePath);
-}
-
-// -------------------------------------------------------------------------------------------------
-
-ConfigNode *ConfigNode::nodeAtPath(const QString &nodePath)
-{
-    return impl()->nodeAtPath(nodePath);
-}
-
-// -------------------------------------------------------------------------------------------------
-
-QString ConfigNode::nodeReference() const
-{
-    return impl()->nodeReference();
-}
-
-// -------------------------------------------------------------------------------------------------
-
-const std::list<ConfigNode> *ConfigNode::derivedArray() const
-{
-    return impl()->derivedArray();
-}
-
-// -------------------------------------------------------------------------------------------------
-
-std::list<ConfigNode> *ConfigNode::derivedArray()
-{
-    return impl()->derivedArray();
-}
-
-// -------------------------------------------------------------------------------------------------
-
-const DerivedObjectData *ConfigNode::derivedObject() const
-{
-    return impl()->derivedObject();
-}
-
-// -------------------------------------------------------------------------------------------------
-
-DerivedObjectData *ConfigNode::derivedObject()
-{
-    return impl()->derivedObject();
-}
-
-// -------------------------------------------------------------------------------------------------
-
-void ConfigNode::setValue(const QVariant &value)
-{
-    return impl()->setValue(value);
-}
-
-// -------------------------------------------------------------------------------------------------
-
-void ConfigNode::setElement(const int index, ConfigNode &&value)
-{
-    return impl()->setElement(index, std::move(value));
-}
-
-// -------------------------------------------------------------------------------------------------
-
-void ConfigNode::appendElement(ConfigNode &&value)
-{
-    return impl()->appendElement(std::move(value));
-}
-
-// -------------------------------------------------------------------------------------------------
-
-void ConfigNode::setMember(const QString &name, ConfigNode &&value)
-{
-    return impl()->setMember(name, std::move(value));
-}
-
-// -------------------------------------------------------------------------------------------------
-
-bool ConfigNode::applyObject(const ConfigNode &otherNode)
-{
-    return impl()->applyObject(otherNode);
-}
-
-// -------------------------------------------------------------------------------------------------
-
-void ConfigNode::setNodeReference(const QString &nodePath)
-{
-    impl()->setNodeReference(nodePath);
-}
-
-// -------------------------------------------------------------------------------------------------
-
-void ConfigNode::removeElement(const int index)
-{
-    return impl()->removeElement(index);
-}
-
-// -------------------------------------------------------------------------------------------------
-
-void ConfigNode::removeMember(const QString &name)
-{
-    return impl()->removeMember(name);
-}
-
-// -------------------------------------------------------------------------------------------------
-
-void ConfigNode::removeAll()
-{
-    return impl()->removeAll();
-}
-
-// -------------------------------------------------------------------------------------------------
-
-// TODO: move these methods either to Impl class or to some helper class
-
-bool ConfigNode::validateNodeName(const QString &name)
-{
-    const QRegularExpression regex(QStringLiteral("^[a-zA-Z][a-zA-Z0-9_]*$|^\\d+$"));
-    auto match = regex.match(name);
-
-    return match.hasMatch();
-}
-
-// -------------------------------------------------------------------------------------------------
-
-bool ConfigNode::isAbsoluteNodePath(const QString &nodePath)
-{
-    return nodePath.startsWith(QChar('/'));
-}
-
-// -------------------------------------------------------------------------------------------------
-
-bool ConfigNode::isRelativeNodePath(const QString &nodePath)
-{
-    return (!isAbsoluteNodePath(nodePath));
-}
-
-// -------------------------------------------------------------------------------------------------
-
-bool ConfigNode::validateNodePath(const QString &nodePath, const QString &currentNodePath)
-{
-    // Check for an empty
-    if (nodePath.isEmpty())
-    {
-        qDebug() << DEBUG_METHOD("validateNodePath")
-                 << "Error: an empty path is not valid";
-        return false;
-    }
-
-    // Check for "root" path
-    if (nodePath == QStringLiteral("/"))
-    {
-        return true;
-    }
-
-    // Prepend current node path if needed
-    QString fullNodePath;
-
-    if (isAbsoluteNodePath(nodePath))
-    {
-        fullNodePath = nodePath;
-    }
-    else
-    {
-        if (!isAbsoluteNodePath(currentNodePath))
-        {
-            qDebug() << DEBUG_METHOD("validateNodePath")
-                     << QString("Error: current node path [%1] must be an absolute node path "
-                                "because node path [%2] is also not an absolute path")
-                        .arg(currentNodePath, nodePath);
-            return false;
-        }
-
-        if (currentNodePath == QStringLiteral("/"))
-        {
-            fullNodePath = QChar('/') % nodePath;
-        }
-        else
-        {
-            fullNodePath = currentNodePath % QChar('/') % nodePath;
-        }
-    }
-
-    // Split the node path to individual nodes (without the leading '/')
-    const QStringList nodeNames = fullNodePath.mid(1).split(QChar('/'));
-    QStringList workingNodeNames;
-
-    for (const QString &nodeName : nodeNames)
-    {
-        if (nodeName == QStringLiteral(".."))
-        {
-            if (workingNodeNames.isEmpty())
-            {
-                qDebug() << DEBUG_METHOD("validateNodePath")
-                         << "Error: invalid access to the parent node of the root node in node "
-                            "path:" << fullNodePath;
-                return false;
-            }
-
-            workingNodeNames.removeLast();
-            continue;
-        }
-
-        if (!validateNodeName(nodeName))
-        {
-            qDebug() << DEBUG_METHOD("validateNodePath")
-                     << QString("Error: invalid node name [%1] in node path [%2]")
-                        .arg(nodeName, fullNodePath);
-            return false;
-        }
-
-        workingNodeNames.append(nodeName);
-    }
-
-    return true;
-}
-
-// -------------------------------------------------------------------------------------------------
-
-QString ConfigNode::appendNodeToPath(const QString &nodePath, const QString &nodeName)
-{
-    if (nodePath.isEmpty())
-    {
-        return nodeName;
-    }
-
-    if (nodePath.endsWith(QChar('/')))
-    {
-        return nodePath % nodeName;
-    }
-
-    return nodePath % QChar('/') % nodeName;
 }
 
 } // namespace CppConfigFramework
