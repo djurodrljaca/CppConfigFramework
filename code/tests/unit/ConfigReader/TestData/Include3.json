@@ -1,0 +1,12 @@
+{
+    "config":
+    {
+        "included_config3":
+        {
+            "xyz":
+            {
+                "value": 3
+            }
+        }
+    }
+}

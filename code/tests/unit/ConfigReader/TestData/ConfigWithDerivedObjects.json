@@ -1,0 +1,59 @@
+{
+    "includes":
+    [
+    ],
+
+    "config":
+    {
+        "root_node1":
+        {
+            "value": 1,
+            "sub_node":
+            {
+                "value": "str"
+            }
+        },
+        "root_node2":
+        {
+            "sub_node":
+            {
+                "#value":
+                [
+                    1,
+                    2,
+                    3
+                ]
+            }
+        },
+        "&derived_object1":
+        {
+            "base": "/root_node1"
+        },
+        "&derived_object2":
+        {
+            "base":
+            [
+                "/root_node1",
+                "/root_node2/sub_node"
+            ],
+            "config":
+            {
+                "sub_node":
+                {
+                    "value": "abc"
+                }
+            }
+        },
+        "&derived_object3":
+        {
+            "base":
+            [
+                "/root_node1"
+            ],
+            "config":
+            {
+                "&sub_node": "/derived_object2/sub_node"
+            }
+        }
+    }
+}
