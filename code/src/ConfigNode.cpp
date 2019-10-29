@@ -296,10 +296,24 @@ const ConfigNode *ConfigNode::nodeAtPath(const ConfigNodePath &nodePath) const
 
 // -------------------------------------------------------------------------------------------------
 
+const ConfigNode *ConfigNode::nodeAtPath(const QString &nodePath) const
+{
+    return nodeAtPath(ConfigNodePath(nodePath));
+}
+
+// -------------------------------------------------------------------------------------------------
+
 ConfigNode *ConfigNode::nodeAtPath(const ConfigNodePath &nodePath)
 {
     auto constThis = static_cast<const ConfigNode*>(this);
     return const_cast<ConfigNode *>(constThis->nodeAtPath(nodePath));
+}
+
+// -------------------------------------------------------------------------------------------------
+
+ConfigNode *ConfigNode::nodeAtPath(const QString &nodePath)
+{
+    return nodeAtPath(ConfigNodePath(nodePath));
 }
 
 // -------------------------------------------------------------------------------------------------

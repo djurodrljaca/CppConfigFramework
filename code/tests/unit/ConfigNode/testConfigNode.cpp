@@ -591,28 +591,28 @@ void TestConfigNode::testNodePath()
     QCOMPARE(level3Item1->nodeAtPath(ConfigNodePath::ROOT_PATH), &rootNode);
     QCOMPARE(level3Item2->nodeAtPath(ConfigNodePath::ROOT_PATH), &rootNode);
 
-    QCOMPARE(level3Item1->nodeAtPath(ConfigNodePath("/level1")), level1);
-    QCOMPARE(level3Item2->nodeAtPath(ConfigNodePath("/level1/level2")), level2);
+    QCOMPARE(level3Item1->nodeAtPath("/level1"), level1);
+    QCOMPARE(level3Item2->nodeAtPath("/level1/level2"), level2);
 
     // Test relative paths
-    QCOMPARE(rootNode.nodeAtPath(ConfigNodePath("/level1/..")), &rootNode);
-    QCOMPARE(rootNode.nodeAtPath(ConfigNodePath("level1/..")), &rootNode);
+    QCOMPARE(rootNode.nodeAtPath("/level1/.."), &rootNode);
+    QCOMPARE(rootNode.nodeAtPath("level1/.."), &rootNode);
 
-    QCOMPARE(rootNode.nodeAtPath(ConfigNodePath("level1")), level1);
-    QCOMPARE(rootNode.nodeAtPath(ConfigNodePath("/level1/level2/..")), level1);
-    QCOMPARE(rootNode.nodeAtPath(ConfigNodePath("/level1/../level1/level2/..")), level1);
-    QCOMPARE(rootNode.nodeAtPath(ConfigNodePath("level1/level2/..")), level1);
+    QCOMPARE(rootNode.nodeAtPath("level1"), level1);
+    QCOMPARE(rootNode.nodeAtPath("/level1/level2/.."), level1);
+    QCOMPARE(rootNode.nodeAtPath("/level1/../level1/level2/.."), level1);
+    QCOMPARE(rootNode.nodeAtPath("level1/level2/.."), level1);
 
-    QCOMPARE(level1->nodeAtPath(ConfigNodePath("..")), &rootNode);
-    QCOMPARE(level1->nodeAtPath(ConfigNodePath("level2/..")), level1);
-    QCOMPARE(level1->nodeAtPath(ConfigNodePath("level2")), level2);
+    QCOMPARE(level1->nodeAtPath(".."), &rootNode);
+    QCOMPARE(level1->nodeAtPath("level2/.."), level1);
+    QCOMPARE(level1->nodeAtPath("level2"), level2);
 
-    QCOMPARE(level3Item2->nodeAtPath(ConfigNodePath("../item1")), level3Item1);
+    QCOMPARE(level3Item2->nodeAtPath("../item1"), level3Item1);
 
-    QCOMPARE(level1->nodeAtPath(ConfigNodePath()), nullptr);
-    QCOMPARE(level1->nodeAtPath(ConfigNodePath("../..")), nullptr);
-    QCOMPARE(level3->nodeAtPath(ConfigNodePath("error")), nullptr);
-    QCOMPARE(level3->nodeAtPath(ConfigNodePath("item1/error")), nullptr);
+    QCOMPARE(level1->nodeAtPath(""), nullptr);
+    QCOMPARE(level1->nodeAtPath("../.."), nullptr);
+    QCOMPARE(level3->nodeAtPath("error"), nullptr);
+    QCOMPARE(level3->nodeAtPath("item1/error"), nullptr);
 
     // Test non-Object "root" nodes
     std::unique_ptr<ConfigNode> nonObjectRootNodes[] =
@@ -686,10 +686,8 @@ void TestConfigNode::testApplyObject()
     node.setMember("level1", ConfigObjectNode());
 
     node.member("level1")->toObject().setMember("level2", ConfigObjectNode());
-    node.nodeAtPath(ConfigNodePath("level1/level2"))->toObject().setMember("null",
-                                                                           ConfigValueNode());
-    node.nodeAtPath(ConfigNodePath("level1/level2"))->toObject().setMember("value",
-                                                                           ConfigValueNode(123));
+    node.nodeAtPath("level1/level2")->toObject().setMember("null", ConfigValueNode());
+    node.nodeAtPath("level1/level2")->toObject().setMember("value", ConfigValueNode(123));
 
     // Create a compatible node structure for the update
     ConfigObjectNode update;
@@ -702,8 +700,7 @@ void TestConfigNode::testApplyObject()
     update.member("level1")->toObject().setMember("value", ConfigValueNode(456));
 
     update.member("level1")->toObject().setMember("level2", ConfigObjectNode());
-    update.nodeAtPath(ConfigNodePath("level1/level2"))->toObject().setMember("value",
-                                                                             ConfigValueNode(789));
+    update.nodeAtPath("level1/level2")->toObject().setMember("value", ConfigValueNode(789));
 
     // Apply the update
     node.apply(update);
@@ -727,23 +724,23 @@ void TestConfigNode::testApplyObject()
     QVERIFY(node.member("level1")->isObject());
 
     QVERIFY(node.member("level1")->toObject().contains("null"));
-    QVERIFY(node.nodeAtPath(ConfigNodePath("level1/null"))->isValue());
-    QCOMPARE(node.nodeAtPath(ConfigNodePath("level1/null"))->toValue().value(), QVariant());
+    QVERIFY(node.nodeAtPath("level1/null")->isValue());
+    QCOMPARE(node.nodeAtPath("level1/null")->toValue().value(), QVariant());
 
-    QVERIFY(node.nodeAtPath(ConfigNodePath("level1/value"))->isValue());
-    QCOMPARE(node.nodeAtPath(ConfigNodePath("level1/value"))->toValue().value(), 456);
+    QVERIFY(node.nodeAtPath("level1/value")->isValue());
+    QCOMPARE(node.nodeAtPath("level1/value")->toValue().value(), 456);
 
     // Check the level 2
     QVERIFY(node.member("level1")->toObject().contains("level2"));
-    QVERIFY(node.nodeAtPath(ConfigNodePath("level1/level2"))->isObject());
+    QVERIFY(node.nodeAtPath("level1/level2")->isObject());
 
-    QVERIFY(node.nodeAtPath(ConfigNodePath("level1/level2"))->toObject().contains("null"));
-    QVERIFY(node.nodeAtPath(ConfigNodePath("level1/level2/null"))->isValue());
-    QCOMPARE(node.nodeAtPath(ConfigNodePath("level1/level2/null"))->toValue().value(), QVariant());
+    QVERIFY(node.nodeAtPath("level1/level2")->toObject().contains("null"));
+    QVERIFY(node.nodeAtPath("level1/level2/null")->isValue());
+    QCOMPARE(node.nodeAtPath("level1/level2/null")->toValue().value(), QVariant());
 
-    QVERIFY(node.nodeAtPath(ConfigNodePath("level1/level2"))->toObject().contains("value"));
-    QVERIFY(node.nodeAtPath(ConfigNodePath("level1/level2/value"))->isValue());
-    QCOMPARE(node.nodeAtPath(ConfigNodePath("level1/level2/value"))->toValue().value(), 789);
+    QVERIFY(node.nodeAtPath("level1/level2")->toObject().contains("value"));
+    QVERIFY(node.nodeAtPath("level1/level2/value")->isValue());
+    QCOMPARE(node.nodeAtPath("level1/level2/value")->toValue().value(), 789);
 }
 
 // Test: DerivedObject node ------------------------------------------------------------------------

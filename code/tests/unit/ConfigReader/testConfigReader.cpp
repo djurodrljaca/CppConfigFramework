@@ -161,7 +161,7 @@ void TestConfigReader::testReadConfigWithNodeReference()
     // Check "/root_node2/ref_value1
     {
         // References "/root_node1/value" node
-        const auto *ref_value1 = config->nodeAtPath(ConfigNodePath("/root_node2/ref_value1"));
+        const auto *ref_value1 = config->nodeAtPath("/root_node2/ref_value1");
         QVERIFY(ref_value1 != nullptr);
         QVERIFY(ref_value1->isValue());
         QCOMPARE(ref_value1->toValue().value(), 1);
@@ -170,7 +170,7 @@ void TestConfigReader::testReadConfigWithNodeReference()
     // Check "/root_node2/ref_value2
     {
         // References "/root_node1/sub_node" node
-        const auto *ref_value2 = config->nodeAtPath(ConfigNodePath("/root_node2/ref_value2"));
+        const auto *ref_value2 = config->nodeAtPath("/root_node2/ref_value2");
         QVERIFY(ref_value2 != nullptr);
         QVERIFY(ref_value2->isObject());
 
@@ -186,7 +186,7 @@ void TestConfigReader::testReadConfigWithNodeReference()
     // Check "/root_node2/ref_value3
     {
         // References "/root_node2/sub_node/value" node
-        const auto *ref_value3 = config->nodeAtPath(ConfigNodePath("/root_node2/ref_value3"));
+        const auto *ref_value3 = config->nodeAtPath("/root_node2/ref_value3");
         QVERIFY(ref_value3 != nullptr);
         QVERIFY(ref_value3->isValue());
         QCOMPARE(ref_value3->toValue().value(), QVariantList({1, 2, 3}));
@@ -206,7 +206,7 @@ void TestConfigReader::testReadConfigWithDerivedObject()
 
     // Check "/derived_object1"
     {
-        const auto *derived_object1 = config->nodeAtPath(ConfigNodePath("/derived_object1"));
+        const auto *derived_object1 = config->nodeAtPath("/derived_object1");
         QVERIFY(derived_object1 != nullptr);
         QVERIFY(derived_object1->isObject());
         QCOMPARE(derived_object1->toObject().count(), 2);
@@ -237,7 +237,7 @@ void TestConfigReader::testReadConfigWithDerivedObject()
 
     // Check "/derived_object2"
     {
-        const auto *derived_object2 = config->nodeAtPath(ConfigNodePath("/derived_object2"));
+        const auto *derived_object2 = config->nodeAtPath("/derived_object2");
         QVERIFY(derived_object2 != nullptr);
         QVERIFY(derived_object2->isObject());
         QCOMPARE(derived_object2->toObject().count(), 2);
@@ -268,7 +268,7 @@ void TestConfigReader::testReadConfigWithDerivedObject()
 
     // Check "/derived_object3"
     {
-        const auto *derived_object3 = config->nodeAtPath(ConfigNodePath("/derived_object3"));
+        const auto *derived_object3 = config->nodeAtPath("/derived_object3");
         QVERIFY(derived_object3 != nullptr);
         QVERIFY(derived_object3->isObject());
         QCOMPARE(derived_object3->toObject().count(), 2);
@@ -313,7 +313,7 @@ void TestConfigReader::testReadConfigWithIncludes()
 
     // Check "/included_config1"
     {
-        const auto *included_config1 = config->nodeAtPath(ConfigNodePath("/included_config1"));
+        const auto *included_config1 = config->nodeAtPath("/included_config1");
         QVERIFY(included_config1 != nullptr);
         QVERIFY(included_config1->isObject());
         QCOMPARE(included_config1->toObject().count(), 2);
@@ -337,8 +337,7 @@ void TestConfigReader::testReadConfigWithIncludes()
 
     // Check "/included_config2_subnode"
     {
-        const auto *included_config2_subnode =
-                config->nodeAtPath(ConfigNodePath("/included_config2_subnode"));
+        const auto *included_config2_subnode = config->nodeAtPath("/included_config2_subnode");
         QVERIFY(included_config2_subnode != nullptr);
         QVERIFY(included_config2_subnode->isObject());
         QCOMPARE(included_config2_subnode->toObject().count(), 2);
@@ -363,7 +362,7 @@ void TestConfigReader::testReadConfigWithIncludes()
 
     // Check "/included_value3"
     {
-        const auto *included_value3 = config->nodeAtPath(ConfigNodePath("/included_value3"));
+        const auto *included_value3 = config->nodeAtPath("/included_value3");
         QVERIFY(included_value3 != nullptr);
         QVERIFY(included_value3->isValue());
         QCOMPARE(included_value3->toValue().value(), 3);
