@@ -220,11 +220,23 @@ public:
      */
     ConfigNodePath nodePath() const;
 
-    //! Gets the member at the specified node path
+    /*!
+     * Gets the node at the specified node path
+     *
+     * \param   nodePath    Node Path
+     *
+     * \return  Node at specified node path or null if node was not found
+     */
     const ConfigNode *nodeAtPath(const ConfigNodePath &nodePath) const;
 
     //! \copydoc    ConfigNode::nodeAtPath()
+    const ConfigNode *nodeAtPath(const QString &nodePath) const;
+
+    //! \copydoc    ConfigNode::nodeAtPath()
     ConfigNode *nodeAtPath(const ConfigNodePath &nodePath);
+
+    //! \copydoc    ConfigNode::nodeAtPath()
+    ConfigNode *nodeAtPath(const QString &nodePath);
 
     /*!
      * Converts the Type value to string
@@ -239,14 +251,14 @@ protected:
     /*!
      * Move constructor
      *
-     * \param   other   Node path to move
+     * \param   other   Instance to move
      */
     ConfigNode(ConfigNode &&other) noexcept = default;
 
     /*!
      * Move assignment operator
      *
-     * \param   other   Node path to move assign
+     * \param   other   Instance to move assign
      *
      * \return  Reference to this instance after the assignment is made
      */

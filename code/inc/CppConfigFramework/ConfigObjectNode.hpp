@@ -56,7 +56,7 @@ public:
     /*!
      * Move constructor
      *
-     * \param   other   Node path to move
+     * \param   other   Instance to move
      */
     ConfigObjectNode(ConfigObjectNode &&other) noexcept;
 
@@ -69,7 +69,7 @@ public:
     /*!
      * Move assignment operator
      *
-     * \param   other   Node path to move assign
+     * \param   other   Instance to move assign
      *
      * \return  Reference to this instance after the assignment is made
      */
