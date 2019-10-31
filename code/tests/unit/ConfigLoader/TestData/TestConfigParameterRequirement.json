@@ -1,0 +1,12 @@
+{
+    "config":
+    {
+        "configWithParam":
+        {
+            "param": true
+        },
+        "configWithoutParam":
+        {
+        }
+    }
+}

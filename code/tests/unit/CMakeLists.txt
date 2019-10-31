@@ -37,6 +37,7 @@ endfunction()
 # --------------------------------------------------------------------------------------------------
 # Unit tests
 # --------------------------------------------------------------------------------------------------
+add_subdirectory(ConfigLoader)
 add_subdirectory(ConfigNode)
 add_subdirectory(ConfigNodePath)
 add_subdirectory(ConfigReader)

@@ -24,18 +24,24 @@ find_package(Qt5Core REQUIRED)
 # --------------------------------------------------------------------------------------------------
 add_library(CppConfigFramework SHARED
     inc/CppConfigFramework/ConfigDerivedObjectNode.hpp
+    inc/CppConfigFramework/ConfigLoader.hpp
     inc/CppConfigFramework/ConfigNode.hpp
     inc/CppConfigFramework/ConfigNodePath.hpp
     inc/CppConfigFramework/ConfigNodeReference.hpp
     inc/CppConfigFramework/ConfigObjectNode.hpp
+    inc/CppConfigFramework/ConfigParameterLoader.hpp
+    inc/CppConfigFramework/ConfigParameterValidator.hpp
     inc/CppConfigFramework/ConfigReader.hpp
     inc/CppConfigFramework/ConfigValueNode.hpp
+    inc/CppConfigFramework/HashFunctions.hpp
 
     src/ConfigDerivedObjectNode.cpp
+    src/ConfigLoader.cpp
     src/ConfigNode.cpp
     src/ConfigNodePath.cpp
     src/ConfigNodeReference.cpp
     src/ConfigObjectNode.cpp
+    src/ConfigParameterLoader.cpp
     src/ConfigReader.cpp
     src/ConfigValueNode.cpp
     )
