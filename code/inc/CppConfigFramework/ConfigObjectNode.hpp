@@ -23,6 +23,7 @@
 
 // C++ Config Framework includes
 #include <CppConfigFramework/ConfigNode.hpp>
+#include <CppConfigFramework/HashFunctions.hpp>
 
 // Qt includes
 
@@ -167,17 +168,8 @@ public:
     void apply(const ConfigObjectNode &other);
 
 private:
-    //! Executable object for calculation of a hash from a QString
-    struct StringHash
-    {
-        inline std::size_t operator()(const QString &value) const { return qHash(value); }
-    };
-
-    //! Alias for Object node data
-    using ObjectMap = std::unordered_map<QString, std::unique_ptr<ConfigNode>, StringHash>;
-
     //! Configuration node members
-    ObjectMap m_members;
+    std::unordered_map<QString, std::unique_ptr<ConfigNode>> m_members;
 };
 
 } // namespace CppConfigFramework
