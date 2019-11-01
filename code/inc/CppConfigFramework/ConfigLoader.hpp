@@ -73,6 +73,7 @@ public:
      * \param   path    Node path to the configuration node for this configuration structure
      * \param   config  Configuration node from which this configuration structure should be loaded
      *
+     * \param[out]  loaded  Optional output for the loading result
      * \param[out]  error   Optional output for the error string
      *
      * \retval  true    Success
@@ -80,11 +81,13 @@ public:
      */
     bool loadOptionalConfigAtPath(const ConfigNodePath &path,
                                   const ConfigObjectNode &config,
+                                  bool *loaded = nullptr,
                                   QString *error = nullptr);
 
     //! \copydoc    ConfigLoader::loadOptionalConfigAtPath()
     bool loadOptionalConfigAtPath(const QString &path,
                                   const ConfigObjectNode &config,
+                                  bool *loaded = nullptr,
                                   QString *error = nullptr);
 
     /*!
@@ -112,6 +115,7 @@ public:
      * \param   config          Configuration node from which this configuration structure should be
      *                          loaded
      *
+     * \param[out]  loaded  Optional output for the loading result
      * \param[out]  error   Optional output for the error string
      *
      * \retval  true    Success
@@ -119,9 +123,8 @@ public:
      */
     bool loadOptionalConfig(const QString &parameterName,
                             const ConfigObjectNode &config,
+                            bool *loaded = nullptr,
                             QString *error = nullptr);
-
-    // TODO: create static variants of "optional" that returns a unique_ptr?
 
 protected:
     /*!

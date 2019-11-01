@@ -87,6 +87,7 @@ bool ConfigLoader::loadConfigAtPath(const QString &path,
 
 bool ConfigLoader::loadOptionalConfigAtPath(const ConfigNodePath &path,
                                             const ConfigObjectNode &config,
+                                            bool *loaded,
                                             QString *error)
 {
     // Validate node path
@@ -100,6 +101,11 @@ bool ConfigLoader::loadOptionalConfigAtPath(const ConfigNodePath &path,
         {
             *error = errorString;
         }
+
+        if (loaded != nullptr)
+        {
+            *loaded = false;
+        }
         return false;
     }
 
@@ -109,20 +115,31 @@ bool ConfigLoader::loadOptionalConfigAtPath(const ConfigNodePath &path,
     if (node == nullptr)
     {
         // Node was not found, skip it
+        if (loaded != nullptr)
+        {
+            *loaded = false;
+        }
         return true;
     }
 
     // Load the configuration structure from the configuration node
-    return loadConfigFromNode(*node, error);
+    const bool result = loadConfigFromNode(*node, error);
+
+    if (loaded != nullptr)
+    {
+        *loaded = result;
+    }
+    return result;
 }
 
 // -------------------------------------------------------------------------------------------------
 
 bool ConfigLoader::loadOptionalConfigAtPath(const QString &path,
                                             const ConfigObjectNode &config,
+                                            bool *loaded,
                                             QString *error)
 {
-    return loadOptionalConfigAtPath(ConfigNodePath(path), config, error);
+    return loadOptionalConfigAtPath(ConfigNodePath(path), config, loaded, error);
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -150,6 +167,7 @@ bool ConfigLoader::loadConfig(const QString &parameterName,
 
 bool ConfigLoader::loadOptionalConfig(const QString &parameterName,
                                       const ConfigObjectNode &config,
+                                      bool *loaded,
                                       QString *error)
 {
     if (!ConfigNodePath::validateNodeName(parameterName))
@@ -164,7 +182,7 @@ bool ConfigLoader::loadOptionalConfig(const QString &parameterName,
         return false;
     }
 
-    return loadOptionalConfigAtPath(ConfigNodePath(parameterName), config, error);
+    return loadOptionalConfigAtPath(ConfigNodePath(parameterName), config, loaded, error);
 }
 
 // -------------------------------------------------------------------------------------------------
