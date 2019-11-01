@@ -135,6 +135,7 @@ void TestConfigLoader::testLoadOptionalConfigAtPath()
 {
     QFETCH(QString, path);
     QFETCH(bool, expectedResult);
+    QFETCH(bool, expectedResultLoaded);
     QFETCH(int, expectedResultValue);
 
     // Read config file
@@ -145,10 +146,13 @@ void TestConfigLoader::testLoadOptionalConfigAtPath()
     QVERIFY(config);
 
     TestRequiredConfigParameter configStructure;
+    bool loaded;
     QString error;
-    QCOMPARE(configStructure.loadOptionalConfigAtPath(path, *config, &error), expectedResult);
+    QCOMPARE(configStructure.loadOptionalConfigAtPath(path, *config, &loaded, &error),
+             expectedResult);
     qDebug() << "TestConfigLoader::testLoadOptionalConfigAtPath: error string:" << error;
 
+    QCOMPARE(loaded, expectedResultLoaded);
     QCOMPARE(configStructure.param, expectedResultValue);
 }
 
@@ -156,20 +160,22 @@ void TestConfigLoader::testLoadOptionalConfigAtPath_data()
 {
     QTest::addColumn<QString>("path");
     QTest::addColumn<bool>("expectedResult");
+    QTest::addColumn<bool>("expectedResultLoaded");
     QTest::addColumn<int>("expectedResultValue");
 
-    QTest::newRow("Absolute path: exists") << "/level1/level2/actualConfig" << true << 1;
-    QTest::newRow("Relative path: exists") << "level1/level2/actualConfig" << true << 1;
+    QTest::newRow("Absolute path: exists") << "/level1/level2/actualConfig" << true << true << 1;
+    QTest::newRow("Relative path: exists") << "level1/level2/actualConfig" << true << true << 1;
 
-    QTest::newRow("Absolute path: missing") << "/level1/level2/missingConfig" << true << 0;
-    QTest::newRow("Relative path: missing") << "level1/level2/missingConfig" << true << 0;
+    QTest::newRow("Absolute path: missing") << "/level1/level2/missingConfig" << true << false << 0;
+    QTest::newRow("Relative path: missing") << "level1/level2/missingConfig" << true << false << 0;
 
-    QTest::newRow("Absolute path: invalid") << "/level1/level2/123" << false << 0;
-    QTest::newRow("Relative path: invalid") << "level1/level2/123" << false << 0;
+    QTest::newRow("Absolute path: invalid") << "/level1/level2/123" << false << false << 0;
+    QTest::newRow("Relative path: invalid") << "level1/level2/123" << false << false << 0;
 
-    QTest::newRow("Invalid config node") << "/level1/level2/invalidConfigNode" << false << 0;
+    QTest::newRow("Invalid config node")
+            << "/level1/level2/invalidConfigNode" << false << false << 0;
     QTest::newRow("Invalid config parameter value range")
-            << "/level1/level2/configWithInvalidParamValueRange" << false << -100;
+            << "/level1/level2/configWithInvalidParamValueRange" << false << false << -100;
 }
 
 // Test: loadConfig() method -----------------------------------------------------------------------
@@ -217,6 +223,7 @@ void TestConfigLoader::testLoadOptionalConfig()
 {
     QFETCH(QString, parameterName);
     QFETCH(bool, expectedResult);
+    QFETCH(bool, expectedResultLoaded);
     QFETCH(int, expectedResultValue);
 
     // Read config file
@@ -227,11 +234,13 @@ void TestConfigLoader::testLoadOptionalConfig()
     QVERIFY(config);
 
     TestRequiredConfigParameter configStructure;
+    bool loaded;
     QString error;
-    QCOMPARE(configStructure.loadOptionalConfig(parameterName, *config, &error),
+    QCOMPARE(configStructure.loadOptionalConfig(parameterName, *config, &loaded, &error),
              expectedResult);
     qDebug() << "TestConfigLoader::testLoadOptionalConfig: error string:" << error;
 
+    QCOMPARE(loaded, expectedResultLoaded);
     QCOMPARE(configStructure.param, expectedResultValue);
 }
 
@@ -239,14 +248,15 @@ void TestConfigLoader::testLoadOptionalConfig_data()
 {
     QTest::addColumn<QString>("parameterName");
     QTest::addColumn<bool>("expectedResult");
+    QTest::addColumn<bool>("expectedResultLoaded");
     QTest::addColumn<int>("expectedResultValue");
 
-    QTest::newRow("Config exists") << "actualConfig" << true << 1;
-    QTest::newRow("Missing config") << "missingConfig" << true << 0;
-    QTest::newRow("Invalid config") << "123" << false << 0;
-    QTest::newRow("Invalid config node") << "invalidConfigNode" << false << 0;
+    QTest::newRow("Config exists") << "actualConfig" << true << true << 1;
+    QTest::newRow("Missing config") << "missingConfig" << true << false << 0;
+    QTest::newRow("Invalid config") << "123" << false << false << 0;
+    QTest::newRow("Invalid config node") << "invalidConfigNode" << false << false << 0;
     QTest::newRow("Invalid config parameter value range")
-            << "configWithInvalidParamValueRange" << false << -100;
+            << "configWithInvalidParamValueRange" << false << false << -100;
 }
 
 // Test: load a config to a config class -----------------------------------------------------------
