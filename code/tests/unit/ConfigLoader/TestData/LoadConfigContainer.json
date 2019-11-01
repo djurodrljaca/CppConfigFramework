@@ -1,0 +1,48 @@
+{
+    "config":
+    {
+        "actualConfig":
+        {
+            "container":
+            {
+                "aaa":
+                {
+                    "param": 1
+                },
+                "bbb":
+                {
+                    "param": 2
+                },
+                "ccc":
+                {
+                    "param": 3
+                }
+            }
+        },
+        "missingConfig":
+        {
+        },
+        "configWithInvalidNodeType":
+        {
+            "container": 1
+        },
+        "configWithInvalidItem":
+        {
+            "container":
+            {
+                "aaa":
+                {
+                    "param": 1
+                },
+                "bbb":
+                {
+                    "param": "str"
+                },
+                "ccc":
+                {
+                    "param": 3
+                }
+            }
+        }
+    }
+}

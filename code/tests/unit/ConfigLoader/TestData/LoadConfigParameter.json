@@ -1,0 +1,20 @@
+{
+    "config":
+    {
+        "configWithParam":
+        {
+            "param": 1
+        },
+        "configWithoutParam":
+        {
+        },
+        "configWithInvalidNodeType":
+        {
+            "param": {}
+        },
+        "configWithInvalidParam":
+        {
+            "param": "abc"
+        }
+    }
+}
