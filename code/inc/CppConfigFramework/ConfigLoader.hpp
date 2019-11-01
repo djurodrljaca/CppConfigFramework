@@ -178,6 +178,7 @@ protected:
      * \param   config          Configuration node from which this configuration structure should be
      *                          loaded
      *
+     * \param[out]  loaded  Optional output for the loading result
      * \param[out]  error   Optional output for the error string
      *
      * \return  Configuration parameter loading result
@@ -187,6 +188,7 @@ protected:
             T *parameterValue,
             const QString &parameterName,
             const ConfigObjectNode &config,
+            bool *loaded = nullptr,
             QString *error = nullptr);
 
     /*!
@@ -199,6 +201,7 @@ protected:
      *                          loaded
      * \param   validator       Validator for the loaded parameter value
      *
+     * \param[out]  loaded  Optional output for the loading result
      * \param[out]  error   Optional output for the error string
      *
      * \return  Configuration parameter loading result
@@ -209,6 +212,7 @@ protected:
             const QString &parameterName,
             const ConfigObjectNode &config,
             const ConfigParameterValidator<T> &validator,
+            bool *loaded = nullptr,
             QString *error = nullptr);
 
     // TODO: load config container
@@ -355,12 +359,14 @@ bool ConfigLoader::loadOptionalConfigParameter(
         T *parameterValue,
         const QString &parameterName,
         const ConfigObjectNode &config,
+        bool *loaded,
         QString *error)
 {
     return loadOptionalConfigParameter(parameterValue,
                                        parameterName,
                                        config,
                                        ConfigParameterValidator<T>(),
+                                       loaded,
                                        error);
 }
 
@@ -372,6 +378,7 @@ bool ConfigLoader::loadOptionalConfigParameter(
         const QString &parameterName,
         const ConfigObjectNode &config,
         const ConfigParameterValidator<T> &validator,
+        bool *loaded,
         QString *error)
 {
     // Validate parameters
@@ -388,6 +395,11 @@ bool ConfigLoader::loadOptionalConfigParameter(
         {
             *error = errorString;
         }
+
+        if (loaded != nullptr)
+        {
+            *loaded = false;
+        }
         return false;
     }
 
@@ -397,11 +409,21 @@ bool ConfigLoader::loadOptionalConfigParameter(
     if (node == nullptr)
     {
         // Node was not found, skip it
+        if (loaded != nullptr)
+        {
+            *loaded = false;
+        }
         return true;
     }
 
     // Load configuration parameter from the configuration node
-    return loadConfigParameterFromNode(parameterValue, *node, validator, error);
+    const bool result = loadConfigParameterFromNode(parameterValue, *node, validator, error);
+
+    if (loaded != nullptr)
+    {
+        *loaded = result;
+    }
+    return result;
 }
 
 // -------------------------------------------------------------------------------------------------

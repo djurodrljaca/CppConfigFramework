@@ -19,8 +19,8 @@
  */
 
 // C++ Config Framework includes
+#include <CppConfigFramework/ConfigLoader.hpp>
 #include <CppConfigFramework/ConfigReader.hpp>
-#include "TestClasses.hpp"
 
 // Qt includes
 #include <QtCore/QDebug>
@@ -33,9 +33,55 @@
 
 // Macros
 
-// Test class declaration --------------------------------------------------------------------------
+// Test config classes -----------------------------------------------------------------------------
 
 using namespace CppConfigFramework;
+
+class TestRequiredConfigParameter : public ConfigLoader
+{
+public:
+    int param = 0;
+
+private:
+    bool loadConfigParameters(const ConfigObjectNode &config, QString *error) override
+    {
+        return loadRequiredConfigParameter(&param,
+                                           "param",
+                                           config,
+                                           ConfigParameterRangeValidator<int>(-50, 50),
+                                           error);
+    }
+
+    QString validateConfig() const override
+    {
+        if (param > 20)
+        {
+            return "validateConfig error";
+        }
+
+        return QString();
+    }
+};
+
+class TestOptionalConfigParameter : public ConfigLoader
+{
+public:
+    int param = 0;
+
+private:
+    bool loadConfigParameters(const ConfigObjectNode &config, QString *error) override
+    {
+        bool loaded = false;
+        return loadOptionalConfigParameter(&param,
+                                           "param",
+                                           config,
+                                           ConfigParameterRangeValidator<int>(-50, 50),
+                                           &loaded,
+                                           error);
+    }
+};
+
+// Test class declaration --------------------------------------------------------------------------
 
 class TestConfigLoader : public QObject
 {
@@ -146,7 +192,7 @@ void TestConfigLoader::testLoadOptionalConfigAtPath()
     QVERIFY(config);
 
     TestRequiredConfigParameter configStructure;
-    bool loaded;
+    bool loaded = false;
     QString error;
     QCOMPARE(configStructure.loadOptionalConfigAtPath(path, *config, &loaded, &error),
              expectedResult);
@@ -234,7 +280,7 @@ void TestConfigLoader::testLoadOptionalConfig()
     QVERIFY(config);
 
     TestRequiredConfigParameter configStructure;
-    bool loaded;
+    bool loaded = false;
     QString error;
     QCOMPARE(configStructure.loadOptionalConfig(parameterName, *config, &loaded, &error),
              expectedResult);
