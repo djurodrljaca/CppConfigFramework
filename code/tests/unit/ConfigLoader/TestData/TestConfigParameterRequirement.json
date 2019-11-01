@@ -3,7 +3,7 @@
     {
         "configWithParam":
         {
-            "param": true
+            "param": 1
         },
         "configWithoutParam":
         {

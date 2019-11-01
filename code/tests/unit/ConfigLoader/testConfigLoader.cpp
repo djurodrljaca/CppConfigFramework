@@ -51,6 +51,18 @@ private slots:
     void cleanup();
 
     // Test functions
+    void testLoadConfigAtPath();
+    void testLoadConfigAtPath_data();
+
+    void testLoadOptionalConfigAtPath();
+    void testLoadOptionalConfigAtPath_data();
+
+    void testLoadConfig();
+    void testLoadConfig_data();
+
+    void testLoadOptionalConfig();
+    void testLoadOptionalConfig_data();
+
     void testConfigParameterRequirement();
 };
 
@@ -74,6 +86,169 @@ void TestConfigLoader::cleanup()
 {
 }
 
+// Test: loadConfigAtPath() method -----------------------------------------------------------------
+
+void TestConfigLoader::testLoadConfigAtPath()
+{
+    QFETCH(QString, path);
+    QFETCH(bool, expectedResult);
+    QFETCH(int, expectedResultValue);
+
+    // Read config file
+    const QString configFilePath(QStringLiteral(":/TestData/TestLoadConfigAtPath.json"));
+    ConfigReader configReader;
+
+    auto config = configReader.read(configFilePath);
+    QVERIFY(config);
+
+    TestRequiredConfigParameter configStructure;
+    QString error;
+    QCOMPARE(configStructure.loadConfigAtPath(path, *config, &error), expectedResult);
+    qDebug() << "TestConfigLoader::testLoadConfigAtPath: error string:" << error;
+
+    QCOMPARE(configStructure.param, expectedResultValue);
+}
+
+void TestConfigLoader::testLoadConfigAtPath_data()
+{
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<bool>("expectedResult");
+    QTest::addColumn<int>("expectedResultValue");
+
+    QTest::newRow("Absolute path exists") << "/level1/level2/actualConfig" << true << 1;
+    QTest::newRow("Relative path exists") << "level1/level2/actualConfig" << true << 1;
+
+    QTest::newRow("Absolute path: missing") << "/level1/level2/missingConfig" << false << 0;
+    QTest::newRow("Relative path: missing") << "level1/level2/missingConfig" << false << 0;
+
+    QTest::newRow("Absolute path: invalid") << "/level1/level2/123" << false << 0;
+    QTest::newRow("Relative path: invalid") << "level1/level2/123" << false << 0;
+
+    QTest::newRow("Invalid config node") << "/level1/level2/invalidConfigNode" << false << 0;
+    QTest::newRow("Invalid config parameter value range")
+            << "/level1/level2/configWithInvalidParamValueRange" << false << -100;
+}
+
+// Test: loadOptionalConfigAtPath() method ---------------------------------------------------------
+
+void TestConfigLoader::testLoadOptionalConfigAtPath()
+{
+    QFETCH(QString, path);
+    QFETCH(bool, expectedResult);
+    QFETCH(int, expectedResultValue);
+
+    // Read config file
+    const QString configFilePath(QStringLiteral(":/TestData/TestLoadConfigAtPath.json"));
+    ConfigReader configReader;
+
+    auto config = configReader.read(configFilePath);
+    QVERIFY(config);
+
+    TestRequiredConfigParameter configStructure;
+    QString error;
+    QCOMPARE(configStructure.loadOptionalConfigAtPath(path, *config, &error), expectedResult);
+    qDebug() << "TestConfigLoader::testLoadOptionalConfigAtPath: error string:" << error;
+
+    QCOMPARE(configStructure.param, expectedResultValue);
+}
+
+void TestConfigLoader::testLoadOptionalConfigAtPath_data()
+{
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<bool>("expectedResult");
+    QTest::addColumn<int>("expectedResultValue");
+
+    QTest::newRow("Absolute path: exists") << "/level1/level2/actualConfig" << true << 1;
+    QTest::newRow("Relative path: exists") << "level1/level2/actualConfig" << true << 1;
+
+    QTest::newRow("Absolute path: missing") << "/level1/level2/missingConfig" << true << 0;
+    QTest::newRow("Relative path: missing") << "level1/level2/missingConfig" << true << 0;
+
+    QTest::newRow("Absolute path: invalid") << "/level1/level2/123" << false << 0;
+    QTest::newRow("Relative path: invalid") << "level1/level2/123" << false << 0;
+
+    QTest::newRow("Invalid config node") << "/level1/level2/invalidConfigNode" << false << 0;
+    QTest::newRow("Invalid config parameter value range")
+            << "/level1/level2/configWithInvalidParamValueRange" << false << -100;
+}
+
+// Test: loadConfig() method -----------------------------------------------------------------------
+
+void TestConfigLoader::testLoadConfig()
+{
+    QFETCH(QString, parameterName);
+    QFETCH(bool, expectedResult);
+    QFETCH(int, expectedResultValue);
+
+    // Read config file
+    const QString configFilePath(QStringLiteral(":/TestData/TestLoadConfig.json"));
+    ConfigReader configReader;
+
+    auto config = configReader.read(configFilePath);
+    QVERIFY(config);
+
+    TestRequiredConfigParameter configStructure;
+    QString error;
+    QCOMPARE(configStructure.loadConfig(parameterName, *config, &error), expectedResult);
+    qDebug() << "TestConfigLoader::testLoadConfig: error string:" << error;
+
+    QCOMPARE(configStructure.param, expectedResultValue);
+}
+
+void TestConfigLoader::testLoadConfig_data()
+{
+    QTest::addColumn<QString>("parameterName");
+    QTest::addColumn<bool>("expectedResult");
+    QTest::addColumn<int>("expectedResultValue");
+
+    QTest::newRow("Config exists") << "actualConfig" << true << 1;
+    QTest::newRow("Missing config") << "missingConfig"  << false << 0;
+    QTest::newRow("Invalid config") << "123" << false << 0;
+    QTest::newRow("Invalid config node") << "invalidConfigNode" << false << 0;
+    QTest::newRow("Invalid config parameter value range")
+            << "configWithInvalidParamValueRange" << false << -100;
+    QTest::newRow("Invalid config parameter value")
+            << "configWithInvalidParamValue" << false << 30;
+}
+
+// Test: loadOptionalConfig() method ---------------------------------------------------------------
+
+void TestConfigLoader::testLoadOptionalConfig()
+{
+    QFETCH(QString, parameterName);
+    QFETCH(bool, expectedResult);
+    QFETCH(int, expectedResultValue);
+
+    // Read config file
+    const QString configFilePath(QStringLiteral(":/TestData/TestLoadConfig.json"));
+    ConfigReader configReader;
+
+    auto config = configReader.read(configFilePath);
+    QVERIFY(config);
+
+    TestRequiredConfigParameter configStructure;
+    QString error;
+    QCOMPARE(configStructure.loadOptionalConfig(parameterName, *config, &error),
+             expectedResult);
+    qDebug() << "TestConfigLoader::testLoadOptionalConfig: error string:" << error;
+
+    QCOMPARE(configStructure.param, expectedResultValue);
+}
+
+void TestConfigLoader::testLoadOptionalConfig_data()
+{
+    QTest::addColumn<QString>("parameterName");
+    QTest::addColumn<bool>("expectedResult");
+    QTest::addColumn<int>("expectedResultValue");
+
+    QTest::newRow("Config exists") << "actualConfig" << true << 1;
+    QTest::newRow("Missing config") << "missingConfig" << true << 0;
+    QTest::newRow("Invalid config") << "123" << false << 0;
+    QTest::newRow("Invalid config node") << "invalidConfigNode" << false << 0;
+    QTest::newRow("Invalid config parameter value range")
+            << "configWithInvalidParamValueRange" << false << -100;
+}
+
 // Test: load a config to a config class -----------------------------------------------------------
 
 void TestConfigLoader::testConfigParameterRequirement()
@@ -90,14 +265,11 @@ void TestConfigLoader::testConfigParameterRequirement()
         TestRequiredConfigParameter required;
         TestOptionalConfigParameter optional;
 
-        required.param = false;
-        optional.param = false;
-
         QCOMPARE(required.loadConfig("configWithParam", *config), true);
         QCOMPARE(optional.loadConfig("configWithParam", *config), true);
 
-        QCOMPARE(required.param, true);
-        QCOMPARE(optional.param, true);
+        QCOMPARE(required.param, 1);
+        QCOMPARE(optional.param, 1);
     }
 
     // Load config without "param" parameter
@@ -105,24 +277,21 @@ void TestConfigLoader::testConfigParameterRequirement()
         TestRequiredConfigParameter required;
         TestOptionalConfigParameter optional;
 
-        required.param = false;
-        optional.param = false;
-
         QCOMPARE(required.loadConfig("configWithoutParam", *config), false);
         QCOMPARE(optional.loadConfig("configWithoutParam", *config), true);
 
-        QCOMPARE(required.param, false);
-        QCOMPARE(optional.param, false);
+        QCOMPARE(required.param, 0);
+        QCOMPARE(optional.param, 0);
 
         // Make sure that the values stay unchaged
-        required.param = true;
-        optional.param = true;
+        required.param = 11;
+        optional.param = 11;
 
         QCOMPARE(required.loadConfig("configWithoutParam", *config), false);
         QCOMPARE(optional.loadConfig("configWithoutParam", *config), true);
 
-        QCOMPARE(required.param, true);
-        QCOMPARE(optional.param, true);
+        QCOMPARE(required.param, 11);
+        QCOMPARE(optional.param, 11);
     }
 }
 
