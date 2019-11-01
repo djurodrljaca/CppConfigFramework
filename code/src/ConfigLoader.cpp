@@ -133,7 +133,7 @@ bool ConfigLoader::loadConfig(const QString &parameterName,
 {
     if (!ConfigNodePath::validateNodeName(parameterName))
     {
-        const QString errorString = QStringLiteral("Parameter name [%1] is not valid!");
+        const QString errorString = QString("Parameter name [%1] is not valid!").arg(parameterName);
         handleError(errorString);
 
         if (error != nullptr)
@@ -154,7 +154,7 @@ bool ConfigLoader::loadOptionalConfig(const QString &parameterName,
 {
     if (!ConfigNodePath::validateNodeName(parameterName))
     {
-        const QString errorString = QStringLiteral("Parameter name [%1] is not valid!");
+        const QString errorString = QString("Parameter name [%1] is not valid!").arg(parameterName);
         handleError(errorString);
 
         if (error != nullptr)

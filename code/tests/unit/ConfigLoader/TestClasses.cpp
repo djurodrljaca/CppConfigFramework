@@ -22,6 +22,7 @@
 #include "TestClasses.hpp"
 
 // C++ Config Framework includes
+#include <CppConfigFramework/ConfigParameterValidator.hpp>
 
 // Qt includes
 
@@ -39,7 +40,23 @@ namespace CppConfigFramework
 bool TestRequiredConfigParameter::loadConfigParameters(const ConfigObjectNode &config,
                                                        QString *error)
 {
-    return loadRequiredConfigParameter(&param, "param", config, error);
+    return loadRequiredConfigParameter(&param,
+                                       "param",
+                                       config,
+                                       ConfigParameterRangeValidator<int>(-50, 50),
+                                       error);
+}
+
+// -------------------------------------------------------------------------------------------------
+
+QString TestRequiredConfigParameter::validateConfig() const
+{
+    if (param > 20)
+    {
+        return "validateConfig error";
+    }
+
+    return QString();
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -47,7 +64,11 @@ bool TestRequiredConfigParameter::loadConfigParameters(const ConfigObjectNode &c
 bool TestOptionalConfigParameter::loadConfigParameters(const ConfigObjectNode &config,
                                                        QString *error)
 {
-    return loadOptionalConfigParameter(&param, "param", config, error);
+    return loadOptionalConfigParameter(&param,
+                                       "param",
+                                       config,
+                                       ConfigParameterRangeValidator<int>(-50, 50),
+                                       error);
 }
 
 } // namespace CppConfigFramework

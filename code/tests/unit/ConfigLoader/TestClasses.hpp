@@ -47,10 +47,11 @@ namespace CppConfigFramework
 class TestRequiredConfigParameter : public ConfigLoader
 {
 public:
-    bool param;
+    int param = 0;
 
 private:
     bool loadConfigParameters(const ConfigObjectNode &config, QString *error) override;
+    QString validateConfig() const override;
 };
 
 // -------------------------------------------------------------------------------------------------
@@ -58,7 +59,7 @@ private:
 class TestOptionalConfigParameter : public ConfigLoader
 {
 public:
-    bool param;
+    int param = 0;
 
 private:
     bool loadConfigParameters(const ConfigObjectNode &config, QString *error) override;

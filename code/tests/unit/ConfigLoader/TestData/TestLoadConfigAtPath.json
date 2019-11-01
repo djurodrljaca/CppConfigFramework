@@ -1,0 +1,20 @@
+{
+    "config":
+    {
+        "level1":
+        {
+            "level2":
+            {
+                "actualConfig":
+                {
+                    "param": 1
+                },
+                "configWithInvalidParamValueRange":
+                {
+                    "param": -100
+                },
+                "invalidConfigNode": ""
+            }
+        }
+    }
+}

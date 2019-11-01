@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>TestData/TestConfigParameterRequirement.json</file>
+        <file>TestData/TestLoadConfigAtPath.json</file>
+        <file>TestData/TestLoadConfig.json</file>
     </qresource>
 </RCC>

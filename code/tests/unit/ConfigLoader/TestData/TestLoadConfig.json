@@ -1,0 +1,18 @@
+{
+    "config":
+    {
+        "actualConfig":
+        {
+            "param": 1
+        },
+        "configWithInvalidParamValueRange":
+        {
+            "param": -100
+        },
+        "configWithInvalidParamValue":
+        {
+            "param": 30
+        },
+        "invalidConfigNode": ""
+    }
+}

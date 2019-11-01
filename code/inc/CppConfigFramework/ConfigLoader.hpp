@@ -121,6 +121,8 @@ public:
                             const ConfigObjectNode &config,
                             QString *error = nullptr);
 
+    // TODO: create static variants of "optional" that returns a unique_ptr?
+
 protected:
     /*!
      * Loads the required configuration parameter from the configuration node without validation
