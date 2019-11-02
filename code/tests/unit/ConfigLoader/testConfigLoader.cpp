@@ -130,7 +130,7 @@ private:
 };
 
 template<typename T>
-class TestRequiredSequentialConfigContainer : public ConfigLoader
+class TestRequiredConfigContainer : public ConfigLoader
 {
 public:
     T container;
@@ -143,17 +143,12 @@ private:
 
     bool loadConfigParameters(const ConfigObjectNode &config, QString *error) override
     {
-        return loadRequiredSequentialConfigContainer(
-                    &container,
-                    "container",
-                    config,
-                    createItem,
-                    error);
+        return loadRequiredConfigContainer(&container, "container", config, createItem, error);
     }
 };
 
 template<typename T>
-class TestOptionalSequentialConfigContainer : public ConfigLoader
+class TestOptionalConfigContainer : public ConfigLoader
 {
 public:
     T container;
@@ -167,51 +162,16 @@ private:
     bool loadConfigParameters(const ConfigObjectNode &config, QString *error) override
     {
         bool loaded = false;
-        return loadOptionalSequentialConfigContainer(&container,
-                                                     "container",
-                                                     config,
-                                                     createItem,
-                                                     &loaded,
-                                                     error);
+        return loadOptionalConfigContainer(&container,
+                                           "container",
+                                           config,
+                                           createItem,
+                                           &loaded,
+                                           error);
     }
 };
 
-template<typename T>
-class TestRequiredAssociativeConfigContainer : public ConfigLoader
-{
-public:
-    T container;
-
-private:
-    bool loadConfigParameters(const ConfigObjectNode &config, QString *error) override
-    {
-        return loadRequiredAssociativeConfigContainer(
-                    &container,
-                    "container",
-                    config,
-                    error);
-    }
-};
-
-template<typename T>
-class TestOptionalAssociativeConfigContainer : public ConfigLoader
-{
-public:
-    T container;
-
-private:
-    bool loadConfigParameters(const ConfigObjectNode &config, QString *error) override
-    {
-        bool loaded = false;
-        return loadOptionalAssociativeConfigContainer(&container,
-                                                      "container",
-                                                      config,
-                                                      &loaded,
-                                                      error);
-    }
-};
-
-class TestRequiredSequentialConfigContainerInvalidParameter : public ConfigLoader
+class TestRequiredConfigContainerInvalidParameter : public ConfigLoader
 {
 public:
     QList<TestConfigContainerItem> container;
@@ -219,15 +179,11 @@ public:
 private:
     bool loadConfigParameters(const ConfigObjectNode &config, QString *error) override
     {
-        return loadRequiredSequentialConfigContainer(
-                    &container,
-                    "0container",
-                    config,
-                    error);
+        return loadRequiredConfigContainer(&container, "0container", config, error);
     }
 };
 
-class TestOptionalSequentialConfigContainerInvalidParameter : public ConfigLoader
+class TestOptionalConfigContainerInvalidParameter : public ConfigLoader
 {
 public:
     QList<TestConfigContainerItem> container;
@@ -236,44 +192,11 @@ private:
     bool loadConfigParameters(const ConfigObjectNode &config, QString *error) override
     {
         bool loaded = false;
-        return loadOptionalSequentialConfigContainer(&container,
-                                                     "0container",
-                                                     config,
-                                                     &loaded,
-                                                     error);
-    }
-};
-
-class TestRequiredAssociativeConfigContainerInvalidParameter : public ConfigLoader
-{
-public:
-    QMap<QString, TestConfigContainerItem> container;
-
-private:
-    bool loadConfigParameters(const ConfigObjectNode &config, QString *error) override
-    {
-        return loadRequiredAssociativeConfigContainer(
-                    &container,
-                    "0container",
-                    config,
-                    error);
-    }
-};
-
-class TestOptionalAssociativeConfigContainerInvalidParameter : public ConfigLoader
-{
-public:
-    QMap<QString, TestConfigContainerItem> container;
-
-private:
-    bool loadConfigParameters(const ConfigObjectNode &config, QString *error) override
-    {
-        bool loaded = false;
-        return loadOptionalAssociativeConfigContainer(&container,
-                                                      "0container",
-                                                      config,
-                                                      &loaded,
-                                                      error);
+        return loadOptionalConfigContainer(&container,
+                                           "0container",
+                                           config,
+                                           &loaded,
+                                           error);
     }
 };
 
@@ -607,8 +530,8 @@ void TestConfigLoader::testLoadConfigContainer()
 
     // QVector
     {
-        TestRequiredSequentialConfigContainer<QVector<TestConfigContainerItem>> required;
-        TestOptionalSequentialConfigContainer<QVector<TestConfigContainerItem>> optional;
+        TestRequiredConfigContainer<QVector<TestConfigContainerItem>> required;
+        TestOptionalConfigContainer<QVector<TestConfigContainerItem>> optional;
 
         QCOMPARE(required.loadConfig("actualConfig", *config), true);
         QCOMPARE(optional.loadConfig("actualConfig", *config), true);
@@ -625,8 +548,8 @@ void TestConfigLoader::testLoadConfigContainer()
 
     // QList
     {
-        TestRequiredSequentialConfigContainer<QList<TestConfigContainerItem>> required;
-        TestOptionalSequentialConfigContainer<QList<TestConfigContainerItem>> optional;
+        TestRequiredConfigContainer<QList<TestConfigContainerItem>> required;
+        TestOptionalConfigContainer<QList<TestConfigContainerItem>> optional;
 
         QCOMPARE(required.loadConfig("actualConfig", *config), true);
         QCOMPARE(optional.loadConfig("actualConfig", *config), true);
@@ -643,8 +566,8 @@ void TestConfigLoader::testLoadConfigContainer()
 
     // QMap
     {
-        TestRequiredAssociativeConfigContainer<QMap<QString, TestConfigContainerItem>> required;
-        TestOptionalAssociativeConfigContainer<QMap<QString, TestConfigContainerItem>> optional;
+        TestRequiredConfigContainer<QMap<QString, TestConfigContainerItem>> required;
+        TestOptionalConfigContainer<QMap<QString, TestConfigContainerItem>> optional;
 
         QCOMPARE(required.loadConfig("actualConfig", *config), true);
         QCOMPARE(optional.loadConfig("actualConfig", *config), true);
@@ -661,8 +584,8 @@ void TestConfigLoader::testLoadConfigContainer()
 
     // QHash
     {
-        TestRequiredAssociativeConfigContainer<QHash<QString, TestConfigContainerItem>> required;
-        TestOptionalAssociativeConfigContainer<QHash<QString, TestConfigContainerItem>> optional;
+        TestRequiredConfigContainer<QHash<QString, TestConfigContainerItem>> required;
+        TestOptionalConfigContainer<QHash<QString, TestConfigContainerItem>> optional;
 
         QCOMPARE(required.loadConfig("actualConfig", *config), true);
         QCOMPARE(optional.loadConfig("actualConfig", *config), true);
@@ -681,8 +604,8 @@ void TestConfigLoader::testLoadConfigContainer()
 
     // std::vector
     {
-        TestRequiredSequentialConfigContainer<std::vector<TestConfigContainerItem>> required;
-        TestOptionalSequentialConfigContainer<std::vector<TestConfigContainerItem>> optional;
+        TestRequiredConfigContainer<std::vector<TestConfigContainerItem>> required;
+        TestOptionalConfigContainer<std::vector<TestConfigContainerItem>> optional;
 
         QCOMPARE(required.loadConfig("actualConfig", *config), true);
         QCOMPARE(optional.loadConfig("actualConfig", *config), true);
@@ -699,8 +622,8 @@ void TestConfigLoader::testLoadConfigContainer()
 
     // std::list
     {
-        TestRequiredSequentialConfigContainer<std::list<TestConfigContainerItem>> required;
-        TestOptionalSequentialConfigContainer<std::list<TestConfigContainerItem>> optional;
+        TestRequiredConfigContainer<std::list<TestConfigContainerItem>> required;
+        TestOptionalConfigContainer<std::list<TestConfigContainerItem>> optional;
 
         QCOMPARE(required.loadConfig("actualConfig", *config), true);
         QCOMPARE(optional.loadConfig("actualConfig", *config), true);
@@ -717,8 +640,8 @@ void TestConfigLoader::testLoadConfigContainer()
 
     // std::map
     {
-        TestRequiredAssociativeConfigContainer<std::map<QString, TestConfigContainerItem>> required;
-        TestOptionalAssociativeConfigContainer<std::map<QString, TestConfigContainerItem>> optional;
+        TestRequiredConfigContainer<std::map<QString, TestConfigContainerItem>> required;
+        TestOptionalConfigContainer<std::map<QString, TestConfigContainerItem>> optional;
 
         QCOMPARE(required.loadConfig("actualConfig", *config), true);
         QCOMPARE(optional.loadConfig("actualConfig", *config), true);
@@ -735,10 +658,8 @@ void TestConfigLoader::testLoadConfigContainer()
 
     // std::unordered_map
     {
-        TestRequiredAssociativeConfigContainer<
-                std::unordered_map<QString, TestConfigContainerItem>> required;
-        TestOptionalAssociativeConfigContainer<
-                std::unordered_map<QString, TestConfigContainerItem>> optional;
+        TestRequiredConfigContainer<std::unordered_map<QString, TestConfigContainerItem>> required;
+        TestOptionalConfigContainer<std::unordered_map<QString, TestConfigContainerItem>> optional;
 
         QCOMPARE(required.loadConfig("actualConfig", *config), true);
         QCOMPARE(optional.loadConfig("actualConfig", *config), true);
@@ -757,11 +678,11 @@ void TestConfigLoader::testLoadConfigContainer()
 
     // Invalid parameter name
     {
-        TestRequiredSequentialConfigContainerInvalidParameter requiredSequential;
-        TestOptionalSequentialConfigContainerInvalidParameter optionalSequential;
+        TestRequiredConfigContainerInvalidParameter requiredSequential;
+        TestOptionalConfigContainerInvalidParameter optionalSequential;
 
-        TestRequiredAssociativeConfigContainerInvalidParameter requiredAssociative;
-        TestOptionalAssociativeConfigContainerInvalidParameter optionalAssociative;
+        TestRequiredConfigContainerInvalidParameter requiredAssociative;
+        TestOptionalConfigContainerInvalidParameter optionalAssociative;
 
         QCOMPARE(requiredSequential.loadConfig("actualConfig", *config), false);
         QCOMPARE(optionalSequential.loadConfig("actualConfig", *config), false);
@@ -778,13 +699,11 @@ void TestConfigLoader::testLoadConfigContainer()
 
     // Missing parameter
     {
-        TestRequiredSequentialConfigContainer<QList<TestConfigContainerItem>> requiredSequential;
-        TestOptionalSequentialConfigContainer<QList<TestConfigContainerItem>> optionalSequential;
+        TestRequiredConfigContainer<QList<TestConfigContainerItem>> requiredSequential;
+        TestOptionalConfigContainer<QList<TestConfigContainerItem>> optionalSequential;
 
-        TestRequiredAssociativeConfigContainer<
-                QMap<QString, TestConfigContainerItem>> requiredAssociative;
-        TestOptionalAssociativeConfigContainer<
-                QMap<QString, TestConfigContainerItem>> optionalAssociative;
+        TestRequiredConfigContainer<QMap<QString, TestConfigContainerItem>> requiredAssociative;
+        TestOptionalConfigContainer<QMap<QString, TestConfigContainerItem>> optionalAssociative;
 
         QCOMPARE(requiredSequential.loadConfig("missingConfig", *config), false);
         QCOMPARE(optionalSequential.loadConfig("missingConfig", *config), true);
@@ -801,13 +720,11 @@ void TestConfigLoader::testLoadConfigContainer()
 
     // Invalid parameter node type
     {
-        TestRequiredSequentialConfigContainer<QList<TestConfigContainerItem>> requiredSequential;
-        TestOptionalSequentialConfigContainer<QList<TestConfigContainerItem>> optionalSequential;
+        TestRequiredConfigContainer<QList<TestConfigContainerItem>> requiredSequential;
+        TestOptionalConfigContainer<QList<TestConfigContainerItem>> optionalSequential;
 
-        TestRequiredAssociativeConfigContainer<
-                QMap<QString, TestConfigContainerItem>> requiredAssociative;
-        TestOptionalAssociativeConfigContainer<
-                QMap<QString, TestConfigContainerItem>> optionalAssociative;
+        TestRequiredConfigContainer<QMap<QString, TestConfigContainerItem>> requiredAssociative;
+        TestOptionalConfigContainer<QMap<QString, TestConfigContainerItem>> optionalAssociative;
 
         QCOMPARE(requiredSequential.loadConfig("configWithInvalidNodeType", *config), false);
         QCOMPARE(optionalSequential.loadConfig("configWithInvalidNodeType", *config), false);
@@ -824,13 +741,11 @@ void TestConfigLoader::testLoadConfigContainer()
 
     // Invalid parameter item
     {
-        TestRequiredSequentialConfigContainer<QList<TestConfigContainerItem>> requiredSequential;
-        TestOptionalSequentialConfigContainer<QList<TestConfigContainerItem>> optionalSequential;
+        TestRequiredConfigContainer<QList<TestConfigContainerItem>> requiredSequential;
+        TestOptionalConfigContainer<QList<TestConfigContainerItem>> optionalSequential;
 
-        TestRequiredAssociativeConfigContainer<
-                QMap<QString, TestConfigContainerItem>> requiredAssociative;
-        TestOptionalAssociativeConfigContainer<
-                QMap<QString, TestConfigContainerItem>> optionalAssociative;
+        TestRequiredConfigContainer<QMap<QString, TestConfigContainerItem>> requiredAssociative;
+        TestOptionalConfigContainer<QMap<QString, TestConfigContainerItem>> optionalAssociative;
 
         QCOMPARE(requiredSequential.loadConfig("configWithInvalidItem", *config), false);
         QCOMPARE(optionalSequential.loadConfig("configWithInvalidItem", *config), false);

@@ -22,6 +22,7 @@
 #define CPPCONFIGFRAMEWORK_CONFIGLOADER_HPP
 
 // C++ Config Framework includes
+#include <CppConfigFramework/ConfigContainerHelper.hpp>
 #include <CppConfigFramework/ConfigNode.hpp>
 #include <CppConfigFramework/ConfigObjectNode.hpp>
 #include <CppConfigFramework/ConfigParameterLoader.hpp>
@@ -228,7 +229,7 @@ protected:
             QString *error = nullptr);
 
     /*!
-     * Loads the required sequential configuration container from the configuration node
+     * Loads the required configuration container from the configuration node
      *
      * \tparam  T   Data type of the container to load (its value type needs to be derived from
      *              ConfigLoader class)
@@ -245,64 +246,14 @@ protected:
      * \retval  false   Failure
      */
     template<typename T>
-    bool loadRequiredSequentialConfigContainer(
+    bool loadRequiredConfigContainer(
             T *container,
             const QString &parameterName,
             const ConfigObjectNode &config,
             QString *error = nullptr);
 
     /*!
-     * Loads the required sequential configuration container from the configuration node
-     *
-     * \tparam  T   Data type of the container to load (its value type needs to be derived from
-     *              ConfigLoader class)
-     *
-     * \param[out]  container   Output for the configuration container
-     *
-     * \param   parameterName   Name of the parameter (member name in the configuration node)
-     * \param   config          Configuration node from which this configuration structure should be
-     *                          loaded
-     * \param   itemCreator     Functor for creating the initial item instances for the container
-     *
-     * \param[out]  error   Optional output for the error string
-     *
-     * \retval  true    Success
-     * \retval  false   Failure
-     */
-    template<typename T>
-    bool loadRequiredSequentialConfigContainer(
-            T *container,
-            const QString &parameterName,
-            const ConfigObjectNode &config,
-            std::function<typename T::value_type(const QString&)> itemCreator,
-            QString *error = nullptr);
-
-    /*!
-     * Loads the required associative configuration container from the configuration node
-     *
-     * \tparam  T   Data type of the container to load (its value type needs to be derived from
-     *              ConfigLoader class)
-     *
-     * \param[out]  container   Output for the configuration container
-     *
-     * \param   parameterName   Name of the parameter (member name in the configuration node)
-     * \param   config          Configuration node from which this configuration structure should be
-     *                          loaded
-     *
-     * \param[out]  error   Optional output for the error string
-     *
-     * \retval  true    Success
-     * \retval  false   Failure
-     */
-    template<typename T>
-    bool loadRequiredAssociativeConfigContainer(
-            T *container,
-            const QString &parameterName,
-            const ConfigObjectNode &config,
-            QString *error = nullptr);
-
-    /*!
-     * Loads the required associative configuration container from the configuration node
+     * Loads the required configuration container from the configuration node
      *
      * \tparam  T   Data type of the container to load (its value type needs to be derived from
      *              ConfigLoader class)
@@ -320,15 +271,15 @@ protected:
      * \retval  false   Failure
      */
     template<typename T>
-    bool loadRequiredAssociativeConfigContainer(
+    bool loadRequiredConfigContainer(
             T *container,
             const QString &parameterName,
             const ConfigObjectNode &config,
-            std::function<typename T::mapped_type(const QString&)> itemCreator,
+            std::function<typename ConfigContainerHelper<T>::ItemType(const QString&)> itemCreator,
             QString *error = nullptr);
 
     /*!
-     * Loads the optional sequential configuration container from the configuration node
+     * Loads the optional configuration container from the configuration node
      *
      * \tparam  T   Data type of the container to load (its value type needs to be derived from
      *              ConfigLoader class)
@@ -346,7 +297,7 @@ protected:
      * \retval  false   Failure
      */
     template<typename T>
-    bool loadOptionalSequentialConfigContainer(
+    bool loadOptionalConfigContainer(
             T *container,
             const QString &parameterName,
             const ConfigObjectNode &config,
@@ -354,7 +305,7 @@ protected:
             QString *error = nullptr);
 
     /*!
-     * Loads the optional sequential configuration container from the configuration node
+     * Loads the optional configuration container from the configuration node
      *
      * \tparam  T   Data type of the container to load (its value type needs to be derived from
      *              ConfigLoader class)
@@ -373,64 +324,11 @@ protected:
      * \retval  false   Failure
      */
     template<typename T>
-    bool loadOptionalSequentialConfigContainer(
+    bool loadOptionalConfigContainer(
             T *container,
             const QString &parameterName,
             const ConfigObjectNode &config,
-            std::function<typename T::value_type(const QString&)> itemCreator,
-            bool *loaded = nullptr,
-            QString *error = nullptr);
-    /*!
-     * Loads the optional associative configuration container from the configuration node
-     *
-     * \tparam  T   Data type of the container to load (its value type needs to be derived from
-     *              ConfigLoader class)
-     *
-     * \param[out]  container   Output for the configuration container
-     *
-     * \param   parameterName   Name of the parameter (member name in the configuration node)
-     * \param   config          Configuration node from which this configuration structure should be
-     *                          loaded
-     *
-     * \param[out]  loaded  Optional output for the loading result
-     * \param[out]  error   Optional output for the error string
-     *
-     * \retval  true    Success
-     * \retval  false   Failure
-     */
-    template<typename T>
-    bool loadOptionalAssociativeConfigContainer(
-            T *container,
-            const QString &parameterName,
-            const ConfigObjectNode &config,
-            bool *loaded = nullptr,
-            QString *error = nullptr);
-
-    /*!
-     * Loads the optional associative configuration container from the configuration node
-     *
-     * \tparam  T   Data type of the container to load (its value type needs to be derived from
-     *              ConfigLoader class)
-     *
-     * \param[out]  container   Output for the configuration container
-     *
-     * \param   parameterName   Name of the parameter (member name in the configuration node)
-     * \param   config          Configuration node from which this configuration structure should be
-     *                          loaded
-     * \param   itemCreator     Functor for creating the initial item instances for the container
-     *
-     * \param[out]  loaded  Optional output for the loading result
-     * \param[out]  error   Optional output for the error string
-     *
-     * \retval  true    Success
-     * \retval  false   Failure
-     */
-    template<typename T>
-    bool loadOptionalAssociativeConfigContainer(
-            T *container,
-            const QString &parameterName,
-            const ConfigObjectNode &config,
-            std::function<typename T::mapped_type(const QString&)> itemCreator,
+            std::function<typename ConfigContainerHelper<T>::ItemType(const QString&)> itemCreator,
             bool *loaded = nullptr,
             QString *error = nullptr);
 
@@ -470,7 +368,7 @@ private:
             QString *error = nullptr);
 
     /*!
-     * Loads the sequential configuration container from the configuration node
+     * Loads the configuration container from the configuration node
      *
      * \tparam  T   Data type of the container to load (its value type needs to be derived from
      *              ConfigLoader class)
@@ -487,34 +385,10 @@ private:
      * \retval  false   Failure
      */
     template<typename T>
-    bool loadSequentialConfigContainerFromNode(
+    bool loadConfigContainerFromNode(
             T *container,
             const ConfigNode &node,
-            std::function<typename T::value_type(const QString&)> itemCreator,
-            QString *error = nullptr);
-
-    /*!
-     * Loads the associative configuration container from the configuration node
-     *
-     * \tparam  T   Data type of the container to load (its value type needs to be derived from
-     *              ConfigLoader class)
-     *
-     * \param[out]  container   Output for the configuration container
-     *
-     * \param   node        Configuration node from which this configuration container should be
-     *                      loaded
-     * \param   itemCreator Functor for creating the initial item instances for the container
-     *
-     * \param[out]  error   Optional output for the error string
-     *
-     * \retval  true    Success
-     * \retval  false   Failure
-     */
-    template<typename T>
-    bool loadAssociativeConfigContainerFromNode(
-            T *container,
-            const ConfigNode &node,
-            std::function<typename T::mapped_type(const QString&)> itemCreator,
+            std::function<typename ConfigContainerHelper<T>::ItemType(const QString&)> itemCreator,
             QString *error = nullptr);
 
     /*!
@@ -566,101 +440,6 @@ private:
      * \note    Default implementation does not do anything!
      */
     virtual void handleError(const QString &error);
-
-    template <typename T>
-    struct ContainerHelper;
-};
-
-// -------------------------------------------------------------------------------------------------
-
-template <typename T>
-struct ConfigLoader::ContainerHelper
-{
-    // Qt containers -------------------------------------------------------------------------------
-
-    static void addItem(QVector<T> *container, const QString &key, const T &item)
-    {
-        Q_UNUSED(key)
-        container->append(item);
-    }
-
-    static void addItem(QList<T> *container, const QString &key, const T &item)
-    {
-        Q_UNUSED(key)
-        container->append(item);
-    }
-
-    static void addItem(QMap<QString, T> *container, const QString &key, const T &item)
-    {
-        container->insert(key, item);
-    }
-
-    static void addItem(QHash<QString, T> *container, const QString &key, const T &item)
-    {
-        container->insert(key, item);
-    }
-
-    // STL containers ------------------------------------------------------------------------------
-
-    static void addItem(std::vector<T> *container,
-                        const QString &key,
-                        std::enable_if_t<std::is_move_constructible<T>::value, T> &&item)
-    {
-        Q_UNUSED(key)
-        container->push_back(item);
-    }
-
-    static void addItem(std::vector<T> *container,
-                        const QString &key,
-                        const std::enable_if_t<std::is_copy_constructible<T>::value, T> &item)
-    {
-        Q_UNUSED(key)
-        container->push_back(item);
-    }
-
-    static void addItem(std::list<T> *container,
-                        const QString &key,
-                        std::enable_if_t<std::is_move_constructible<T>::value, T> &&item)
-    {
-        Q_UNUSED(key)
-        container->push_back(item);
-    }
-
-    static void addItem(std::list<T> *container,
-                        const QString &key,
-                        const std::enable_if_t<std::is_copy_constructible<T>::value, T> &item)
-    {
-        Q_UNUSED(key)
-        container->push_back(item);
-    }
-
-    static void addItem(std::map<QString, T> *container,
-                        const QString &key,
-                        std::enable_if_t<std::is_move_constructible<T>::value, T> &&item)
-    {
-        container->emplace(key, item);
-    }
-
-    static void addItem(std::map<QString, T> *container,
-                        const QString &key,
-                        const std::enable_if_t<std::is_copy_constructible<T>::value, T> &item)
-    {
-        container->emplace(key, item);
-    }
-
-    static void addItem(std::unordered_map<QString, T> *container,
-                        const QString &key,
-                        const std::enable_if_t<std::is_copy_constructible<T>::value, T> &item)
-    {
-        container->emplace(key, item);
-    }
-
-    static void addItem(std::unordered_map<QString, T> *container,
-                        const QString &key,
-                        std::enable_if_t<std::is_move_constructible<T>::value, T> &&item)
-    {
-        container->emplace(key, item);
-    }
 };
 
 // -------------------------------------------------------------------------------------------------
@@ -804,33 +583,31 @@ bool ConfigLoader::loadOptionalConfigParameter(
 // -------------------------------------------------------------------------------------------------
 
 template<typename T>
-bool ConfigLoader::loadRequiredSequentialConfigContainer(
+bool ConfigLoader::loadRequiredConfigContainer(
         T *container,
         const QString &parameterName,
         const ConfigObjectNode &config,
         QString *error)
 {
-    return loadRequiredSequentialConfigContainer(
-                container,
-                parameterName,
-                config,
-                ConfigLoader::defaultContainerItemCreator<typename T::value_type>,
-                error);
+    using ItemType = typename ConfigContainerHelper<T>::ItemType;
+
+    return loadRequiredConfigContainer(container,
+                                       parameterName,
+                                       config,
+                                       ConfigLoader::defaultContainerItemCreator<ItemType>,
+                                       error);
 }
 
 // -------------------------------------------------------------------------------------------------
 
 template<typename T>
-bool ConfigLoader::loadRequiredSequentialConfigContainer(
+bool ConfigLoader::loadRequiredConfigContainer(
         T *container,
         const QString &parameterName,
         const ConfigObjectNode &config,
-        std::function<typename T::value_type(const QString&)> itemCreator,
+        std::function<typename ConfigContainerHelper<T>::ItemType(const QString&)> itemCreator,
         QString *error)
 {
-    static_assert (std::is_base_of<ConfigLoader, typename T::value_type>::value,
-                   "Containers value type must be derived from ConfigLoader");
-
     container->clear();
 
     // Validate parameters
@@ -868,112 +645,40 @@ bool ConfigLoader::loadRequiredSequentialConfigContainer(
     }
 
     // Load configuration container from the configuration node
-    return loadSequentialConfigContainerFromNode(container, *node, itemCreator, error);
+    return loadConfigContainerFromNode(container, *node, itemCreator, error);
 }
 
 // -------------------------------------------------------------------------------------------------
 
 template<typename T>
-bool ConfigLoader::loadRequiredAssociativeConfigContainer(
-        T *container,
-        const QString &parameterName,
-        const ConfigObjectNode &config,
-        QString *error)
-{
-    return loadRequiredAssociativeConfigContainer(
-                container,
-                parameterName,
-                config,
-                ConfigLoader::defaultContainerItemCreator<typename T::mapped_type>,
-                error);
-}
-
-// -------------------------------------------------------------------------------------------------
-
-template<typename T>
-bool ConfigLoader::loadRequiredAssociativeConfigContainer(
-        T *container,
-        const QString &parameterName,
-        const ConfigObjectNode &config,
-        std::function<typename T::mapped_type(const QString&)> itemCreator,
-        QString *error)
-{
-    static_assert (std::is_base_of<ConfigLoader, typename T::mapped_type>::value,
-                   "Containers value type must be derived from ConfigLoader");
-
-    container->clear();
-
-    // Validate parameters
-    Q_ASSERT(container != nullptr);
-
-    if (!ConfigNodePath::validateNodeName(parameterName))
-    {
-        const QString errorString = QString("Configuration parameter name [%1] is not valid "
-                                            "(configuration node [%2])!")
-                                    .arg(parameterName, config.nodePath().path());
-        handleError(errorString);
-
-        if (error != nullptr)
-        {
-            *error = errorString;
-        }
-        return false;
-    }
-
-    // Get container's configuration node
-    const auto *node = config.member(parameterName);
-
-    if (node == nullptr)
-    {
-        const QString errorString = QString("Configuration parameter node with name [%1] was not "
-                                            "found in configuration node [%2]!")
-                                    .arg(parameterName, config.nodePath().path());
-        handleError(errorString);
-
-        if (error != nullptr)
-        {
-            *error = errorString;
-        }
-        return false;
-    }
-
-    // Load configuration container from the configuration node
-    return loadAssociativeConfigContainerFromNode(container, *node, itemCreator, error);
-}
-
-// -------------------------------------------------------------------------------------------------
-
-template<typename T>
-bool ConfigLoader::loadOptionalSequentialConfigContainer(
+bool ConfigLoader::loadOptionalConfigContainer(
         T *container,
         const QString &parameterName,
         const ConfigObjectNode &config,
         bool *loaded,
         QString *error)
 {
-    return loadOptionalSequentialConfigContainer(
-                container,
-                parameterName,
-                config,
-                ConfigLoader::defaultContainerItemCreator<typename T::value_type>,
-                loaded,
-                error);
+    using ItemType = typename ConfigContainerHelper<T>::ItemType;
+
+    return loadOptionalConfigContainer(container,
+                                       parameterName,
+                                       config,
+                                       ConfigLoader::defaultContainerItemCreator<ItemType>,
+                                       loaded,
+                                       error);
 }
 
 // -------------------------------------------------------------------------------------------------
 
 template<typename T>
-bool ConfigLoader::loadOptionalSequentialConfigContainer(
+bool ConfigLoader::loadOptionalConfigContainer(
         T *container,
         const QString &parameterName,
         const ConfigObjectNode &config,
-        std::function<typename T::value_type(const QString&)> itemCreator,
+        std::function<typename ConfigContainerHelper<T>::ItemType(const QString&)> itemCreator,
         bool *loaded,
         QString *error)
 {
-    static_assert (std::is_base_of<ConfigLoader, typename T::value_type>::value,
-                   "Containers value type must be derived from ConfigLoader");
-
     container->clear();
 
     // Validate parameters
@@ -1007,83 +712,7 @@ bool ConfigLoader::loadOptionalSequentialConfigContainer(
     }
 
     // Load configuration container from the configuration node
-    const bool result = loadSequentialConfigContainerFromNode(container, *node, itemCreator, error);
-
-    if (loaded != nullptr)
-    {
-        *loaded = result;
-    }
-    return result;
-}
-
-// -------------------------------------------------------------------------------------------------
-
-template<typename T>
-bool ConfigLoader::loadOptionalAssociativeConfigContainer(
-        T *container,
-        const QString &parameterName,
-        const ConfigObjectNode &config,
-        bool *loaded,
-        QString *error)
-{
-    return loadOptionalAssociativeConfigContainer(
-                container,
-                parameterName,
-                config,
-                ConfigLoader::defaultContainerItemCreator<typename T::mapped_type>,
-                loaded,
-                error);
-}
-
-// -------------------------------------------------------------------------------------------------
-
-template<typename T>
-bool ConfigLoader::loadOptionalAssociativeConfigContainer(
-        T *container,
-        const QString &parameterName,
-        const ConfigObjectNode &config,
-        std::function<typename T::mapped_type(const QString&)> itemCreator,
-        bool *loaded,
-        QString *error)
-{
-    static_assert (std::is_base_of<ConfigLoader, typename T::mapped_type>::value,
-                   "Containers value type must be derived from ConfigLoader");
-
-    container->clear();
-
-    // Validate parameters
-    Q_ASSERT(container != nullptr);
-
-    if (!ConfigNodePath::validateNodeName(parameterName))
-    {
-        const QString errorString = QString("Configuration parameter name [%1] is not valid "
-                                            "(configuration node [%2])!")
-                                    .arg(parameterName, config.nodePath().path());
-        handleError(errorString);
-
-        if (error != nullptr)
-        {
-            *error = errorString;
-        }
-        return false;
-    }
-
-    // Get container's configuration node
-    const auto *node = config.member(parameterName);
-
-    if (node == nullptr)
-    {
-        // Node was not found, skip it
-        if (loaded != nullptr)
-        {
-            *loaded = false;
-        }
-        return true;
-    }
-
-    // Load configuration container from the configuration node
-    const bool result =
-            loadAssociativeConfigContainerFromNode(container, *node, itemCreator, error);
+    const bool result = loadConfigContainerFromNode(container, *node, itemCreator, error);
 
     if (loaded != nullptr)
     {
@@ -1155,15 +784,12 @@ bool ConfigLoader::loadConfigParameterFromNode(
 // -------------------------------------------------------------------------------------------------
 
 template<typename T>
-bool ConfigLoader::loadSequentialConfigContainerFromNode(
+bool ConfigLoader::loadConfigContainerFromNode(
         T *container,
         const ConfigNode &node,
-        std::function<typename T::value_type(const QString&)> itemCreator,
+        std::function<typename ConfigContainerHelper<T>::ItemType(const QString&)> itemCreator,
         QString *error)
 {
-    static_assert (std::is_base_of<ConfigLoader, typename T::value_type>::value,
-                   "Containers value type must be derived from ConfigLoader");
-
     if (!node.isObject())
     {
         const QString errorString = QString("Configuration container node [%1] is not an Object"
@@ -1183,7 +809,7 @@ bool ConfigLoader::loadSequentialConfigContainerFromNode(
     for (const QString &itemName : nodeObject.names())
     {
         // Load item's node
-        typename T::value_type item = itemCreator(itemName);
+        auto item = itemCreator(itemName);
         const auto *itemNode = nodeObject.member(itemName);
         Q_ASSERT(itemNode != nullptr);
 
@@ -1193,54 +819,7 @@ bool ConfigLoader::loadSequentialConfigContainerFromNode(
         }
 
         // Add the node to the container
-        ContainerHelper<typename T::value_type>::addItem(container, itemName, std::move(item));
-    }
-
-    return true;
-}
-
-// -------------------------------------------------------------------------------------------------
-
-template<typename T>
-bool ConfigLoader::loadAssociativeConfigContainerFromNode(
-        T *container,
-        const ConfigNode &node,
-        std::function<typename T::mapped_type(const QString&)> itemCreator,
-        QString *error)
-{
-    static_assert (std::is_base_of<ConfigLoader, typename T::mapped_type>::value,
-                   "Containers value type must be derived from ConfigLoader");
-
-    if (!node.isObject())
-    {
-        const QString errorString = QString("Configuration container node [%1] is not an Object"
-                                            "node!").arg(node.nodePath().path());
-        handleError(errorString);
-
-        if (error != nullptr)
-        {
-            *error = errorString;
-        }
-        return false;
-    }
-
-    // Load individual configuration items from the node object to the container
-    const auto &nodeObject = node.toObject();
-
-    for (const QString &itemName : nodeObject.names())
-    {
-        // Load item's node
-        typename T::mapped_type item = itemCreator(itemName);
-        const auto *itemNode = nodeObject.member(itemName);
-        Q_ASSERT(itemNode != nullptr);
-
-        if (!item.loadConfigFromNode(*itemNode, error))
-        {
-            return false;
-        }
-
-        // Add the node to the container
-        ContainerHelper<typename T::mapped_type>::addItem(container, itemName, std::move(item));
+        ConfigContainerHelper<T>::addItem(container, itemName, std::move(item));
     }
 
     return true;
