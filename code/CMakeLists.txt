@@ -23,6 +23,7 @@ find_package(Qt5Core REQUIRED)
 # CppConfigFramework library
 # --------------------------------------------------------------------------------------------------
 add_library(CppConfigFramework SHARED
+    inc/CppConfigFramework/ConfigContainerHelper.hpp
     inc/CppConfigFramework/ConfigDerivedObjectNode.hpp
     inc/CppConfigFramework/ConfigLoader.hpp
     inc/CppConfigFramework/ConfigNode.hpp
