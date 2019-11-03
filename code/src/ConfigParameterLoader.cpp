@@ -49,39 +49,147 @@ namespace CppConfigFramework
 namespace Internal
 {
 
-/*!
- * Converts the input value to the desired output value type using the specified working value
- * type
- *
- * \tparam  T_W     Working value type (for example int64_t, uint64_t, double)
- * \tparam  T_OUT   Output value type
- *
- * \param   inputValue  Value to convert
- *
- * \param[out]  outputValue Output for the converted value
- * \param[out]  error       Optional output for the error string
- *
- * retval   true    Success
- * retval   false   Failure
- */
-template<typename T_W, typename T_OUT>
-bool converNumericValue(const T_W &inputValue, T_OUT *outputValue, QString *error)
-{
-    static_assert(std::is_integral<T_W>::value || std::is_floating_point<T_W>::value,
-                  "T_W must be of an integer or a floating-point type");
-    static_assert(std::is_integral<T_W>::value || std::is_floating_point<T_W>::value,
-                  "T_OUT must be of an integer or a floating-point type");
+template<typename T>
+using IsMax64BitInteger = std::enable_if_t<std::is_integral<T>::value && (sizeof(T) <= 8), bool>;
 
-    if ((inputValue < static_cast<T_W>(std::numeric_limits<T_OUT>::min())) ||
-        (inputValue > static_cast<T_W>(std::numeric_limits<T_OUT>::max())))
+template<typename T>
+using IsMax64BitFloatingPoint = std::enable_if_t<
+std::is_floating_point<T>::value && (sizeof(T) <= 8),
+bool
+>;
+
+template<typename T>
+using IsMax64BitNumeric = std::enable_if_t<
+(std::is_integral<T>::value || std::is_floating_point<T>::value) && (sizeof(T) <= 8),
+bool
+>;
+
+// -------------------------------------------------------------------------------------------------
+
+template<typename T_OUT, IsMax64BitInteger<T_OUT> = true>
+bool converNumericValue(const int64_t &inputValue, T_OUT *outputValue, QString *error)
+{
+    constexpr auto lowwerLimit = std::numeric_limits<T_OUT>::min();
+    constexpr auto upperLimit = std::numeric_limits<T_OUT>::max();
+
+    // Check if output value is also signed
+    if (std::is_signed<T_OUT>::value)
+    {
+        // Output value is also signed, just check the valid range
+        if ((inputValue < static_cast<int64_t>(lowwerLimit)) ||
+            (inputValue > static_cast<int64_t>(upperLimit)))
+        {
+            if (error != nullptr)
+            {
+                *error = QString("Parameter value [%1] is out of range for the "
+                                 "its data type (min: [%2], max: [%3])!")
+                         .arg(inputValue)
+                         .arg(lowwerLimit)
+                         .arg(upperLimit);
+            }
+            return false;
+        }
+    }
+    else
+    {
+        // Output is unsigned
+
+        // A negative value cannot be stored in the output or a positive value greater than the
+        // max value that can be stored in the output
+        if ((inputValue < 0LL) ||
+            (static_cast<uint64_t>(inputValue) > static_cast<uint64_t>(upperLimit)))
+        {
+            if (error != nullptr)
+            {
+                *error = QString("Parameter value [%1] is out of range for the "
+                                 "its data type (min: [%2], max: [%3])!")
+                         .arg(inputValue)
+                         .arg(lowwerLimit)
+                         .arg(upperLimit);
+            }
+            return false;
+        }
+    }
+
+    *outputValue = static_cast<T_OUT>(inputValue);
+    return true;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+template<typename T_OUT, IsMax64BitInteger<T_OUT> = true>
+bool converNumericValue(const uint64_t &inputValue, T_OUT *outputValue, QString *error)
+{
+    constexpr auto lowwerLimit = std::numeric_limits<T_OUT>::min();
+    constexpr auto upperLimit = std::numeric_limits<T_OUT>::max();
+
+    // Make sure that the input value can be stored in the output
+    if (inputValue > static_cast<uint64_t>(upperLimit))
     {
         if (error != nullptr)
         {
             *error = QString("Parameter value [%1] is out of range for the "
                              "its data type (min: [%2], max: [%3])!")
                      .arg(inputValue)
-                     .arg(std::numeric_limits<T_OUT>::min())
-                     .arg(std::numeric_limits<T_OUT>::max());
+                     .arg(lowwerLimit)
+                     .arg(upperLimit);
+        }
+        return false;
+    }
+
+    *outputValue = static_cast<T_OUT>(inputValue);
+    return true;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+template<typename T_IN,
+         typename T_OUT,
+         IsMax64BitInteger<T_IN> = true,
+         IsMax64BitFloatingPoint<T_OUT> = true>
+bool converNumericValue(const T_IN &inputValue, T_OUT *outputValue, QString *error)
+{
+    constexpr auto lowwerLimit = std::numeric_limits<T_OUT>::min();
+    constexpr auto upperLimit = std::numeric_limits<T_OUT>::max();
+
+    // Make sure that the input value can be stored in the output
+    if ((static_cast<double>(inputValue) < static_cast<double>(lowwerLimit)) ||
+        (static_cast<double>(inputValue) > static_cast<double>(upperLimit)))
+    {
+        if (error != nullptr)
+        {
+            *error = QString("Parameter value [%1] is out of range for the "
+                             "its data type (min: [%2], max: [%3])!")
+                     .arg(inputValue)
+                     .arg(lowwerLimit)
+                     .arg(upperLimit);
+        }
+        return false;
+    }
+
+    *outputValue = static_cast<T_OUT>(inputValue);
+    return true;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+template<typename T_OUT, IsMax64BitNumeric<T_OUT> = true>
+bool converNumericValue(const double &inputValue, T_OUT *outputValue, QString *error)
+{
+    constexpr auto lowwerLimit = std::numeric_limits<T_OUT>::min();
+    constexpr auto upperLimit = std::numeric_limits<T_OUT>::max();
+
+    // Make sure that the input value can be stored in the output
+    if ((inputValue < static_cast<double>(lowwerLimit)) ||
+        (inputValue > static_cast<double>(upperLimit)))
+    {
+        if (error != nullptr)
+        {
+            *error = QString("Parameter value [%1] is out of range for the "
+                             "its data type (min: [%2], max: [%3])!")
+                     .arg(inputValue)
+                     .arg(lowwerLimit)
+                     .arg(upperLimit);
         }
         return false;
     }
@@ -103,76 +211,76 @@ bool loadIntegerParameter(const QVariant &nodeValue, T *parameterValue, QString 
     {
         // Exactly the same integer type is in the QVariant value
         *parameterValue = nodeValue.value<T>();
+        return true;
     }
-    else
+
+    // Check for a compatible numeric type in the QVariant value
+    switch (nodeValueType)
     {
-        // Check for a compatible numeric type in the QVariant value
-        switch (nodeValueType)
+        case qMetaTypeId<uint8_t>():
+        case qMetaTypeId<uint16_t>():
+        case qMetaTypeId<uint32_t>():
+        case qMetaTypeId<uint64_t>():
         {
-            case qMetaTypeId<uint8_t>():
-            case qMetaTypeId<uint16_t>():
-            case qMetaTypeId<uint32_t>():
-            case qMetaTypeId<uint64_t>():
-            {
-                return converNumericValue(nodeValue.value<uint64_t>(), parameterValue, error);
-            }
+            return converNumericValue(nodeValue.value<uint64_t>(), parameterValue, error);
+        }
 
-            case qMetaTypeId<int8_t>():
-            case qMetaTypeId<int16_t>():
-            case qMetaTypeId<int32_t>():
-            case qMetaTypeId<int64_t>():
-            {
-                return converNumericValue(nodeValue.value<int64_t>(), parameterValue,error);
-            }
+        case qMetaTypeId<int8_t>():
+        case qMetaTypeId<int16_t>():
+        case qMetaTypeId<int32_t>():
+        case qMetaTypeId<int64_t>():
+        {
+            return converNumericValue(nodeValue.value<int64_t>(), parameterValue, error);
+        }
 
-            case qMetaTypeId<float>():
-            case qMetaTypeId<double>():
-            {
-                return converNumericValue(nodeValue.value<double>(), parameterValue, error);
-            }
+        case qMetaTypeId<float>():
+        case qMetaTypeId<double>():
+        {
+            return converNumericValue(nodeValue.value<double>(), parameterValue, error);
+        }
 
-            case qMetaTypeId<QString>():
+        case qMetaTypeId<QByteArray>():
+        case qMetaTypeId<QString>():
+        {
+            if (std::is_signed<T>::value)
             {
-                if (std::is_signed<T>::value)
+                bool ok = false;
+                const auto value = nodeValue.toString().toLongLong(&ok);
+
+                if (!ok)
                 {
-                    bool ok = false;
-                    const auto value = nodeValue.toString().toLongLong(&ok);
-
-                    if (!ok)
+                    if (error != nullptr)
                     {
-                        if (error != nullptr)
-                        {
-                            *error = QString("Failed to convert the parameter value [%1] to a "
-                                             "signed integer!").arg(nodeValue.toString());
-                        }
-                        return false;
+                        *error = QString("Failed to convert the parameter value [%1] to a "
+                                         "signed integer!").arg(nodeValue.toString());
                     }
-
-                    return converNumericValue(value, parameterValue, error);
+                    return false;
                 }
-                else
-                {
-                    bool ok = false;
-                    const auto value = nodeValue.toString().toULongLong(&ok);
 
-                    if (!ok)
-                    {
-                        if (error != nullptr)
-                        {
-                            *error = QString("Failed to convert the parameter value [%1] to an "
-                                             "unsigned integer!").arg(nodeValue.toString());
-                        }
-                        return false;
-                    }
-
-                    return converNumericValue(value, parameterValue, error);
-                }
+                return converNumericValue(static_cast<int64_t>(value), parameterValue, error);
             }
-
-            default:
+            else
             {
-                break;
+                bool ok = false;
+                const auto value = nodeValue.toString().toULongLong(&ok);
+
+                if (!ok)
+                {
+                    if (error != nullptr)
+                    {
+                        *error = QString("Failed to convert the parameter value [%1] to an "
+                                         "unsigned integer!").arg(nodeValue.toString());
+                    }
+                    return false;
+                }
+
+                return converNumericValue(static_cast<uint64_t>(value), parameterValue, error);
             }
+        }
+
+        default:
+        {
+            break;
         }
     }
 
@@ -197,48 +305,48 @@ bool loadFloatingPointParameter(const QVariant &nodeValue, T *parameterValue, QS
     {
         // Exactly the same integer type is in the QVariant value
         *parameterValue = nodeValue.value<T>();
+        return true;
     }
-    else
+
+    // Check for a compatible numeric type in the QVariant value
+    switch (nodeValueType)
     {
-        // Check for a compatible numeric type in the QVariant value
-        switch (nodeValueType)
+        case qMetaTypeId<uint8_t>():
+        case qMetaTypeId<uint16_t>():
+        case qMetaTypeId<uint32_t>():
+        case qMetaTypeId<uint64_t>():
+        case qMetaTypeId<int8_t>():
+        case qMetaTypeId<int16_t>():
+        case qMetaTypeId<int32_t>():
+        case qMetaTypeId<int64_t>():
+        case qMetaTypeId<float>():
+        case qMetaTypeId<double>():
         {
-            case qMetaTypeId<uint8_t>():
-            case qMetaTypeId<uint16_t>():
-            case qMetaTypeId<uint32_t>():
-            case qMetaTypeId<uint64_t>():
-            case qMetaTypeId<int8_t>():
-            case qMetaTypeId<int16_t>():
-            case qMetaTypeId<int32_t>():
-            case qMetaTypeId<int64_t>():
-            case qMetaTypeId<float>():
-            case qMetaTypeId<double>():
-            {
-                return converNumericValue(nodeValue.value<double>(), parameterValue, error);
-            }
+            return converNumericValue(nodeValue.value<double>(), parameterValue, error);
+        }
 
-            case qMetaTypeId<QString>():
-            {
-                bool ok = false;
-                const auto value = nodeValue.toString().toDouble(&ok);
+        case qMetaTypeId<QByteArray>():
+        case qMetaTypeId<QString>():
+        {
+            bool ok = false;
+            const auto value = nodeValue.toString().toDouble(&ok);
 
-                if (!ok)
+            if (!ok)
+            {
+                if (error != nullptr)
                 {
-                    if (error != nullptr)
-                    {
-                        *error = QString("Failed to convert the parameter value [%1] to a "
-                                         "floating-point value!").arg(nodeValue.toString());
-                    }
-                    return false;
+                    *error = QString("Failed to convert the parameter value [%1] to a "
+                                     "floating-point value!").arg(nodeValue.toString());
                 }
-
-                return converNumericValue(value, parameterValue, error);
+                return false;
             }
 
-            default:
-            {
-                break;
-            }
+            return converNumericValue(value, parameterValue, error);
+        }
+
+        default:
+        {
+            break;
         }
     }
 

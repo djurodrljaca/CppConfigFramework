@@ -125,16 +125,17 @@ public:
 
 private:
     //! Holds the min value
-    const T &m_minValue;
+    const T m_minValue;
 
     //! Holds the max value
-    const T &m_maxValue;
+    const T m_maxValue;
 };
 
 // -------------------------------------------------------------------------------------------------
 
 /*!
- * This configuration parameter validatior checks if the value matches any from the specified list
+ * This configuration parameter validatior checks if the value matches any one from the
+ * "valid values" list
  *
  * \tparam  T   Data type of the value to validate
  */
@@ -145,10 +146,10 @@ public:
     /*!
      * Constructor
      *
-     * \param   allowedValues   List of allowed values
+     * \param   validValues     List of valid values
      */
-    ConfigParameterListValidator(const QList<T> &allowedValues)
-        : m_allowedValues(allowedValues)
+    ConfigParameterListValidator(const QList<T> &validValues)
+        : m_validValues(validValues)
     {
     }
 
@@ -158,13 +159,13 @@ public:
     //! \copydoc    ConfigParameterValidator<T>::validate()
     virtual bool validate(const T &value, QString *error = nullptr) const
     {
-        if (!m_allowedValues.contains(value))
+        if (!m_validValues.contains(value))
         {
             if (error != nullptr)
             {
                 QStringList allowedValuesPrintable;
 
-                for (const T &item : m_allowedValues)
+                for (const T &item : m_validValues)
                 {
                     allowedValuesPrintable.append(QString("'%1'").arg(item));
                 }
@@ -179,8 +180,8 @@ public:
     }
 
 private:
-    //! Holds the list of allowed values
-    const QList<T> &m_allowedValues;
+    //! Holds the list of valid values
+    const QList<T> m_validValues;
 };
 
 // -------------------------------------------------------------------------------------------------

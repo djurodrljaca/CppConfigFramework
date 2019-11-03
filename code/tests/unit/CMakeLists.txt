@@ -40,6 +40,8 @@ endfunction()
 add_subdirectory(ConfigLoader)
 add_subdirectory(ConfigNode)
 add_subdirectory(ConfigNodePath)
+add_subdirectory(ConfigParameterLoader)
+add_subdirectory(ConfigParameterValidator)
 add_subdirectory(ConfigReader)
 
 # --------------------------------------------------------------------------------------------------
