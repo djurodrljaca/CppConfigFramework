@@ -116,6 +116,9 @@ private slots:
 
     void testInt64();
     void testInt64_data();
+
+    void testUInt64();
+    void testUInt64_data();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -1783,10 +1786,9 @@ void TestConfigParameterLoader::testInt64_data()
                               << CastNumeric<int64_t>(0)
                               << true;
     QTest::newRow("float: max valid")
-            // Workaround for max int64 value that can be exactly represented as a float value (next
-            // one is max int64 + 1)
-            << QVariant::fromValue(CastNumeric<float>(2147483520))
-            << CastNumeric<int64_t>(2147483520)
+            // Workaround for max int64 value that can be exactly represented as a float value
+            << QVariant::fromValue(CastNumeric<float>(9223371487098961920LL))
+            << CastNumeric<int64_t>(9223371487098961920LL)
             << true;
     QTest::newRow("float: max invalid 1")
             // Workaround for the next smallest max int64 value that can be exactly represented as a
@@ -1881,6 +1883,221 @@ void TestConfigParameterLoader::testInt64_data()
     // Invalid type
     QTest::newRow("Invalid: type") << QVariant::fromValue(QChar('0'))
                                    << CastNumeric<int64_t>(0)
+                                   << false;
+}
+
+// Test: load uint64 value --------------------------------------------------------------------------
+
+void TestConfigParameterLoader::testUInt64()
+{
+    QFETCH(QVariant, nodeValue);
+    QFETCH(uint64_t, expectedParameterValue);
+    QFETCH(bool, expectedResult);
+
+    uint64_t parameterValue = 0U;
+    QString error;
+    bool result = ConfigParameterLoader::load(nodeValue, &parameterValue, &error);
+    qDebug() << "TestConfigParameterLoader::testUInt64: error string:" << error;
+    QCOMPARE(result, expectedResult);
+
+    QCOMPARE(parameterValue, expectedParameterValue);
+}
+
+void TestConfigParameterLoader::testUInt64_data()
+{
+    QTest::addColumn<QVariant>("nodeValue");
+    QTest::addColumn<uint64_t>("expectedParameterValue");
+    QTest::addColumn<bool>("expectedResult");
+
+    // int8
+    QTest::newRow("int8: min invalid") << QVariant::fromValue(MinNumeric<int8_t>())
+                                       << CastNumeric<uint64_t>(0)
+                                       << false;
+    QTest::newRow("int8: 0") << QVariant::fromValue(CastNumeric<int8_t>(0))
+                             << CastNumeric<uint64_t>(0)
+                             << true;
+    QTest::newRow("int8: max valid") << QVariant::fromValue(MaxNumeric<int8_t>())
+                                     << CastNumeric<uint64_t>(MaxNumeric<int8_t>())
+                                     << true;
+
+    // uint8
+    QTest::newRow("uint8: 0") << QVariant::fromValue(CastNumeric<uint8_t>(0))
+                              << CastNumeric<uint64_t>(0)
+                              << true;
+    QTest::newRow("uint8: max") << QVariant::fromValue(MaxNumeric<uint8_t>())
+                                << CastNumeric<uint64_t>(MaxNumeric<uint8_t>())
+                                << true;
+
+    // int16
+    QTest::newRow("int16: min invalid 1") << QVariant::fromValue(MinNumeric<int16_t>())
+                                          << CastNumeric<uint64_t>(0)
+                                          << false;
+    QTest::newRow("int16: min invalid 2") << QVariant::fromValue(CastNumeric<int16_t>(-1))
+                                          << CastNumeric<uint64_t>(0)
+                                          << false;
+    QTest::newRow("int16: 0") << QVariant::fromValue(CastNumeric<int16_t>(0))
+                              << CastNumeric<uint64_t>(0)
+                              << true;
+    QTest::newRow("int16: max")
+            << QVariant::fromValue(MaxNumeric<int16_t>())
+            << CastNumeric<uint64_t>(MaxNumeric<int16_t>())
+            << true;
+
+    // uint16
+    QTest::newRow("uint16: 0") << QVariant::fromValue(CastNumeric<uint16_t>(0))
+                               << CastNumeric<uint64_t>(0)
+                               << true;
+    QTest::newRow("uint16: max")
+            << QVariant::fromValue(MaxNumeric<uint16_t>())
+            << CastNumeric<uint64_t>(MaxNumeric<uint16_t>())
+            << true;
+
+    // int32
+    QTest::newRow("int32: min invalid 1") << QVariant::fromValue(MinNumeric<int32_t>())
+                                          << CastNumeric<uint64_t>(0)
+                                          << false;
+    QTest::newRow("int32: min invalid 2") << QVariant::fromValue(CastNumeric<int32_t>(-1))
+                                          << CastNumeric<uint64_t>(0)
+                                          << false;
+    QTest::newRow("int32: 0") << QVariant::fromValue(CastNumeric<int32_t>(0))
+                              << CastNumeric<uint64_t>(0)
+                              << true;
+    QTest::newRow("int32: max")
+            << QVariant::fromValue(MaxNumeric<int32_t>())
+            << CastNumeric<uint64_t>(MaxNumeric<int32_t>())
+            << true;
+
+    // uint32
+    QTest::newRow("uint32: 0") << QVariant::fromValue(CastNumeric<uint32_t>(0))
+                               << CastNumeric<uint64_t>(0)
+                               << true;
+    QTest::newRow("uint32: max")
+            << QVariant::fromValue(MaxNumeric<uint32_t>())
+            << CastNumeric<uint64_t>(MaxNumeric<uint32_t>())
+            << true;
+
+    // int64
+    QTest::newRow("int64: min invalid 1") << QVariant::fromValue(MinNumeric<int64_t>())
+                                          << CastNumeric<uint64_t>(0)
+                                          << false;
+    QTest::newRow("int64: min invalid 2") << QVariant::fromValue(CastNumeric<int64_t>(-1LL))
+                                          << CastNumeric<uint64_t>(0)
+                                          << false;
+    QTest::newRow("int64: 0") << QVariant::fromValue(CastNumeric<int64_t>(0))
+                              << CastNumeric<uint64_t>(0)
+                              << true;
+    QTest::newRow("int64: max valid")
+            << QVariant::fromValue(MaxNumeric<int64_t>())
+            << CastNumeric<uint64_t>(MaxNumeric<int64_t>())
+            << true;
+
+    // uint64
+    QTest::newRow("uint64: 0") << QVariant::fromValue(CastNumeric<uint64_t>(0))
+                               << CastNumeric<uint64_t>(0)
+                               << true;
+    QTest::newRow("uint64: max")
+            << QVariant::fromValue(MaxNumeric<uint64_t>())
+            << MaxNumeric<uint64_t>()
+            << true;
+
+    // float
+    QTest::newRow("float: min invalid 1") << QVariant::fromValue(MinNumeric<float>())
+                                          << CastNumeric<uint64_t>(0)
+                                          << false;
+    QTest::newRow("float: min invalid 2") << QVariant::fromValue(CastNumeric<float>(-1))
+                                          << CastNumeric<uint64_t>(0)
+                                          << false;
+    QTest::newRow("float: min valid")
+            << QVariant::fromValue(CastNumeric<float>(MinNumeric<uint64_t>()))
+            << MinNumeric<uint64_t>()
+            << true;
+    QTest::newRow("float: 0") << QVariant::fromValue(CastNumeric<float>(0.0f))
+                              << CastNumeric<uint64_t>(0)
+                              << true;
+    QTest::newRow("float: max valid")
+            // Workaround for max uint64 value that can be exactly represented as a float value
+            << QVariant::fromValue(CastNumeric<float>(18446742974197923840ULL))
+            << CastNumeric<uint64_t>(18446742974197923840ULL)
+            << true;
+    QTest::newRow("float: max invalid 1")
+            << QVariant::fromValue(CastNumeric<float>(1.8446746272732807e+19f))
+            << CastNumeric<uint64_t>(0)
+            << false;
+    QTest::newRow("float: max invalid 2") << QVariant::fromValue(MaxNumeric<float>())
+                                          << CastNumeric<uint64_t>(0)
+                                          << false;
+
+    // double
+    QTest::newRow("double: min invalid 1") << QVariant::fromValue(MinNumeric<double>())
+                                           << CastNumeric<uint64_t>(0)
+                                           << false;
+    QTest::newRow("double: min invalid 2") << QVariant::fromValue(CastNumeric<double>(-1))
+                                           << CastNumeric<uint64_t>(0)
+                                           << false;
+    QTest::newRow("double: min valid")
+            << QVariant::fromValue(CastNumeric<double>(MinNumeric<uint64_t>()))
+            << MinNumeric<uint64_t>()
+            << true;
+    QTest::newRow("double: 0") << QVariant::fromValue(CastNumeric<double>(0.0))
+                               << CastNumeric<uint64_t>(0)
+                               << true;
+    QTest::newRow("double: max valid")
+            << QVariant::fromValue(CastNumeric<double>(18446744073709549568ULL))
+            << CastNumeric<uint64_t>(18446744073709549568ULL)
+            << true;
+    QTest::newRow("double: max invalid 1")
+            << QVariant::fromValue(CastNumeric<double>(1.8446744073709556e+19))
+            << CastNumeric<uint64_t>(0)
+            << false;
+    QTest::newRow("double: max invalid 2") << QVariant::fromValue(MaxNumeric<double>())
+                                           << CastNumeric<uint64_t>(0)
+                                           << false;
+
+    // byte array
+    QTest::newRow("byte array: min invalid") << QVariant::fromValue(QByteArray::number(-1))
+                                             << CastNumeric<uint64_t>(0)
+                                             << false;
+    QTest::newRow("byte array: min valid")
+            // Workaround: for some reason uint64_t does not work here
+            << QVariant::fromValue(QByteArray::number(MinNumeric<qulonglong>()))
+            << MinNumeric<uint64_t>()
+            << true;
+    QTest::newRow("byte array: 0") << QVariant::fromValue(QByteArray::number(0))
+                                   << CastNumeric<uint64_t>(0)
+                                   << true;
+    QTest::newRow("byte array: max valid")
+            // Workaround: for some reason uint64_t does not work here
+            << QVariant::fromValue(QByteArray::number(MaxNumeric<qulonglong>()))
+            << MaxNumeric<uint64_t>()
+            << true;
+    QTest::newRow("byte array: max invalid")
+            << QVariant::fromValue(QByteArray::number(1.8446744073709556e+19))
+            << CastNumeric<uint64_t>(0)
+            << false;
+
+    // string
+    QTest::newRow("string: min invalid") << QVariant::fromValue(QString::number(-1))
+                                         << CastNumeric<uint64_t>(0)
+                                         << false;
+    QTest::newRow("string: min valid")
+            << QVariant::fromValue(QString::number(MinNumeric<uint64_t>()))
+            << MinNumeric<uint64_t>()
+            << true;
+    QTest::newRow("string: 0") << QVariant::fromValue(QString::number(0))
+                               << CastNumeric<uint64_t>(0)
+                               << true;
+    QTest::newRow("string: max valid")
+            << QVariant::fromValue(QString::number(MaxNumeric<uint64_t>()))
+            << MaxNumeric<uint64_t>()
+            << true;
+    QTest::newRow("string: max invalid")
+            << QVariant::fromValue(QString::number(1.8446744073709556e+19))
+            << CastNumeric<uint64_t>(0)
+            << false;
+
+    // Invalid type
+    QTest::newRow("Invalid: type") << QVariant::fromValue(QChar('0'))
+                                   << CastNumeric<uint64_t>(0)
                                    << false;
 }
 
