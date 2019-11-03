@@ -84,8 +84,14 @@ void TestConfigReader::testReadValidConfig()
     // Read config file
     const QString configFilePath(QStringLiteral(":/TestData/ValidConfig.json"));
     ConfigReader configReader;
+    QString error;
 
-    auto config = configReader.read(configFilePath);
+    auto config = configReader.read(configFilePath,
+                                    QDir::current(),
+                                    ConfigNodePath::ROOT_PATH,
+                                    ConfigNodePath::ROOT_PATH,
+                                    std::vector<const ConfigObjectNode *>(),
+                                    &error);
     QVERIFY(config);
 
     // Check config configs
@@ -150,8 +156,14 @@ void TestConfigReader::testReadConfigWithNodeReference()
     // Read config file
     const QString configFilePath(QStringLiteral(":/TestData/ConfigWithNodeReferences.json"));
     ConfigReader configReader;
+    QString error;
 
-    auto config = configReader.read(configFilePath);
+    auto config = configReader.read(configFilePath,
+                                    QDir::current(),
+                                    ConfigNodePath::ROOT_PATH,
+                                    ConfigNodePath::ROOT_PATH,
+                                    std::vector<const ConfigObjectNode *>(),
+                                    &error);
     QVERIFY(config);
 
     // Check config configs
@@ -200,8 +212,14 @@ void TestConfigReader::testReadConfigWithDerivedObject()
     // Read config file
     const QString configFilePath(QStringLiteral(":/TestData/ConfigWithDerivedObjects.json"));
     ConfigReader configReader;
+    QString error;
 
-    auto config = configReader.read(configFilePath);
+    auto config = configReader.read(configFilePath,
+                                    QDir::current(),
+                                    ConfigNodePath::ROOT_PATH,
+                                    ConfigNodePath::ROOT_PATH,
+                                    std::vector<const ConfigObjectNode *>(),
+                                    &error);
     QVERIFY(config);
 
     // Check "/derived_object1"
@@ -305,8 +323,14 @@ void TestConfigReader::testReadConfigWithIncludes()
     // Read config file
     const QString configFilePath(QStringLiteral(":/TestData/ConfigWithIncludes.json"));
     ConfigReader configReader;
+    QString error;
 
-    auto config = configReader.read(configFilePath);
+    auto config = configReader.read(configFilePath,
+                                    QDir::current(),
+                                    ConfigNodePath::ROOT_PATH,
+                                    ConfigNodePath::ROOT_PATH,
+                                    std::vector<const ConfigObjectNode *>(),
+                                    &error);
     QVERIFY(config);
     QVERIFY(config->isObject());
     QCOMPARE(config->count(), 3);
