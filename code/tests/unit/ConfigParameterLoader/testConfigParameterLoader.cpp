@@ -33,30 +33,45 @@
 
 // Test helper methods -----------------------------------------------------------------------------
 
-template<typename T_OUT, typename T_IN>
+template<typename T>
+using IsInteger = std::enable_if_t<std::is_integral<T>::value, bool>;
+
+template<typename T>
+using IsFloatingPoint = std::enable_if_t<std::is_floating_point<T>::value, bool>;
+
+template<typename T>
+using IsNumeric = std::enable_if_t<
+(std::is_integral<T>::value || std::is_floating_point<T>::value),
+bool
+>;
+
+template<typename T_OUT, typename T_IN, IsNumeric<T_OUT> = true, IsNumeric<T_IN> = true>
 static T_OUT CastNumeric(const T_IN value)
 {
-    static_assert ((std::is_integral<T_OUT>::value || std::is_floating_point<T_OUT>::value) &&
-                   (std::is_integral<T_IN>::value || std::is_floating_point<T_IN>::value),
-                   "Not numeric");
     return static_cast<T_OUT>(value);
 }
 
 // -------------------------------------------------------------------------------------------------
 
-template<typename T>
+template<typename T, IsInteger<T> = true>
 static T MinNumeric()
 {
-    static_assert (std::is_integral<T>::value || std::is_floating_point<T>::value, "Not numeric");
     return std::numeric_limits<T>::min();
 }
 
 // -------------------------------------------------------------------------------------------------
 
-template<typename T>
+template<typename T, IsFloatingPoint<T> = true>
+static T MinNumeric()
+{
+    return static_cast<T>(-std::numeric_limits<T>::max());
+}
+
+// -------------------------------------------------------------------------------------------------
+
+template<typename T, IsNumeric<T> = true>
 static T MaxNumeric()
 {
-    static_assert (std::is_integral<T>::value || std::is_floating_point<T>::value, "Not numeric");
     return std::numeric_limits<T>::max();
 }
 
@@ -330,10 +345,9 @@ void TestConfigParameterLoader::testInt8_data()
                                            << false;
 
     // float
-    QTest::newRow("float: min invalid 1")
-            << QVariant::fromValue(CastNumeric<float>(-MaxNumeric<float>()))
-            << CastNumeric<int8_t>(0)
-            << false;
+    QTest::newRow("float: min invalid 1") << QVariant::fromValue(MinNumeric<float>())
+                                          << CastNumeric<int8_t>(0)
+                                          << false;
     QTest::newRow("float: min invalid 2")
             << QVariant::fromValue(CastNumeric<float>(MinNumeric<int8_t>() - 1))
             << CastNumeric<int8_t>(0)
@@ -358,10 +372,9 @@ void TestConfigParameterLoader::testInt8_data()
                                           << false;
 
     // double
-    QTest::newRow("double: min invalid 1")
-            << QVariant::fromValue(CastNumeric<double>(-MaxNumeric<double>()))
-            << CastNumeric<int8_t>(0)
-            << false;
+    QTest::newRow("double: min invalid 1") << QVariant::fromValue(MinNumeric<double>())
+                                           << CastNumeric<int8_t>(0)
+                                           << false;
     QTest::newRow("double: min invalid 2")
             << QVariant::fromValue(CastNumeric<double>(MinNumeric<int8_t>() - 1))
             << CastNumeric<int8_t>(0)
@@ -587,10 +600,9 @@ void TestConfigParameterLoader::testUInt8_data()
                                            << false;
 
     // float
-    QTest::newRow("float: min invalid 1")
-            << QVariant::fromValue(CastNumeric<float>(-MaxNumeric<float>()))
-            << CastNumeric<uint8_t>(0)
-            << false;
+    QTest::newRow("float: min invalid 1") << QVariant::fromValue(MinNumeric<float>())
+                                          << CastNumeric<uint8_t>(0)
+                                          << false;
     QTest::newRow("float: min invalid 2") << QVariant::fromValue(CastNumeric<float>(-1))
                                           << CastNumeric<uint8_t>(0)
                                           << false;
@@ -614,10 +626,9 @@ void TestConfigParameterLoader::testUInt8_data()
                                           << false;
 
     // double
-    QTest::newRow("double: min invalid 1")
-            << QVariant::fromValue(CastNumeric<double>(-MaxNumeric<double>()))
-            << CastNumeric<uint8_t>(0)
-            << false;
+    QTest::newRow("double: min invalid 1") << QVariant::fromValue(MinNumeric<double>())
+                                           << CastNumeric<uint8_t>(0)
+                                           << false;
     QTest::newRow("double: min invalid 2") << QVariant::fromValue(CastNumeric<double>(-1))
                                            << CastNumeric<uint8_t>(0)
                                            << false;
@@ -842,10 +853,9 @@ void TestConfigParameterLoader::testInt16_data()
                                            << false;
 
     // float
-    QTest::newRow("float: min invalid 1")
-            << QVariant::fromValue(CastNumeric<float>(-MaxNumeric<float>()))
-            << CastNumeric<int16_t>(0)
-            << false;
+    QTest::newRow("float: min invalid 1") << QVariant::fromValue(MinNumeric<float>())
+                                          << CastNumeric<int16_t>(0)
+                                          << false;
     QTest::newRow("float: min invalid 2")
             << QVariant::fromValue(CastNumeric<float>(MinNumeric<int16_t>() - 1))
             << CastNumeric<int16_t>(0)
@@ -870,10 +880,9 @@ void TestConfigParameterLoader::testInt16_data()
                                           << false;
 
     // double
-    QTest::newRow("double: min invalid 1")
-            << QVariant::fromValue(CastNumeric<double>(-MaxNumeric<double>()))
-            << CastNumeric<int16_t>(0)
-            << false;
+    QTest::newRow("double: min invalid 1") << QVariant::fromValue(MinNumeric<double>())
+                                           << CastNumeric<int16_t>(0)
+                                           << false;
     QTest::newRow("double: min invalid 2")
             << QVariant::fromValue(CastNumeric<double>(MinNumeric<int16_t>() - 1))
             << CastNumeric<int16_t>(0)
@@ -1087,10 +1096,9 @@ void TestConfigParameterLoader::testUInt16_data()
                                            << false;
 
     // float
-    QTest::newRow("float: min invalid 1")
-            << QVariant::fromValue(CastNumeric<float>(-MaxNumeric<float>()))
-            << CastNumeric<uint16_t>(0)
-            << false;
+    QTest::newRow("float: min invalid 1") << QVariant::fromValue(MinNumeric<float>())
+                                          << CastNumeric<uint16_t>(0)
+                                          << false;
     QTest::newRow("float: min invalid 2") << QVariant::fromValue(CastNumeric<float>(-1))
                                           << CastNumeric<uint16_t>(0)
                                           << false;
@@ -1114,10 +1122,9 @@ void TestConfigParameterLoader::testUInt16_data()
                                           << false;
 
     // double
-    QTest::newRow("double: min invalid 1")
-            << QVariant::fromValue(CastNumeric<double>(-MaxNumeric<double>()))
-            << CastNumeric<uint16_t>(0)
-            << false;
+    QTest::newRow("double: min invalid 1") << QVariant::fromValue(MinNumeric<double>())
+                                           << CastNumeric<uint16_t>(0)
+                                           << false;
     QTest::newRow("double: min invalid 2") << QVariant::fromValue(CastNumeric<double>(-1))
                                            << CastNumeric<uint16_t>(0)
                                            << false;
@@ -1318,10 +1325,9 @@ void TestConfigParameterLoader::testInt32_data()
                                            << false;
 
     // float
-    QTest::newRow("float: min invalid 1")
-            << QVariant::fromValue(CastNumeric<float>(-MaxNumeric<float>()))
-            << CastNumeric<int32_t>(0)
-            << false;
+    QTest::newRow("float: min invalid 1") << QVariant::fromValue(MinNumeric<float>())
+                                          << CastNumeric<int32_t>(0)
+                                          << false;
     QTest::newRow("float: min invalid 2")
             << QVariant::fromValue(CastNumeric<float>(MinNumeric<int32_t>() - 1))
             << CastNumeric<int32_t>(0)
@@ -1348,10 +1354,9 @@ void TestConfigParameterLoader::testInt32_data()
                                           << false;
 
     // double
-    QTest::newRow("double: min invalid 1")
-            << QVariant::fromValue(CastNumeric<double>(-MaxNumeric<double>()))
-            << CastNumeric<int32_t>(0)
-            << false;
+    QTest::newRow("double: min invalid 1") << QVariant::fromValue(MinNumeric<double>())
+                                           << CastNumeric<int32_t>(0)
+                                           << false;
     QTest::newRow("double: min invalid 2")
             << QVariant::fromValue(CastNumeric<double>(MinNumeric<int32_t>() - 1LL))
             << CastNumeric<int32_t>(0)
@@ -1551,10 +1556,9 @@ void TestConfigParameterLoader::testUInt32_data()
                                            << false;
 
     // float
-    QTest::newRow("float: min invalid 1")
-            << QVariant::fromValue(CastNumeric<float>(-MaxNumeric<float>()))
-            << CastNumeric<uint32_t>(0)
-            << false;
+    QTest::newRow("float: min invalid 1") << QVariant::fromValue(MinNumeric<float>())
+                                          << CastNumeric<uint32_t>(0)
+                                          << false;
     QTest::newRow("float: min invalid 2") << QVariant::fromValue(CastNumeric<float>(-1))
                                           << CastNumeric<uint32_t>(0)
                                           << false;
@@ -1580,10 +1584,9 @@ void TestConfigParameterLoader::testUInt32_data()
                                           << false;
 
     // double
-    QTest::newRow("double: min invalid 1")
-            << QVariant::fromValue(CastNumeric<double>(-MaxNumeric<double>()))
-            << CastNumeric<uint32_t>(0)
-            << false;
+    QTest::newRow("double: min invalid 1") << QVariant::fromValue(MinNumeric<double>())
+                                           << CastNumeric<uint32_t>(0)
+                                           << false;
     QTest::newRow("double: min invalid 2") << QVariant::fromValue(CastNumeric<double>(-1))
                                            << CastNumeric<uint32_t>(0)
                                            << false;
