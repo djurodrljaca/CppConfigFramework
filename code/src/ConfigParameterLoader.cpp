@@ -53,15 +53,15 @@ template<typename T>
 using IsMax64BitInteger = std::enable_if_t<std::is_integral<T>::value && (sizeof(T) <= 8), bool>;
 
 template<typename T>
-using IsMax64BitNumeric = std::enable_if_t<
-(std::is_integral<T>::value || std::is_floating_point<T>::value) && (sizeof(T) <= 8),
+using IsMax64BitFloatingPoint = std::enable_if_t<
+std::is_floating_point<T>::value && (sizeof(T) <= 8),
 bool
 >;
 
 // -------------------------------------------------------------------------------------------------
 
 template<typename T_OUT, IsMax64BitInteger<T_OUT> = true>
-bool convertNumericValue(const int64_t &inputValue, T_OUT *outputValue, QString *error)
+bool convertIntegerValue(const int64_t &inputValue, T_OUT *outputValue, QString *error)
 {
     constexpr auto lowwerLimit = std::numeric_limits<T_OUT>::min();
     constexpr auto upperLimit = std::numeric_limits<T_OUT>::max();
@@ -112,7 +112,7 @@ bool convertNumericValue(const int64_t &inputValue, T_OUT *outputValue, QString 
 // -------------------------------------------------------------------------------------------------
 
 template<typename T_OUT, IsMax64BitInteger<T_OUT> = true>
-bool convertNumericValue(const uint64_t &inputValue, T_OUT *outputValue, QString *error)
+bool convertIntegerValue(const uint64_t &inputValue, T_OUT *outputValue, QString *error)
 {
     constexpr auto lowwerLimit = std::numeric_limits<T_OUT>::min();
     constexpr auto upperLimit = std::numeric_limits<T_OUT>::max();
@@ -137,10 +137,37 @@ bool convertNumericValue(const uint64_t &inputValue, T_OUT *outputValue, QString
 
 // -------------------------------------------------------------------------------------------------
 
-template<typename T_OUT, IsMax64BitNumeric<T_OUT> = true>
-bool convertNumericValue(const double &inputValue, T_OUT *outputValue, QString *error)
+template<typename T_OUT, IsMax64BitInteger<T_OUT> = true>
+bool convertIntegerValue(const double &inputValue, T_OUT *outputValue, QString *error)
 {
     constexpr auto lowwerLimit = std::numeric_limits<T_OUT>::min();
+    constexpr auto upperLimit = std::numeric_limits<T_OUT>::max();
+
+    // Make sure that the input value can be stored in the output
+    if ((inputValue < static_cast<double>(lowwerLimit)) ||
+        (inputValue > static_cast<double>(upperLimit)))
+    {
+        if (error != nullptr)
+        {
+            *error = QString("Parameter value [%1] is out of range for the "
+                             "its data type (min: [%2], max: [%3])!")
+                     .arg(inputValue)
+                     .arg(lowwerLimit)
+                     .arg(upperLimit);
+        }
+        return false;
+    }
+
+    *outputValue = static_cast<T_OUT>(inputValue);
+    return true;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+template<typename T_OUT, IsMax64BitFloatingPoint<T_OUT> = true>
+bool convertFloatingPointValue(const double &inputValue, T_OUT *outputValue, QString *error)
+{
+    constexpr auto lowwerLimit = -std::numeric_limits<T_OUT>::max();
     constexpr auto upperLimit = std::numeric_limits<T_OUT>::max();
 
     // Make sure that the input value can be stored in the output
@@ -186,7 +213,7 @@ bool loadIntegerParameter(const QVariant &nodeValue, T *parameterValue, QString 
         case qMetaTypeId<uint32_t>():
         case qMetaTypeId<uint64_t>():
         {
-            return convertNumericValue(nodeValue.value<uint64_t>(), parameterValue, error);
+            return convertIntegerValue(nodeValue.value<uint64_t>(), parameterValue, error);
         }
 
         case qMetaTypeId<int8_t>():
@@ -194,13 +221,13 @@ bool loadIntegerParameter(const QVariant &nodeValue, T *parameterValue, QString 
         case qMetaTypeId<int32_t>():
         case qMetaTypeId<int64_t>():
         {
-            return convertNumericValue(nodeValue.value<int64_t>(), parameterValue, error);
+            return convertIntegerValue(nodeValue.value<int64_t>(), parameterValue, error);
         }
 
         case qMetaTypeId<float>():
         case qMetaTypeId<double>():
         {
-            return convertNumericValue(nodeValue.value<double>(), parameterValue, error);
+            return convertIntegerValue(nodeValue.value<double>(), parameterValue, error);
         }
 
         case qMetaTypeId<QByteArray>():
@@ -221,7 +248,7 @@ bool loadIntegerParameter(const QVariant &nodeValue, T *parameterValue, QString 
                     return false;
                 }
 
-                return convertNumericValue(static_cast<int64_t>(value), parameterValue, error);
+                return convertIntegerValue(static_cast<int64_t>(value), parameterValue, error);
             }
             else
             {
@@ -238,7 +265,7 @@ bool loadIntegerParameter(const QVariant &nodeValue, T *parameterValue, QString 
                     return false;
                 }
 
-                return convertNumericValue(static_cast<uint64_t>(value), parameterValue, error);
+                return convertIntegerValue(static_cast<uint64_t>(value), parameterValue, error);
             }
         }
 
@@ -286,7 +313,7 @@ bool loadFloatingPointParameter(const QVariant &nodeValue, T *parameterValue, QS
         case qMetaTypeId<float>():
         case qMetaTypeId<double>():
         {
-            return convertNumericValue(nodeValue.value<double>(), parameterValue, error);
+            return convertFloatingPointValue(nodeValue.value<double>(), parameterValue, error);
         }
 
         case qMetaTypeId<QByteArray>():
@@ -305,7 +332,7 @@ bool loadFloatingPointParameter(const QVariant &nodeValue, T *parameterValue, QS
                 return false;
             }
 
-            return convertNumericValue(value, parameterValue, error);
+            return convertFloatingPointValue(value, parameterValue, error);
         }
 
         default:
