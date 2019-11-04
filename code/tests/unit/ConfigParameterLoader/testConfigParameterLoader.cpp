@@ -172,7 +172,7 @@ void TestConfigParameterLoader::testBool_data()
     QTest::newRow("int") << QVariant(1) << false << false;
     QTest::newRow("uint") << QVariant(1u) << false << false;
     QTest::newRow("double") << QVariant(1.0) << false << false;
-    QTest::newRow("string") << QVariant(QString("true")) << false << false;
+    QTest::newRow("string") << QVariant(QString("true")) << false << false; // TODO: should this be valid?
 }
 
 // Test: load int8 value ---------------------------------------------------------------------------
@@ -427,6 +427,10 @@ void TestConfigParameterLoader::testInt8_data()
             << QVariant::fromValue(QByteArray::number(MaxNumeric<int8_t>() + 1))
             << CastNumeric<int8_t>(0)
             << false;
+    QTest::newRow("byte array: invalid string")
+            << QVariant::fromValue(QByteArrayLiteral("123t"))
+            << CastNumeric<int8_t>(0)
+            << false;
 
     // string
     QTest::newRow("string: min invalid")
@@ -444,6 +448,10 @@ void TestConfigParameterLoader::testInt8_data()
                                        << true;
     QTest::newRow("string: max invalid")
             << QVariant::fromValue(QString::number(MaxNumeric<int8_t>() + 1))
+            << CastNumeric<int8_t>(0)
+            << false;
+    QTest::newRow("string: invalid string")
+            << QVariant::fromValue(QStringLiteral("123t"))
             << CastNumeric<int8_t>(0)
             << false;
 
@@ -671,6 +679,10 @@ void TestConfigParameterLoader::testUInt8_data()
             << QVariant::fromValue(QByteArray::number(MaxNumeric<uint8_t>() + 1))
             << CastNumeric<uint8_t>(0)
             << false;
+    QTest::newRow("byte array: invalid string")
+            << QVariant::fromValue(QByteArrayLiteral("123t"))
+            << CastNumeric<uint8_t>(0)
+            << false;
 
     // string
     QTest::newRow("string: min invalid") << QVariant::fromValue(QString::number(-1))
@@ -689,6 +701,10 @@ void TestConfigParameterLoader::testUInt8_data()
             << true;
     QTest::newRow("string: max invalid")
             << QVariant::fromValue(QString::number(MaxNumeric<uint8_t>() + 1))
+            << CastNumeric<uint8_t>(0)
+            << false;
+    QTest::newRow("string: invalid string")
+            << QVariant::fromValue(QStringLiteral("123t"))
             << CastNumeric<uint8_t>(0)
             << false;
 
@@ -927,6 +943,10 @@ void TestConfigParameterLoader::testInt16_data()
             << QVariant::fromValue(QByteArray::number(MaxNumeric<int16_t>() + 1))
             << CastNumeric<int16_t>(0)
             << false;
+    QTest::newRow("byte array: invalid string")
+            << QVariant::fromValue(QByteArrayLiteral("123t"))
+            << CastNumeric<int16_t>(0)
+            << false;
 
     // string
     QTest::newRow("string: min invalid")
@@ -946,6 +966,10 @@ void TestConfigParameterLoader::testInt16_data()
             << true;
     QTest::newRow("string: max invalid")
             << QVariant::fromValue(QString::number(MaxNumeric<int16_t>() + 1))
+            << CastNumeric<int16_t>(0)
+            << false;
+    QTest::newRow("string: invalid string")
+            << QVariant::fromValue(QStringLiteral("123t"))
             << CastNumeric<int16_t>(0)
             << false;
 
@@ -1159,6 +1183,10 @@ void TestConfigParameterLoader::testUInt16_data()
             << QVariant::fromValue(QByteArray::number(MaxNumeric<uint16_t>() + 1))
             << CastNumeric<uint16_t>(0)
             << false;
+    QTest::newRow("byte array: invalid string")
+            << QVariant::fromValue(QByteArrayLiteral("123t"))
+            << CastNumeric<uint16_t>(0)
+            << false;
 
     // string
     QTest::newRow("string: min invalid") << QVariant::fromValue(QString::number(-1))
@@ -1177,6 +1205,10 @@ void TestConfigParameterLoader::testUInt16_data()
             << true;
     QTest::newRow("string: max invalid")
             << QVariant::fromValue(QString::number(MaxNumeric<uint16_t>() + 1))
+            << CastNumeric<uint16_t>(0)
+            << false;
+    QTest::newRow("string: invalid string")
+            << QVariant::fromValue(QStringLiteral("123t"))
             << CastNumeric<uint16_t>(0)
             << false;
 
@@ -1394,6 +1426,10 @@ void TestConfigParameterLoader::testInt32_data()
             << QVariant::fromValue(QByteArray::number(MaxNumeric<int32_t>() + 1LL))
             << CastNumeric<int32_t>(0)
             << false;
+    QTest::newRow("byte array: invalid string")
+            << QVariant::fromValue(QByteArrayLiteral("123t"))
+            << CastNumeric<int32_t>(0)
+            << false;
 
     // string
     QTest::newRow("string: min invalid")
@@ -1413,6 +1449,10 @@ void TestConfigParameterLoader::testInt32_data()
             << true;
     QTest::newRow("string: max invalid")
             << QVariant::fromValue(QString::number(MaxNumeric<int32_t>() + 1LL))
+            << CastNumeric<int32_t>(0)
+            << false;
+    QTest::newRow("string: invalid string")
+            << QVariant::fromValue(QStringLiteral("123t"))
             << CastNumeric<int32_t>(0)
             << false;
 
@@ -1614,6 +1654,10 @@ void TestConfigParameterLoader::testUInt32_data()
             << QVariant::fromValue(QByteArray::number(MaxNumeric<uint32_t>() + 1ULL))
             << CastNumeric<uint32_t>(0)
             << false;
+    QTest::newRow("byte array: invalid string")
+            << QVariant::fromValue(QByteArrayLiteral("123t"))
+            << CastNumeric<uint32_t>(0)
+            << false;
 
     // string
     QTest::newRow("string: min invalid") << QVariant::fromValue(QString::number(-1))
@@ -1632,6 +1676,10 @@ void TestConfigParameterLoader::testUInt32_data()
             << true;
     QTest::newRow("string: max invalid")
             << QVariant::fromValue(QString::number(MaxNumeric<uint32_t>() + 1ULL))
+            << CastNumeric<uint32_t>(0)
+            << false;
+    QTest::newRow("string: invalid string")
+            << QVariant::fromValue(QStringLiteral("123t"))
             << CastNumeric<uint32_t>(0)
             << false;
 
@@ -1835,6 +1883,10 @@ void TestConfigParameterLoader::testInt64_data()
             << QVariant::fromValue(QByteArray::number(MaxNumeric<int64_t>() + 1ULL))
             << CastNumeric<int64_t>(0)
             << false;
+    QTest::newRow("byte array: invalid string")
+            << QVariant::fromValue(QByteArrayLiteral("123t"))
+            << CastNumeric<int64_t>(0)
+            << false;
 
     // string
     QTest::newRow("string: min invalid")
@@ -1856,6 +1908,10 @@ void TestConfigParameterLoader::testInt64_data()
             << true;
     QTest::newRow("string: max invalid")
             << QVariant::fromValue(QString::number(MaxNumeric<int64_t>() + 1ULL))
+            << CastNumeric<int64_t>(0)
+            << false;
+    QTest::newRow("string: invalid string")
+            << QVariant::fromValue(QStringLiteral("123t"))
             << CastNumeric<int64_t>(0)
             << false;
 
@@ -2044,6 +2100,10 @@ void TestConfigParameterLoader::testUInt64_data()
             << QVariant::fromValue(QByteArray::number(1.8446744073709556e+19))
             << CastNumeric<uint64_t>(0)
             << false;
+    QTest::newRow("byte array: invalid string")
+            << QVariant::fromValue(QByteArrayLiteral("123t"))
+            << CastNumeric<uint64_t>(0)
+            << false;
 
     // string
     QTest::newRow("string: min invalid") << QVariant::fromValue(QString::number(-1))
@@ -2062,6 +2122,10 @@ void TestConfigParameterLoader::testUInt64_data()
             << true;
     QTest::newRow("string: max invalid")
             << QVariant::fromValue(QString::number(1.8446744073709556e+19))
+            << CastNumeric<uint64_t>(0)
+            << false;
+    QTest::newRow("string: invalid string")
+            << QVariant::fromValue(QStringLiteral("123t"))
             << CastNumeric<uint64_t>(0)
             << false;
 
@@ -2233,6 +2297,10 @@ void TestConfigParameterLoader::testFloat_data()
             << QVariant::fromValue(QByteArray::number(MaxNumeric<float>() + 1.5337e32))
             << CastNumeric<float>(0)
             << false;
+    QTest::newRow("byte array: invalid string")
+            << QVariant::fromValue(QByteArrayLiteral("123t"))
+            << CastNumeric<float>(0)
+            << false;
 
     // string
     QTest::newRow("string: min invalid")
@@ -2254,6 +2322,10 @@ void TestConfigParameterLoader::testFloat_data()
     QTest::newRow("string: max invalid")
             // Workaround for the next value that is bigger than max float
             << QVariant::fromValue(QString::number(MaxNumeric<float>() + 1.5337e32))
+            << CastNumeric<float>(0)
+            << false;
+    QTest::newRow("string: invalid string")
+            << QVariant::fromValue(QStringLiteral("123t"))
             << CastNumeric<float>(0)
             << false;
 
