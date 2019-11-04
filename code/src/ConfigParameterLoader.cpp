@@ -60,8 +60,95 @@ bool
 
 // -------------------------------------------------------------------------------------------------
 
+template<typename T_IN, IsMax64BitInteger<T_IN> = true>
+bool convertBooleanValue(const T_IN inputValue, bool *outputValue, QString *error)
+{
+    if (inputValue == static_cast<T_IN>(0))
+    {
+        *outputValue = false;
+        return true;
+    }
+
+    if (inputValue == static_cast<T_IN>(1))
+    {
+        *outputValue = true;
+        return true;
+    }
+
+    *error = QString("Not a valid Boolean value in integral format [%1]! "
+                     "Only [0] and [1] values are allowed!").arg(inputValue);
+    return false;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+bool convertBooleanValue(const double inputValue, bool *outputValue, QString *error)
+{
+    // Check if value is very close to 0
+    if (std::abs(inputValue) < 1e-3)
+    {
+        *outputValue = false;
+        return true;
+    }
+
+    // Check if value is very close to 1
+    if (std::abs(inputValue - 1.0) < 1e-3)
+    {
+        *outputValue = true;
+        return true;
+    }
+
+    // Error
+    if (error != nullptr)
+    {
+        *error = QString("Not a valid Boolean value in floating-point format [%1]! "
+                         "Only [0] and [1] values are allowed!").arg(inputValue);
+    }
+    return false;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+bool convertBooleanValue(const QString &inputValue, bool *outputValue, QString *error)
+{
+    // Try to extract the value from a string
+    if (inputValue == QStringLiteral("false"))
+    {
+        *outputValue = false;
+        return true;
+    }
+
+    if (inputValue == QStringLiteral("true"))
+    {
+        *outputValue = true;
+        return true;
+    }
+
+    // Try to extract the value from a numeric value
+    bool ok = false;
+    const auto floatingPointValue = inputValue.toDouble(&ok);
+
+    if (ok)
+    {
+        if (Internal::convertBooleanValue(floatingPointValue, outputValue, nullptr))
+        {
+            return true;
+        }
+    }
+
+    // Error
+    if (error != nullptr)
+    {
+        *error = QString("Not a valid Boolean value in string format [%1]! "
+                         "Only [false], [true], [0], and [1] values are allowed!").arg(inputValue);
+    }
+    return false;
+}
+
+// -------------------------------------------------------------------------------------------------
+
 template<typename T_OUT, IsMax64BitInteger<T_OUT> = true>
-bool convertIntegerValue(const int64_t &inputValue, T_OUT *outputValue, QString *error)
+bool convertIntegerValue(const int64_t inputValue, T_OUT *outputValue, QString *error)
 {
     constexpr auto lowwerLimit = std::numeric_limits<T_OUT>::min();
     constexpr auto upperLimit = std::numeric_limits<T_OUT>::max();
@@ -112,7 +199,7 @@ bool convertIntegerValue(const int64_t &inputValue, T_OUT *outputValue, QString 
 // -------------------------------------------------------------------------------------------------
 
 template<typename T_OUT, IsMax64BitInteger<T_OUT> = true>
-bool convertIntegerValue(const uint64_t &inputValue, T_OUT *outputValue, QString *error)
+bool convertIntegerValue(const uint64_t inputValue, T_OUT *outputValue, QString *error)
 {
     constexpr auto lowwerLimit = std::numeric_limits<T_OUT>::min();
     constexpr auto upperLimit = std::numeric_limits<T_OUT>::max();
@@ -138,7 +225,7 @@ bool convertIntegerValue(const uint64_t &inputValue, T_OUT *outputValue, QString
 // -------------------------------------------------------------------------------------------------
 
 template<typename T_OUT, IsMax64BitInteger<T_OUT> = true>
-bool convertIntegerValue(const double &inputValue, T_OUT *outputValue, QString *error)
+bool convertIntegerValue(const double inputValue, T_OUT *outputValue, QString *error)
 {
     constexpr auto lowwerLimit = std::numeric_limits<T_OUT>::min();
     constexpr auto upperLimit = std::numeric_limits<T_OUT>::max();
@@ -165,7 +252,7 @@ bool convertIntegerValue(const double &inputValue, T_OUT *outputValue, QString *
 // -------------------------------------------------------------------------------------------------
 
 template<typename T_OUT, IsMax64BitFloatingPoint<T_OUT> = true>
-bool convertFloatingPointValue(const double &inputValue, T_OUT *outputValue, QString *error)
+bool convertFloatingPointValue(const double inputValue, T_OUT *outputValue, QString *error)
 {
     constexpr auto lowwerLimit = -std::numeric_limits<T_OUT>::max();
     constexpr auto upperLimit = std::numeric_limits<T_OUT>::max();
@@ -212,6 +299,7 @@ bool loadIntegerParameter(const QVariant &nodeValue, T *parameterValue, QString 
         case qMetaTypeId<uint16_t>():
         case qMetaTypeId<uint32_t>():
         case qMetaTypeId<uint64_t>():
+        case qMetaTypeId<qulonglong>():
         {
             return convertIntegerValue(nodeValue.value<uint64_t>(), parameterValue, error);
         }
@@ -220,6 +308,7 @@ bool loadIntegerParameter(const QVariant &nodeValue, T *parameterValue, QString 
         case qMetaTypeId<int16_t>():
         case qMetaTypeId<int32_t>():
         case qMetaTypeId<int64_t>():
+        case qMetaTypeId<qlonglong>():
         {
             return convertIntegerValue(nodeValue.value<int64_t>(), parameterValue, error);
         }
@@ -306,10 +395,12 @@ bool loadFloatingPointParameter(const QVariant &nodeValue, T *parameterValue, QS
         case qMetaTypeId<uint16_t>():
         case qMetaTypeId<uint32_t>():
         case qMetaTypeId<uint64_t>():
+        case qMetaTypeId<qulonglong>():
         case qMetaTypeId<int8_t>():
         case qMetaTypeId<int16_t>():
         case qMetaTypeId<int32_t>():
         case qMetaTypeId<int64_t>():
+        case qMetaTypeId<qlonglong>():
         case qMetaTypeId<float>():
         case qMetaTypeId<double>():
         {
@@ -361,12 +452,51 @@ namespace ConfigParameterLoader
 
 bool load(const QVariant &nodeValue, bool *parameterValue, QString *error)
 {
-    if (static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::Bool)
+    switch (nodeValue.userType())
     {
-        *parameterValue = nodeValue.toBool();
-        return true;
+        case qMetaTypeId<bool>():
+        {
+            *parameterValue = nodeValue.toBool();
+            return true;
+        }
+
+        case qMetaTypeId<uint8_t>():
+        case qMetaTypeId<uint16_t>():
+        case qMetaTypeId<uint32_t>():
+        case qMetaTypeId<uint64_t>():
+        case qMetaTypeId<qulonglong>():
+        {
+            return Internal::convertBooleanValue(nodeValue.toULongLong(), parameterValue, error);
+        }
+
+        case qMetaTypeId<int8_t>():
+        case qMetaTypeId<int16_t>():
+        case qMetaTypeId<int32_t>():
+        case qMetaTypeId<int64_t>():
+        case qMetaTypeId<qlonglong>():
+        {
+            return Internal::convertBooleanValue(nodeValue.toLongLong(), parameterValue, error);
+        }
+
+        case qMetaTypeId<float>():
+        case qMetaTypeId<double>():
+        {
+            return Internal::convertBooleanValue(nodeValue.toDouble(), parameterValue, error);
+        }
+
+        case qMetaTypeId<QByteArray>():
+        case qMetaTypeId<QString>():
+        {
+            return Internal::convertBooleanValue(nodeValue.toString(), parameterValue, error);
+        }
+
+        default:
+        {
+            break;
+        }
     }
 
+    // Error
     if (error != nullptr)
     {
         *error = QStringLiteral("Not a Boolean value!");

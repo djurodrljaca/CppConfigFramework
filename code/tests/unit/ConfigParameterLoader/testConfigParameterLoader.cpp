@@ -166,13 +166,45 @@ void TestConfigParameterLoader::testBool_data()
     QTest::addColumn<bool>("expectedParameterValue");
     QTest::addColumn<bool>("expectedResult");
 
-    QTest::newRow("false") << QVariant(false) << false << true;
-    QTest::newRow("true") << QVariant(true) << true << true;
+    QTest::newRow("bool: false") << QVariant(false) << false << true;
+    QTest::newRow("bool: true") << QVariant(true) << true << true;
 
-    QTest::newRow("int") << QVariant(1) << false << false;
-    QTest::newRow("uint") << QVariant(1u) << false << false;
-    QTest::newRow("double") << QVariant(1.0) << false << false;
-    QTest::newRow("string") << QVariant(QString("true")) << false << false; // TODO: should this be valid?
+    QTest::newRow("int: min") << QVariant(MinNumeric<int>()) << false << false;
+    QTest::newRow("int: -1") << QVariant(-1) << false << false;
+    QTest::newRow("int: 0") << QVariant(0) << false << true;
+    QTest::newRow("int: 1") << QVariant(1) << true << true;
+    QTest::newRow("int: 2") << QVariant(2) << false << false;
+    QTest::newRow("int: max") << QVariant(MaxNumeric<int>()) << false << false;
+
+    QTest::newRow("uint: 0") << QVariant(0u) << false << true;
+    QTest::newRow("uint: 1") << QVariant(1u) << true << true;
+    QTest::newRow("uint: 2") << QVariant(2u) << false << false;
+    QTest::newRow("uint: max") << QVariant(MaxNumeric<unsigned int>()) << false << false;
+
+    QTest::newRow("float: min") << QVariant(MinNumeric<float>()) << false << false;
+    QTest::newRow("float: < 0.0") << QVariant(-0.01f) << false << false;
+    QTest::newRow("float: 0.0") << QVariant(0.0f) << false << true;
+    QTest::newRow("float: 1.0") << QVariant(1.0f) << true << true;
+    QTest::newRow("float: > 1.0") << QVariant(1.01f) << false << false;
+    QTest::newRow("float: max") << QVariant(MaxNumeric<float>()) << false << false;
+
+    QTest::newRow("double: min") << QVariant(MinNumeric<double>()) << false << false;
+    QTest::newRow("double: < 0.0") << QVariant(-0.01) << false << false;
+    QTest::newRow("double: 0.0") << QVariant(0.0) << false << true;
+    QTest::newRow("double: 1.0") << QVariant(1.0) << true << true;
+    QTest::newRow("double: > 1.0") << QVariant(1.01) << false << false;
+    QTest::newRow("double: max") << QVariant(MaxNumeric<double>()) << false << false;
+
+    QTest::newRow("string: false") << QVariant(QString("false")) << false << true;
+    QTest::newRow("string: true") << QVariant(QString("true")) << true << true;
+    QTest::newRow("string: invalid 1") << QVariant(QString("False")) << false << false;
+    QTest::newRow("string: invalid 2") << QVariant(QString("True")) << false << false;
+    QTest::newRow("string: invalid 3") << QVariant(QString("asd")) << false << false;
+
+    QTest::newRow("string: < 0.0") << QVariant(QString("-0.01")) << false << false;
+    QTest::newRow("string: 0.0") << QVariant(QString("0.0")) << false << true;
+    QTest::newRow("string: 1.0") << QVariant(QString("1.0")) << true << true;
+    QTest::newRow("string: > 1.0") << QVariant(QString("1.01")) << false << false;
 }
 
 // Test: load int8 value ---------------------------------------------------------------------------
