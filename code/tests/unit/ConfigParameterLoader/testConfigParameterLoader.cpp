@@ -125,6 +125,9 @@ private slots:
 
     void testDouble();
     void testDouble_data();
+
+    void testChar();
+    void testChar_data();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -2628,6 +2631,142 @@ void TestConfigParameterLoader::testDouble_data()
     QTest::newRow("Invalid: type") << QVariant::fromValue(QChar('0'))
                                    << CastNumeric<double>(0)
                                    << false;
+}
+// Test: load char value ---------------------------------------------------------------------------
+
+void TestConfigParameterLoader::testChar()
+{
+    QFETCH(QVariant, nodeValue);
+    QFETCH(QChar, expectedParameterValue);
+    QFETCH(bool, expectedResult);
+
+    QChar parameterValue;
+    QString error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testChar: error string:" << error;
+
+    QCOMPARE(parameterValue, expectedParameterValue);
+}
+
+void TestConfigParameterLoader::testChar_data()
+{
+    QTest::addColumn<QVariant>("nodeValue");
+    QTest::addColumn<QChar>("expectedParameterValue");
+    QTest::addColumn<bool>("expectedResult");
+
+    // QChar
+    QTest::newRow("char: '\\0'") << QVariant::fromValue(QChar('\0'))
+                               << QChar('\0')
+                               << true;
+    QTest::newRow("char: '0'") << QVariant::fromValue(QChar('0'))
+                               << QChar('0')
+                               << true;
+    QTest::newRow("char: '9'") << QVariant::fromValue(QChar('9'))
+                               << QChar('9')
+                               << true;
+    QTest::newRow("char: 'A'") << QVariant::fromValue(QChar('A'))
+                               << QChar('A')
+                               << true;
+    QTest::newRow("char: 'Z'") << QVariant::fromValue(QChar('Z'))
+                               << QChar('Z')
+                               << true;
+    QTest::newRow("char: 'a'") << QVariant::fromValue(QChar('a'))
+                               << QChar('a')
+                               << true;
+    QTest::newRow("char: 'z'") << QVariant::fromValue(QChar('z'))
+                               << QChar('z')
+                               << true;
+
+    // byte array
+    QTest::newRow("byte array: '0'") << QVariant::fromValue(QByteArray("0"))
+                                       << QChar('0')
+                                       << true;
+    QTest::newRow("byte array: '9'") << QVariant::fromValue(QByteArray("9"))
+                                     << QChar('9')
+                                     << true;
+    QTest::newRow("byte array: 'A'") << QVariant::fromValue(QByteArray("A"))
+                                     << QChar('A')
+                                     << true;
+    QTest::newRow("byte array: 'Z'") << QVariant::fromValue(QByteArray("Z"))
+                                     << QChar('Z')
+                                     << true;
+    QTest::newRow("byte array: 'a'") << QVariant::fromValue(QByteArray("a"))
+                                     << QChar('a')
+                                     << true;
+    QTest::newRow("byte array: 'z'") << QVariant::fromValue(QByteArray("z"))
+                                     << QChar('z')
+                                     << true;
+    QTest::newRow("byte array: '\\0'") << QVariant::fromValue(QByteArray("\0"))
+                                       << QChar()
+                                       << false;
+    QTest::newRow("byte array: invalid too short") << QVariant::fromValue(QByteArray(""))
+                                                   << QChar()
+                                                   << false;
+    QTest::newRow("byte array: invalid too long") << QVariant::fromValue(QByteArray("aa"))
+                                                  << QChar()
+                                                  << false;
+
+    // string
+    QTest::newRow("string: '0'") << QVariant::fromValue(QString("0"))
+                                     << QChar('0')
+                                     << true;
+    QTest::newRow("string: '9'") << QVariant::fromValue(QString("9"))
+                                     << QChar('9')
+                                     << true;
+    QTest::newRow("string: 'A'") << QVariant::fromValue(QString("A"))
+                                     << QChar('A')
+                                     << true;
+    QTest::newRow("string: 'Z'") << QVariant::fromValue(QString("Z"))
+                                     << QChar('Z')
+                                     << true;
+    QTest::newRow("string: 'a'") << QVariant::fromValue(QString("a"))
+                                     << QChar('a')
+                                     << true;
+    QTest::newRow("string: 'z'") << QVariant::fromValue(QString("z"))
+                                     << QChar('z')
+                                     << true;
+    QTest::newRow("string: '\\0'") << QVariant::fromValue(QString("\0"))
+                                   << QChar()
+                                   << false;
+    QTest::newRow("string: invalid too short") << QVariant::fromValue(QString(""))
+                                                   << QChar()
+                                                   << false;
+    QTest::newRow("string: invalid too long") << QVariant::fromValue(QString("aa"))
+                                                  << QChar()
+                                                  << false;
+
+    // Invalid type
+    QTest::newRow("Invalid: bool") << QVariant::fromValue(true) << QChar() << false;
+    QTest::newRow("Invalid: int8") << QVariant::fromValue(CastNumeric<int8_t>(50))
+                                   << QChar()
+                                   << false;
+    QTest::newRow("Invalid: uint8") << QVariant::fromValue(CastNumeric<uint8_t>(50))
+                                    << QChar()
+                                    << false;
+    QTest::newRow("Invalid: int16") << QVariant::fromValue(CastNumeric<int16_t>(50))
+                                    << QChar()
+                                    << false;
+    QTest::newRow("Invalid: uint16") << QVariant::fromValue(CastNumeric<uint16_t>(50))
+                                     << QChar()
+                                     << false;
+    QTest::newRow("Invalid: int32") << QVariant::fromValue(CastNumeric<int32_t>(50))
+                                    << QChar()
+                                    << false;
+    QTest::newRow("Invalid: uint32") << QVariant::fromValue(CastNumeric<uint32_t>(50))
+                                     << QChar()
+                                     << false;
+    QTest::newRow("Invalid: int64") << QVariant::fromValue(CastNumeric<int64_t>(50))
+                                    << QChar()
+                                    << false;
+    QTest::newRow("Invalid: uint64") << QVariant::fromValue(CastNumeric<uint64_t>(50))
+                                     << QChar()
+                                     << false;
+    QTest::newRow("Invalid: float") << QVariant::fromValue(CastNumeric<float>(50))
+                                    << QChar()
+                                    << false;
+    QTest::newRow("Invalid: double") << QVariant::fromValue(CastNumeric<double>(50))
+                                     << QChar()
+                                     << false;
 }
 
 // Main function -----------------------------------------------------------------------------------

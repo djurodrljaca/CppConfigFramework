@@ -578,29 +578,56 @@ bool load(const QVariant &nodeValue, double *parameterValue, QString *error)
 
 bool load(const QVariant &nodeValue, QChar *parameterValue, QString *error)
 {
-    if (static_cast<QMetaType::Type>(nodeValue.type()) != QMetaType::QString)
+    const auto nodeValueType = nodeValue.type();
+
+    if (nodeValueType == qMetaTypeId<QChar>())
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("Node value must be a string!");
-        }
-        return false;
+        *parameterValue = nodeValue.toChar();
+        return true;
     }
 
-    const auto value = nodeValue.toString();
-
-    if (value.size() != 1)
+    if (nodeValueType == qMetaTypeId<QString>())
     {
-        if (error != nullptr)
+        const auto value = nodeValue.toString();
+
+        if (value.size() != 1)
         {
-            *error = QString("String in the node value [%1] must have exactly one character!")
-                     .arg(value);
+            if (error != nullptr)
+            {
+                *error = QString("String in the node value [%1] must have exactly one character!")
+                         .arg(value);
+            }
+            return false;
         }
-        return false;
+
+        *parameterValue = value.front();
+        return true;
     }
 
-    *parameterValue = value.front();
-    return true;
+    if (nodeValueType == qMetaTypeId<QByteArray>())
+    {
+        const auto value = nodeValue.toByteArray();
+
+        if (value.size() != 1)
+        {
+            if (error != nullptr)
+            {
+                *error = QString("String in the node value [%1] must have exactly one character!")
+                         .arg(QString::fromUtf8(value));
+            }
+            return false;
+        }
+
+        *parameterValue = QChar(value.front());
+        return true;
+    }
+
+    // Error
+    if (error != nullptr)
+    {
+        *error = QStringLiteral("Not a character value");
+    }
+    return false;
 }
 
 // -------------------------------------------------------------------------------------------------
