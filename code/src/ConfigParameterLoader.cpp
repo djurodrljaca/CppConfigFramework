@@ -634,16 +634,90 @@ bool load(const QVariant &nodeValue, QChar *parameterValue, QString *error)
 
 bool load(const QVariant &nodeValue, QString *parameterValue, QString *error)
 {
-    if (static_cast<QMetaType::Type>(nodeValue.type()) != QMetaType::QString)
+    // Check for the same type
+    if (static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QString)
+    {
+        *parameterValue = nodeValue.toString();
+        return true;
+    }
+
+    // Check for a compatible numeric type in the QVariant value
+    switch (nodeValue.userType())
+    {
+        case qMetaTypeId<int8_t>():
+        case qMetaTypeId<int16_t>():
+        case qMetaTypeId<int32_t>():
+        case qMetaTypeId<int64_t>():
+        {
+            *parameterValue = QString::number(nodeValue.toLongLong());
+            return true;
+        }
+
+        case qMetaTypeId<uint8_t>():
+        case qMetaTypeId<uint16_t>():
+        case qMetaTypeId<uint32_t>():
+        case qMetaTypeId<uint64_t>():
+        {
+            *parameterValue = QString::number(nodeValue.toULongLong());
+            return true;
+        }
+
+        case qMetaTypeId<float>():
+        {
+            *parameterValue = QString::number(nodeValue.toFloat());
+            return true;
+        }
+
+        case qMetaTypeId<double>():
+        {
+            *parameterValue = QString::number(nodeValue.toDouble());
+            return true;
+        }
+
+        default:
+        {
+            break;
+        }
+    }
+
+    // Just convert it to a string if possible
+    if (!nodeValue.canConvert<QString>())
     {
         if (error != nullptr)
         {
-            *error = QStringLiteral("Node value must be a string!");
+            *error = QStringLiteral("Node value must be convertable to a string!");
         }
         return false;
     }
 
     *parameterValue = nodeValue.toString();
+    return true;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+bool load(const QVariant &nodeValue, QByteArray *parameterValue, QString *error)
+{
+    // Check for the same type
+    if (static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QByteArray)
+    {
+        *parameterValue = nodeValue.toByteArray();
+        return true;
+    }
+
+    // Convert it to string first and then to UTF8 encoded byte array
+    QString value;
+
+    if (!load(nodeValue, &value))
+    {
+        if (error != nullptr)
+        {
+            *error = QStringLiteral("Node value must be convertable to a byte array!");
+        }
+        return false;
+    }
+
+    *parameterValue = value.toUtf8();
     return true;
 }
 
@@ -713,29 +787,6 @@ bool load(const QVariant &nodeValue, std::u32string *parameterValue, QString *er
 
     *parameterValue = nodeValue.toString().toStdU32String();
     return true;
-}
-
-// -------------------------------------------------------------------------------------------------
-
-bool load(const QVariant &nodeValue, QByteArray *parameterValue, QString *error)
-{
-    if (static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QByteArray)
-    {
-        *parameterValue = nodeValue.toByteArray();
-        return true;
-    }
-
-    if (static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QString)
-    {
-        *parameterValue = nodeValue.toString().toUtf8();
-        return true;
-    }
-
-    if (error != nullptr)
-    {
-        *error = QStringLiteral("Node value must be a string!");
-    }
-    return false;
 }
 
 // -------------------------------------------------------------------------------------------------

@@ -93,6 +93,9 @@ bool load(const QVariant &nodeValue, QChar *parameterValue, QString *error = nul
 bool load(const QVariant &nodeValue, QString *parameterValue, QString *error = nullptr);
 
 //! \copydoc    ConfigParameterLoader::load()
+bool load(const QVariant &nodeValue, QByteArray *parameterValue, QString *error = nullptr);
+
+//! \copydoc    ConfigParameterLoader::load()
 bool load(const QVariant &nodeValue, std::string *parameterValue, QString *error = nullptr);
 
 //! \copydoc    ConfigParameterLoader::load()
@@ -103,9 +106,6 @@ bool load(const QVariant &nodeValue, std::u16string *parameterValue, QString *er
 
 //! \copydoc    ConfigParameterLoader::load()
 bool load(const QVariant &nodeValue, std::u32string *parameterValue, QString *error = nullptr);
-
-//! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, QByteArray *parameterValue, QString *error = nullptr);
 
 //! \copydoc    ConfigParameterLoader::load()
 bool load(const QVariant &nodeValue, QDate *parameterValue, QString *error = nullptr);
