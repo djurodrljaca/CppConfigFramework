@@ -134,6 +134,9 @@ private slots:
 
     void testByteArray();
     void testByteArray_data();
+
+    void testStdString();
+    void testStdString_data();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -3073,6 +3076,87 @@ void TestConfigParameterLoader::testByteArray_data()
     // Invalid type
     QTest::newRow("Invalid: type") << QVariant::fromValue(QMap<int, bool>())
                                    << QByteArray()
+                                   << false;
+}
+
+// Test: load string value -------------------------------------------------------------------------
+
+void TestConfigParameterLoader::testStdString()
+{
+    QFETCH(QVariant, nodeValue);
+    QFETCH(QString, expectedParameterValue);
+    QFETCH(bool, expectedResult);
+
+    // std::string
+    std::string parameterValue1;
+    QString error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue1, &error), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testString: error string:" << error;
+
+    QCOMPARE(parameterValue1, expectedParameterValue.toStdString());
+
+    // std::wstring
+    std::wstring parameterValue2;
+    error.clear();
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue2, &error), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testString: error string:" << error;
+
+    QCOMPARE(parameterValue2, expectedParameterValue.toStdWString());
+
+    // std::u16string
+    std::u16string parameterValue3;
+    error.clear();
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue3, &error), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testString: error string:" << error;
+
+    QCOMPARE(parameterValue3, expectedParameterValue.toStdU16String());
+
+    // std::u32string
+    std::u32string parameterValue4;
+    error.clear();
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue4, &error), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testString: error string:" << error;
+
+    QCOMPARE(parameterValue4, expectedParameterValue.toStdU32String());
+}
+
+void TestConfigParameterLoader::testStdString_data()
+{
+    QTest::addColumn<QVariant>("nodeValue");
+    QTest::addColumn<QString>("expectedParameterValue");
+    QTest::addColumn<bool>("expectedResult");
+
+    // bool
+    QTest::newRow("bool: false") << QVariant::fromValue(false)
+                               << QString("false")
+                               << true;
+
+    // int32
+    QTest::newRow("int32: min") << QVariant::fromValue(MinNumeric<int32_t>())
+                                << QString::number(MinNumeric<int32_t>())
+                                << true;
+
+    // uint32
+    QTest::newRow("uint32: max") << QVariant::fromValue(MaxNumeric<uint32_t>())
+                                 << QString::number(MaxNumeric<uint32_t>())
+                                 << true;
+
+    // byte array
+    QTest::newRow("byte array") << QVariant::fromValue(QByteArray("test string"))
+                                << QString("test string")
+                                << true;
+
+    // string
+    QTest::newRow("string") << QVariant::fromValue(QString("test string"))
+                            << QString("test string")
+                            << true;
+
+    // char
+    QTest::newRow("char") << QVariant::fromValue(QChar('0')) << QString("0") << true;
+
+    // Invalid type
+    QTest::newRow("Invalid: type") << QVariant::fromValue(QMap<int, bool>())
+                                   << QString()
                                    << false;
 }
 
