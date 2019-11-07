@@ -128,6 +128,12 @@ private slots:
 
     void testChar();
     void testChar_data();
+
+    void testString();
+    void testString_data();
+
+    void testByteArray();
+    void testByteArray_data();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -2347,7 +2353,7 @@ void TestConfigParameterLoader::testFloat_data()
     QTest::newRow("int64: min") << QVariant::fromValue(MinNumeric<int64_t>())
                                 << CastNumeric<float>(MinNumeric<int64_t>())
                                 << true;
-    QTest::newRow("int64: 0") << QVariant::fromValue(CastNumeric<float>(0))
+    QTest::newRow("int64: 0") << QVariant::fromValue(CastNumeric<int64_t>(0))
                               << CastNumeric<float>(0)
                               << true;
     QTest::newRow("int64: max") << QVariant::fromValue(MaxNumeric<int64_t>())
@@ -2555,7 +2561,7 @@ void TestConfigParameterLoader::testDouble_data()
     QTest::newRow("int64: min") << QVariant::fromValue(MinNumeric<int64_t>())
                                 << CastNumeric<double>(MinNumeric<int64_t>())
                                 << true;
-    QTest::newRow("int64: 0") << QVariant::fromValue(CastNumeric<double>(0))
+    QTest::newRow("int64: 0") << QVariant::fromValue(CastNumeric<int64_t>(0))
                               << CastNumeric<double>(0)
                               << true;
     QTest::newRow("int64: max") << QVariant::fromValue(MaxNumeric<int64_t>())
@@ -2632,6 +2638,7 @@ void TestConfigParameterLoader::testDouble_data()
                                    << CastNumeric<double>(0)
                                    << false;
 }
+
 // Test: load char value ---------------------------------------------------------------------------
 
 void TestConfigParameterLoader::testChar()
@@ -2767,6 +2774,306 @@ void TestConfigParameterLoader::testChar_data()
     QTest::newRow("Invalid: double") << QVariant::fromValue(CastNumeric<double>(50))
                                      << QChar()
                                      << false;
+}
+
+// Test: load string value -------------------------------------------------------------------------
+
+void TestConfigParameterLoader::testString()
+{
+    QFETCH(QVariant, nodeValue);
+    QFETCH(QString, expectedParameterValue);
+    QFETCH(bool, expectedResult);
+
+    QString parameterValue;
+    QString error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testString: error string:" << error;
+
+    QCOMPARE(parameterValue, expectedParameterValue);
+}
+
+void TestConfigParameterLoader::testString_data()
+{
+    QTest::addColumn<QVariant>("nodeValue");
+    QTest::addColumn<QString>("expectedParameterValue");
+    QTest::addColumn<bool>("expectedResult");
+
+    // bool
+    QTest::newRow("bool: false") << QVariant::fromValue(false)
+                               << QString("false")
+                               << true;
+    QTest::newRow("bool: true") << QVariant::fromValue(true)
+                                << QString("true")
+                                << true;
+
+    // int8
+    QTest::newRow("int8: min") << QVariant::fromValue(MinNumeric<int8_t>())
+                               << QString::number(MinNumeric<int8_t>())
+                               << true;
+    QTest::newRow("int8: 0") << QVariant::fromValue(CastNumeric<int8_t>(0))
+                             << QString::number(0)
+                             << true;
+    QTest::newRow("int8: max") << QVariant::fromValue(MaxNumeric<int8_t>())
+                               << QString::number(MaxNumeric<int8_t>())
+                               << true;
+
+    // uint8
+    QTest::newRow("uint8: 0") << QVariant::fromValue(CastNumeric<uint8_t>(0))
+                              << QString::number(0)
+                              << true;
+    QTest::newRow("uint8: max") << QVariant::fromValue(MaxNumeric<uint8_t>())
+                                << QString::number(MaxNumeric<uint8_t>())
+                                << true;
+
+    // int16
+    QTest::newRow("int16: min") << QVariant::fromValue(MinNumeric<int16_t>())
+                                << QString::number(MinNumeric<int16_t>())
+                                << true;
+    QTest::newRow("int16: 0") << QVariant::fromValue(CastNumeric<int16_t>(0))
+                              << QString::number(0)
+                              << true;
+    QTest::newRow("int16: max") << QVariant::fromValue(MaxNumeric<int16_t>())
+                                << QString::number(MaxNumeric<int16_t>())
+                                << true;
+
+    // uint16
+    QTest::newRow("uint16: 0") << QVariant::fromValue(CastNumeric<uint16_t>(0))
+                               << QString::number(0)
+                               << true;
+    QTest::newRow("uint16: max") << QVariant::fromValue(MaxNumeric<uint16_t>())
+                                 << QString::number(MaxNumeric<uint16_t>())
+                                 << true;
+
+    // int32
+    QTest::newRow("int32: min") << QVariant::fromValue(MinNumeric<int32_t>())
+                                << QString::number(MinNumeric<int32_t>())
+                                << true;
+    QTest::newRow("int32: 0") << QVariant::fromValue(CastNumeric<int32_t>(0))
+                              << QString::number(0)
+                              << true;
+    QTest::newRow("int32: max") << QVariant::fromValue(MaxNumeric<int32_t>())
+                                << QString::number(MaxNumeric<int32_t>())
+                                << true;
+
+    // uint32
+    QTest::newRow("uint32: 0") << QVariant::fromValue(CastNumeric<uint32_t>(0))
+                               << QString::number(0)
+                               << true;
+    QTest::newRow("uint32: max") << QVariant::fromValue(MaxNumeric<uint32_t>())
+                                 << QString::number(MaxNumeric<uint32_t>())
+                                 << true;
+
+    // int64
+    QTest::newRow("int64: min") << QVariant::fromValue(MinNumeric<int64_t>())
+                                << QString::number(MinNumeric<int64_t>())
+                                << true;
+    QTest::newRow("int64: 0") << QVariant::fromValue(CastNumeric<int64_t>(0))
+                              << QString::number(0)
+                              << true;
+    QTest::newRow("int64: max") << QVariant::fromValue(MaxNumeric<int64_t>())
+                                << QString::number(MaxNumeric<int64_t>())
+                                << true;
+
+    // uint64
+    QTest::newRow("uint64: 0") << QVariant::fromValue(CastNumeric<uint64_t>(0))
+                               << QString::number(0)
+                               << true;
+    QTest::newRow("uint64: max") << QVariant::fromValue(MaxNumeric<uint64_t>())
+                                 << QString::number(MaxNumeric<uint64_t>())
+                                 << true;
+
+    // float
+    QTest::newRow("float: min") << QVariant::fromValue(MinNumeric<float>())
+                                << QString::number(MinNumeric<float>())
+                                << true;
+    QTest::newRow("float: 0") << QVariant::fromValue(CastNumeric<float>(0.0f))
+                              << QString::number(0.0)
+                              << true;
+    QTest::newRow("float: max") << QVariant::fromValue(MaxNumeric<float>())
+                                << QString::number(MaxNumeric<float>())
+                                << true;
+
+    // double
+    QTest::newRow("double: min") << QVariant::fromValue(MinNumeric<double>())
+                                 << QString::number(MinNumeric<double>())
+                                 << true;
+    QTest::newRow("double: 0") << QVariant::fromValue(CastNumeric<double>(0.0))
+                              << QString::number(0.0)
+                              << true;
+    QTest::newRow("double: max") << QVariant::fromValue(MaxNumeric<double>())
+                                 << QString::number(MaxNumeric<double>())
+                                 << true;
+
+    // byte array
+    QTest::newRow("byte array") << QVariant::fromValue(QByteArray("test string"))
+                                << QString::fromUtf8(QByteArray("test string"))
+                                << true;
+
+    // string
+    QTest::newRow("string") << QVariant::fromValue(QString("test string"))
+                            << QString("test string")
+                            << true;
+
+    // char
+    QTest::newRow("char") << QVariant::fromValue(QChar('0')) << QString("0") << true;
+
+    // Invalid type
+    QTest::newRow("Invalid: type") << QVariant::fromValue(QMap<int, bool>())
+                                   << QString()
+                                   << false;
+}
+
+// Test: load byte array value ---------------------------------------------------------------------
+
+void TestConfigParameterLoader::testByteArray()
+{
+    QFETCH(QVariant, nodeValue);
+    QFETCH(QByteArray, expectedParameterValue);
+    QFETCH(bool, expectedResult);
+
+    QByteArray parameterValue;
+    QString error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testByteArray: error string:" << error;
+
+    QCOMPARE(parameterValue, expectedParameterValue);
+}
+
+void TestConfigParameterLoader::testByteArray_data()
+{
+    QTest::addColumn<QVariant>("nodeValue");
+    QTest::addColumn<QByteArray>("expectedParameterValue");
+    QTest::addColumn<bool>("expectedResult");
+
+    // bool
+    QTest::newRow("bool: false") << QVariant::fromValue(false)
+                               << QByteArray("false")
+                               << true;
+    QTest::newRow("bool: true") << QVariant::fromValue(true)
+                                << QByteArray("true")
+                                << true;
+
+    // int8
+    QTest::newRow("int8: min") << QVariant::fromValue(MinNumeric<int8_t>())
+                               << QByteArray::number(MinNumeric<int8_t>())
+                               << true;
+    QTest::newRow("int8: 0") << QVariant::fromValue(CastNumeric<int8_t>(0))
+                             << QByteArray::number(0)
+                             << true;
+    QTest::newRow("int8: max") << QVariant::fromValue(MaxNumeric<int8_t>())
+                               << QByteArray::number(MaxNumeric<int8_t>())
+                               << true;
+
+    // uint8
+    QTest::newRow("uint8: 0") << QVariant::fromValue(CastNumeric<uint8_t>(0))
+                              << QByteArray::number(0)
+                              << true;
+    QTest::newRow("uint8: max") << QVariant::fromValue(MaxNumeric<uint8_t>())
+                                << QByteArray::number(MaxNumeric<uint8_t>())
+                                << true;
+
+    // int16
+    QTest::newRow("int16: min") << QVariant::fromValue(MinNumeric<int16_t>())
+                                << QByteArray::number(MinNumeric<int16_t>())
+                                << true;
+    QTest::newRow("int16: 0") << QVariant::fromValue(CastNumeric<int16_t>(0))
+                              << QByteArray::number(0)
+                              << true;
+    QTest::newRow("int16: max") << QVariant::fromValue(MaxNumeric<int16_t>())
+                                << QByteArray::number(MaxNumeric<int16_t>())
+                                << true;
+
+    // uint16
+    QTest::newRow("uint16: 0") << QVariant::fromValue(CastNumeric<uint16_t>(0))
+                               << QByteArray::number(0)
+                               << true;
+    QTest::newRow("uint16: max") << QVariant::fromValue(MaxNumeric<uint16_t>())
+                                 << QByteArray::number(MaxNumeric<uint16_t>())
+                                 << true;
+
+    // int32
+    QTest::newRow("int32: min") << QVariant::fromValue(MinNumeric<int32_t>())
+                                << QByteArray::number(MinNumeric<int32_t>())
+                                << true;
+    QTest::newRow("int32: 0") << QVariant::fromValue(CastNumeric<int32_t>(0))
+                              << QByteArray::number(0)
+                              << true;
+    QTest::newRow("int32: max") << QVariant::fromValue(MaxNumeric<int32_t>())
+                                << QByteArray::number(MaxNumeric<int32_t>())
+                                << true;
+
+    // uint32
+    QTest::newRow("uint32: 0") << QVariant::fromValue(CastNumeric<uint32_t>(0))
+                               << QByteArray::number(0)
+                               << true;
+    QTest::newRow("uint32: max") << QVariant::fromValue(MaxNumeric<uint32_t>())
+                                 << QByteArray::number(MaxNumeric<uint32_t>())
+                                 << true;
+
+    // int64
+    QTest::newRow("int64: min")
+            // Workaround: for some reason int64_t does not work here
+            << QVariant::fromValue(MinNumeric<int64_t>())
+            << QByteArray::number(MinNumeric<qlonglong>())
+            << true;
+    QTest::newRow("int64: 0") << QVariant::fromValue(CastNumeric<int64_t>(0))
+                              << QByteArray::number(0)
+                              << true;
+    QTest::newRow("int64: max")
+            // Workaround: for some reason int64_t does not work here
+            << QVariant::fromValue(MaxNumeric<int64_t>())
+            << QByteArray::number(MaxNumeric<qlonglong>())
+            << true;
+
+    // uint64
+    QTest::newRow("uint64: 0") << QVariant::fromValue(CastNumeric<uint64_t>(0))
+                               << QByteArray::number(0)
+                               << true;
+    QTest::newRow("uint64: max")
+            // Workaround: for some reason uint64_t does not work here
+            << QVariant::fromValue(MaxNumeric<uint64_t>())
+            << QByteArray::number(MaxNumeric<qulonglong>())
+            << true;
+
+    // float
+    QTest::newRow("float: min") << QVariant::fromValue(MinNumeric<float>())
+                                << QByteArray::number(MinNumeric<float>())
+                                << true;
+    QTest::newRow("float: 0") << QVariant::fromValue(CastNumeric<float>(0.0f))
+                              << QByteArray::number(0.0)
+                              << true;
+    QTest::newRow("float: max") << QVariant::fromValue(MaxNumeric<float>())
+                                << QByteArray::number(MaxNumeric<float>())
+                                << true;
+
+    // double
+    QTest::newRow("double: min") << QVariant::fromValue(MinNumeric<double>())
+                                 << QByteArray::number(MinNumeric<double>())
+                                 << true;
+    QTest::newRow("double: 0") << QVariant::fromValue(CastNumeric<double>(0.0))
+                              << QByteArray::number(0.0)
+                              << true;
+    QTest::newRow("double: max") << QVariant::fromValue(MaxNumeric<double>())
+                                 << QByteArray::number(MaxNumeric<double>())
+                                 << true;
+
+    // byte array
+    QTest::newRow("byte array") << QVariant::fromValue(QByteArray("test string"))
+                                << QByteArray("test string")
+                                << true;
+
+    // string
+    QTest::newRow("string") << QVariant::fromValue(QString("test string"))
+                            << QByteArray("test string")
+                            << true;
+
+    // char
+    QTest::newRow("char") << QVariant::fromValue(QChar('0')) << QByteArray("0") << true;
+
+    // Invalid type
+    QTest::newRow("Invalid: type") << QVariant::fromValue(QMap<int, bool>())
+                                   << QByteArray()
+                                   << false;
 }
 
 // Main function -----------------------------------------------------------------------------------
