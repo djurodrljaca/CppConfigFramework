@@ -725,16 +725,15 @@ bool load(const QVariant &nodeValue, QByteArray *parameterValue, QString *error)
 
 bool load(const QVariant &nodeValue, std::string *parameterValue, QString *error)
 {
-    if (static_cast<QMetaType::Type>(nodeValue.type()) != QMetaType::QString)
+    // Convert it to string first and then to the std string
+    QString value;
+
+    if (!load(nodeValue, &value, error))
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("Node value must be a string!");
-        }
         return false;
     }
 
-    *parameterValue = nodeValue.toString().toStdString();
+    *parameterValue = value.toStdString();
     return true;
 }
 
@@ -742,16 +741,15 @@ bool load(const QVariant &nodeValue, std::string *parameterValue, QString *error
 
 bool load(const QVariant &nodeValue, std::wstring *parameterValue, QString *error)
 {
-    if (static_cast<QMetaType::Type>(nodeValue.type()) != QMetaType::QString)
+    // Convert it to string first and then to the std string
+    QString value;
+
+    if (!load(nodeValue, &value, error))
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("Node value must be a string!");
-        }
         return false;
     }
 
-    *parameterValue = nodeValue.toString().toStdWString();
+    *parameterValue = value.toStdWString();
     return true;
 }
 
@@ -759,16 +757,15 @@ bool load(const QVariant &nodeValue, std::wstring *parameterValue, QString *erro
 
 bool load(const QVariant &nodeValue, std::u16string *parameterValue, QString *error)
 {
-    if (static_cast<QMetaType::Type>(nodeValue.type()) != QMetaType::QString)
+    // Convert it to string first and then to the std string
+    QString value;
+
+    if (!load(nodeValue, &value, error))
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("Node value must be a string!");
-        }
         return false;
     }
 
-    *parameterValue = nodeValue.toString().toStdU16String();
+    *parameterValue = value.toStdU16String();
     return true;
 }
 
@@ -776,16 +773,15 @@ bool load(const QVariant &nodeValue, std::u16string *parameterValue, QString *er
 
 bool load(const QVariant &nodeValue, std::u32string *parameterValue, QString *error)
 {
-    if (static_cast<QMetaType::Type>(nodeValue.type()) != QMetaType::QString)
+    // Convert it to string first and then to the std string
+    QString value;
+
+    if (!load(nodeValue, &value, error))
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("Node value must be a string!");
-        }
         return false;
     }
 
-    *parameterValue = nodeValue.toString().toStdU32String();
+    *parameterValue = value.toStdU32String();
     return true;
 }
 
