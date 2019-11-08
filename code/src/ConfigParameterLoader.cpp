@@ -789,22 +789,16 @@ bool load(const QVariant &nodeValue, std::u32string *parameterValue, QString *er
 
 bool load(const QVariant &nodeValue, QDate *parameterValue, QString *error)
 {
+    // Check for the same type
     if (static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QDate)
     {
-        *parameterValue = nodeValue.toDate();
-        return true;
-    }
-
-    if (static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QString)
-    {
-        const auto value = QDate::fromString(nodeValue.toString(), Qt::ISODate);
+        const auto value = nodeValue.toDate();
 
         if (!value.isValid())
         {
             if (error != nullptr)
             {
-                *error = QString("Node value [%1] does not contain a date in ISO 8601 format!")
-                         .arg(nodeValue.toString());
+                *error = QStringLiteral("Node value contains an invalid date object!");
             }
             return false;
         }
@@ -813,67 +807,18 @@ bool load(const QVariant &nodeValue, QDate *parameterValue, QString *error)
         return true;
     }
 
-    if (error != nullptr)
-    {
-        *error = QStringLiteral("Node value must be a date string in ISO 8601 format!");
-    }
-    return false;
-}
+    // Convert it to string first and then to date
+    QString stringValue;
 
-// -------------------------------------------------------------------------------------------------
-
-bool load(const QVariant &nodeValue, QTime *parameterValue, QString *error)
-{
-    if (static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QTime)
+    if (load(nodeValue, &stringValue))
     {
-        *parameterValue = nodeValue.toTime();
-        return true;
-    }
-
-    if (static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QString)
-    {
-        const auto value = QTime::fromString(nodeValue.toString(), Qt::ISODateWithMs);
+        const auto value = QDate::fromString(stringValue, Qt::ISODate);
 
         if (!value.isValid())
         {
             if (error != nullptr)
             {
-                *error = QString("Node value [%1] does not contain a time in ISO 8601 format!")
-                         .arg(nodeValue.toString());
-            }
-            return false;
-        }
-
-        *parameterValue = value;
-        return true;
-    }
-
-    if (error != nullptr)
-    {
-        *error = QStringLiteral("Node value must be a time string in ISO 8601 format!");
-    }
-    return false;
-}
-
-// -------------------------------------------------------------------------------------------------
-
-bool load(const QVariant &nodeValue, QDateTime *parameterValue, QString *error)
-{
-    if (static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QDateTime)
-    {
-        *parameterValue = nodeValue.toDateTime();
-        return true;
-    }
-
-    if (static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QString)
-    {
-        const auto value = QDateTime::fromString(nodeValue.toString(), Qt::ISODateWithMs);
-
-        if (!value.isValid())
-        {
-            if (error != nullptr)
-            {
-                *error = QString("Node value [%1] does not contain a date and time in ISO 8601 "
+                *error = QString("Node value [%1] does not contain a valid date object in ISO 8601 "
                                  "format!").arg(nodeValue.toString());
             }
             return false;
@@ -885,7 +830,110 @@ bool load(const QVariant &nodeValue, QDateTime *parameterValue, QString *error)
 
     if (error != nullptr)
     {
-        *error = QStringLiteral("Node value must be a date and time string in ISO 8601 format!");
+        *error = QStringLiteral("Node value must be either a date object or a date string in "
+                                "ISO 8601 format!");
+    }
+    return false;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+bool load(const QVariant &nodeValue, QTime *parameterValue, QString *error)
+{
+    // Check for the same type
+    if (static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QTime)
+    {
+        const auto value = nodeValue.toTime();
+
+        if (!value.isValid())
+        {
+            if (error != nullptr)
+            {
+                *error = QStringLiteral("Node value contains an invalid time object!");
+            }
+            return false;
+        }
+
+        *parameterValue = value;
+        return true;
+    }
+
+    // Convert it to string first and then to time
+    QString stringValue;
+
+    if (load(nodeValue, &stringValue))
+    {
+        const auto value = QTime::fromString(stringValue, Qt::ISODateWithMs);
+
+        if (!value.isValid())
+        {
+            if (error != nullptr)
+            {
+                *error = QString("Node value [%1] does not contain a valid time object in ISO 8601 "
+                                 "format!").arg(nodeValue.toString());
+            }
+            return false;
+        }
+
+        *parameterValue = value;
+        return true;
+    }
+
+    if (error != nullptr)
+    {
+        *error = QStringLiteral("Node value must be either a time object or a time string in "
+                                "ISO 8601 format!");
+    }
+    return false;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+bool load(const QVariant &nodeValue, QDateTime *parameterValue, QString *error)
+{
+    // Check for the same type
+    if (static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QDateTime)
+    {
+        const auto value = nodeValue.toDateTime();
+
+        if (!value.isValid())
+        {
+            if (error != nullptr)
+            {
+                *error = QStringLiteral("Node value contains an invalid datetime object!");
+            }
+            return false;
+        }
+
+        *parameterValue = value;
+        return true;
+    }
+
+    // Convert it to string first and then to datetime
+    QString stringValue;
+
+    if (load(nodeValue, &stringValue))
+    {
+        const auto value = QDateTime::fromString(stringValue, Qt::ISODateWithMs);
+
+        if (!value.isValid())
+        {
+            if (error != nullptr)
+            {
+                *error = QString("Node value [%1] does not contain a valid datetime object in "
+                                 "ISO 8601 format!").arg(nodeValue.toString());
+            }
+            return false;
+        }
+
+        *parameterValue = value;
+        return true;
+    }
+
+    if (error != nullptr)
+    {
+        *error = QStringLiteral("Node value must be either a datetime object or a datetime string "
+                                "in ISO 8601 format!");
     }
     return false;
 }
