@@ -137,6 +137,15 @@ private slots:
 
     void testStdString();
     void testStdString_data();
+
+    void testDate();
+    void testDate_data();
+
+    void testTime();
+    void testTime_data();
+
+    void testDateTime();
+    void testDateTime_data();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -3157,6 +3166,176 @@ void TestConfigParameterLoader::testStdString_data()
     // Invalid type
     QTest::newRow("Invalid: type") << QVariant::fromValue(QMap<int, bool>())
                                    << QString()
+                                   << false;
+}
+
+// Test: load date value ---------------------------------------------------------------------------
+
+void TestConfigParameterLoader::testDate()
+{
+    QFETCH(QVariant, nodeValue);
+    QFETCH(QDate, expectedParameterValue);
+    QFETCH(bool, expectedResult);
+
+    QDate parameterValue;
+    QString error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testDate: error string:" << error;
+
+    QCOMPARE(parameterValue, expectedParameterValue);
+}
+
+void TestConfigParameterLoader::testDate_data()
+{
+    QTest::addColumn<QVariant>("nodeValue");
+    QTest::addColumn<QDate>("expectedParameterValue");
+    QTest::addColumn<bool>("expectedResult");
+
+    // date
+    QTest::newRow("date: valid") << QVariant::fromValue(QDate(2019, 11, 8))
+                                 << QDate(2019, 11, 8)
+                                 << true;
+    QTest::newRow("date: null node value") << QVariant()
+                                           << QDate()
+                                           << false;
+    QTest::newRow("date: null date") << QVariant::fromValue(QDate())
+                                     << QDate()
+                                     << false;
+    QTest::newRow("date: invalid date value") << QVariant::fromValue(QDate(2019, 13, 8))
+                                              << QDate()
+                                              << false;
+
+    // string
+    QTest::newRow("string: valid") << QVariant::fromValue(QString("2019-11-08"))
+                                   << QDate(2019, 11, 8)
+                                   << true;
+    QTest::newRow("string: empty") << QVariant::fromValue(QString())
+                                   << QDate()
+                                   << false;
+    QTest::newRow("string: invalid") << QVariant::fromValue(QString("2019-13-08"))
+                                     << QDate()
+                                     << false;
+
+    // Invalid type
+    QTest::newRow("Invalid: type") << QVariant::fromValue(true)
+                                   << QDate()
+                                   << false;
+}
+
+// Test: load time value ---------------------------------------------------------------------------
+
+void TestConfigParameterLoader::testTime()
+{
+    QFETCH(QVariant, nodeValue);
+    QFETCH(QTime, expectedParameterValue);
+    QFETCH(bool, expectedResult);
+
+    QTime parameterValue;
+    QString error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testTime: error string:" << error;
+
+    QCOMPARE(parameterValue, expectedParameterValue);
+}
+
+void TestConfigParameterLoader::testTime_data()
+{
+    QTest::addColumn<QVariant>("nodeValue");
+    QTest::addColumn<QTime>("expectedParameterValue");
+    QTest::addColumn<bool>("expectedResult");
+
+    // time
+    QTest::newRow("time: valid") << QVariant::fromValue(QTime(22, 33, 44, 555))
+                                 << QTime(22, 33, 44, 555)
+                                 << true;
+    QTest::newRow("time: null node value") << QVariant()
+                                           << QTime()
+                                           << false;
+    QTest::newRow("time: null time") << QVariant::fromValue(QTime())
+                                     << QTime()
+                                     << false;
+    QTest::newRow("time: invalid time value") << QVariant::fromValue(QTime(24, 33, 44, 555))
+                                              << QTime()
+                                              << false;
+
+    // string
+    QTest::newRow("string: valid") << QVariant::fromValue(QString("22:33:44.555"))
+                                   << QTime(22, 33, 44, 555)
+                                   << true;
+    QTest::newRow("string: empty") << QVariant::fromValue(QString())
+                                   << QTime()
+                                   << false;
+    QTest::newRow("string: invalid") << QVariant::fromValue(QString("24:33:44.555"))
+                                     << QTime()
+                                     << false;
+
+    // Invalid type
+    QTest::newRow("Invalid: type") << QVariant::fromValue(true)
+                                   << QTime()
+                                   << false;
+}
+
+// Test: load datetime value -----------------------------------------------------------------------
+
+void TestConfigParameterLoader::testDateTime()
+{
+    QFETCH(QVariant, nodeValue);
+    QFETCH(QDateTime, expectedParameterValue);
+    QFETCH(bool, expectedResult);
+
+    QDateTime parameterValue;
+    QString error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testDateTime: error string:" << error;
+
+    QCOMPARE(parameterValue, expectedParameterValue);
+}
+
+void TestConfigParameterLoader::testDateTime_data()
+{
+    QTest::addColumn<QVariant>("nodeValue");
+    QTest::addColumn<QDateTime>("expectedParameterValue");
+    QTest::addColumn<bool>("expectedResult");
+
+    // datetime
+    QTest::newRow("datetime: valid")
+            << QVariant::fromValue(QDateTime(QDate(2019, 11, 8), QTime(22, 33, 44, 555), Qt::UTC))
+            << QDateTime(QDate(2019, 11, 8), QTime(22, 33, 44, 555), Qt::UTC)
+            << true;
+    QTest::newRow("datetime: null node value") << QVariant()
+                                               << QDateTime()
+                                               << false;
+    QTest::newRow("datetime: null datetime") << QVariant::fromValue(QDateTime())
+                                             << QDateTime()
+                                             << false;
+    QTest::newRow("datetime: invalid time value")
+            // Note: this works because QDateTime always converts the invalid time component to
+            //       midnight!
+            << QVariant::fromValue(QDateTime(QDate(2019, 11, 8), QTime(24, 33, 44, 555), Qt::UTC))
+            << QDateTime(QDate(2019, 11, 8), QTime(0, 0, 0, 0), Qt::UTC)
+            << true;
+    QTest::newRow("datetime: invalid date value")
+            << QVariant::fromValue(QDateTime(QDate(2019, 13, 8), QTime(22, 33, 44, 555), Qt::UTC))
+            << QDateTime()
+            << false;
+
+    // string
+    QTest::newRow("string: valid") << QVariant::fromValue(QString("2019-11-08T22:33:44.555Z"))
+                                   << QDateTime(QDate(2019, 11, 8), QTime(22, 33, 44, 555), Qt::UTC)
+                                   << true;
+    QTest::newRow("string: empty") << QVariant::fromValue(QString())
+                                   << QDateTime()
+                                   << false;
+    QTest::newRow("string: invalid 1") << QVariant::fromValue(QString("2019-13-08T22:33:44.555Z"))
+                                       << QDateTime()
+                                       << false;
+    QTest::newRow("string: invalid 2") << QVariant::fromValue(QString("2019-11-08T24:33:44.555Z"))
+                                       << QDateTime()
+                                       << false;
+
+    // Invalid type
+    QTest::newRow("Invalid: type") << QVariant::fromValue(true)
+                                   << QDateTime()
                                    << false;
 }
 
