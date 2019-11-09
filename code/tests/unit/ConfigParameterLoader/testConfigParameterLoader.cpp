@@ -3590,13 +3590,23 @@ void TestConfigParameterLoader::testSize_data()
             << QSize()
             << QSizeF()
             << false;
-    QTest::newRow("map: invalid values")
-            << QVariant::fromValue(QVariantMap { {"width", -1}, {"height", -1} } )
+    QTest::newRow("map: invalid width")
+            << QVariant::fromValue(QVariantMap { {"width", "asd"}, {"height", 200} } )
+            << QSize()
+            << QSizeF()
+            << false;
+    QTest::newRow("map: invalid height")
+            << QVariant::fromValue(QVariantMap { {"width", 100}, {"height", "asd"} } )
             << QSize()
             << QSizeF()
             << false;
     QTest::newRow("map: too many members")
             << QVariant::fromValue(QVariantMap { {"width", 100}, {"height", 200}, {"asd", 0} } )
+            << QSize()
+            << QSizeF()
+            << false;
+    QTest::newRow("map: invalid size")
+            << QVariant::fromValue(QVariantMap { {"width", -1}, {"height", -1} } )
             << QSize()
             << QSizeF()
             << false;
@@ -3704,6 +3714,16 @@ void TestConfigParameterLoader::testPoint_data()
             << false;
     QTest::newRow("map: too many members")
             << QVariant::fromValue(QVariantMap { {"x", 100}, {"y", 200}, {"asd", 0} } )
+            << QPoint()
+            << QPointF()
+            << false;
+    QTest::newRow("map: invalid x")
+            << QVariant::fromValue(QVariantMap { {"x", "asd"}, {"y", 200} } )
+            << QPoint()
+            << QPointF()
+            << false;
+    QTest::newRow("map: invalid y")
+            << QVariant::fromValue(QVariantMap { {"x", 100}, {"y", "asd"} } )
             << QPoint()
             << QPointF()
             << false;
@@ -3816,6 +3836,30 @@ void TestConfigParameterLoader::testLine_data()
                                        {"x1", 100}, {"y1", 200},
                                        {"x2", 300}, {"y2", 400},
                                        {"asd", 0} } )
+            << QLine()
+            << QLineF()
+            << false;
+    QTest::newRow("map: invalid x1")
+            << QVariant::fromValue(QVariantMap {
+                                       {"x1", "asd"}, {"y1", 200}, {"x2", 300}, {"y2", 400} } )
+            << QLine()
+            << QLineF()
+            << false;
+    QTest::newRow("map: invalid y1")
+            << QVariant::fromValue(QVariantMap {
+                                       {"x1", 100}, {"y1", "asd"}, {"x2", 300}, {"y2", 400} } )
+            << QLine()
+            << QLineF()
+            << false;
+    QTest::newRow("map: invalid x2")
+            << QVariant::fromValue(QVariantMap {
+                                       {"x1", 100}, {"y1", 200}, {"x2", "asd"}, {"y2", 400} } )
+            << QLine()
+            << QLineF()
+            << false;
+    QTest::newRow("map: invalid y2")
+            << QVariant::fromValue(QVariantMap {
+                                       {"x1", 100}, {"y1", 200}, {"x2", 300}, {"y2", "asd"} } )
             << QLine()
             << QLineF()
             << false;
