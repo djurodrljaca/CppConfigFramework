@@ -168,6 +168,9 @@ private slots:
 
     void testRect();
     void testRect_data();
+
+    void testStringList();
+    void testStringList_data();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -3874,7 +3877,7 @@ void TestConfigParameterLoader::testLine_data()
                                    << false;
 }
 
-// Test: load line value ---------------------------------------------------------------------------
+// Test: load rect value ---------------------------------------------------------------------------
 
 void TestConfigParameterLoader::testRect()
 {
@@ -4043,6 +4046,65 @@ void TestConfigParameterLoader::testRect_data()
                                    << QRect()
                                    << QRectF()
                                    << false;
+}
+
+// Test: load string list value --------------------------------------------------------------------
+
+void TestConfigParameterLoader::testStringList()
+{
+    QFETCH(QVariant, nodeValue);
+    QFETCH(QStringList, expectedParameterValue);
+    QFETCH(bool, expectedResult);
+
+    QStringList parameterValue;
+    QString error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testStringList: error string:" << error;
+    QCOMPARE(parameterValue, expectedParameterValue);
+}
+
+void TestConfigParameterLoader::testStringList_data()
+{
+    QTest::addColumn<QVariant>("nodeValue");
+    QTest::addColumn<QStringList>("expectedParameterValue");
+    QTest::addColumn<bool>("expectedResult");
+
+    // string list
+    QTest::newRow("string list: valid")
+            << QVariant::fromValue(QStringList { {"a"}, {"b"}, {"c"} } )
+            << QStringList { {"a"}, {"b"}, {"c"} }
+            << true;
+    QTest::newRow("string list: empty")
+            << QVariant::fromValue(QStringList()) << QStringList() << true;
+    QTest::newRow("string list: null node value") << QVariant() << QStringList() << false;
+
+    // int list
+    QTest::newRow("int list: valid")
+            << QVariant::fromValue(QList<int> { 1, 2, 3 } )
+            << QStringList { {"1"}, {"2"}, {"3"} }
+            << true;
+    QTest::newRow("int list: empty")
+            << QVariant::fromValue(QList<int>()) << QStringList() << true;
+
+    // uint vector
+    QTest::newRow("uint vector: valid")
+            << QVariant::fromValue(QVector<uint32_t> { 1u, 2u, 3u } )
+            << QStringList { {"1"}, {"2"}, {"3"} }
+            << true;
+    QTest::newRow("int list: empty")
+            << QVariant::fromValue(QVector<uint32_t>()) << QStringList() << true;
+
+    // variant list
+    QTest::newRow("variant list: valid")
+            << QVariant::fromValue(QVariantList { {"a"}, {"b"}, {"c"} } )
+            << QStringList { {"a"}, {"b"}, {"c"} }
+            << true;
+    QTest::newRow("string list: empty")
+            << QVariant::fromValue(QVariantList()) << QStringList() << true;
+    QTest::newRow("variant list: invalid")
+            << QVariant::fromValue(QVariantList { {"a"}, {1}, { QPoint() } } )
+            << QStringList()
+            << false;
 }
 
 // Main function -----------------------------------------------------------------------------------

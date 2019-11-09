@@ -648,6 +648,7 @@ bool load(const QVariant &nodeValue, QString *parameterValue, QString *error)
         case qMetaTypeId<int16_t>():
         case qMetaTypeId<int32_t>():
         case qMetaTypeId<int64_t>():
+        case qMetaTypeId<qlonglong>():
         {
             *parameterValue = QString::number(nodeValue.toLongLong());
             return true;
@@ -657,6 +658,7 @@ bool load(const QVariant &nodeValue, QString *parameterValue, QString *error)
         case qMetaTypeId<uint16_t>():
         case qMetaTypeId<uint32_t>():
         case qMetaTypeId<uint64_t>():
+        case qMetaTypeId<qulonglong>():
         {
             *parameterValue = QString::number(nodeValue.toULongLong());
             return true;
@@ -1242,7 +1244,7 @@ bool load(const QVariant &nodeValue, QPoint *parameterValue, QString *error)
 {
     const auto nodeValueType = static_cast<QMetaType::Type>(nodeValue.type());
 
-    // Check for size types
+    // Check for point types
     if ((nodeValueType == QMetaType::QPoint) ||
         (nodeValueType == QMetaType::QPointF))
     {
@@ -1310,7 +1312,7 @@ bool load(const QVariant &nodeValue, QPointF *parameterValue, QString *error)
 {
     const auto nodeValueType = static_cast<QMetaType::Type>(nodeValue.type());
 
-    // Check for size types
+    // Check for point types
     if ((nodeValueType == QMetaType::QPoint) ||
         (nodeValueType == QMetaType::QPointF))
     {
@@ -1378,7 +1380,7 @@ bool load(const QVariant &nodeValue, QLine *parameterValue, QString *error)
 {
     const auto nodeValueType = static_cast<QMetaType::Type>(nodeValue.type());
 
-    // Check for size types
+    // Check for line types
     if ((nodeValueType == QMetaType::QLine) ||
         (nodeValueType == QMetaType::QLineF))
     {
@@ -1472,7 +1474,7 @@ bool load(const QVariant &nodeValue, QLineF *parameterValue, QString *error)
 {
     const auto nodeValueType = static_cast<QMetaType::Type>(nodeValue.type());
 
-    // Check for size types
+    // Check for line types
     if ((nodeValueType == QMetaType::QLine) ||
         (nodeValueType == QMetaType::QLineF))
     {
@@ -1574,7 +1576,7 @@ bool load(const QVariant &nodeValue, QRect *parameterValue, QString *error)
 {
     const auto nodeValueType = static_cast<QMetaType::Type>(nodeValue.type());
 
-    // Check for size types
+    // Check for rect types
     if ((nodeValueType == QMetaType::QRect) ||
         (nodeValueType == QMetaType::QRectF))
     {
@@ -1694,7 +1696,7 @@ bool load(const QVariant &nodeValue, QRectF *parameterValue, QString *error)
 {
     const auto nodeValueType = static_cast<QMetaType::Type>(nodeValue.type());
 
-    // Check for size types
+    // Check for rect types
     if ((nodeValueType == QMetaType::QRect) ||
         (nodeValueType == QMetaType::QRectF))
     {
@@ -1812,17 +1814,45 @@ bool load(const QVariant &nodeValue, QRectF *parameterValue, QString *error)
 
 bool load(const QVariant &nodeValue, QStringList *parameterValue, QString *error)
 {
-    if (static_cast<QMetaType::Type>(nodeValue.type()) != QMetaType::QStringList)
+    // Check for the same type
+    if (static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QStringList)
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("Node value must be a string list!");
-        }
-        return false;
+        *parameterValue = nodeValue.toStringList();
+        return true;
     }
 
-    *parameterValue = nodeValue.toStringList();
-    return true;
+    // Extract the value from a list
+    if (nodeValue.canConvert<QVariantList>())
+    {
+        QStringList value;
+        auto iterable = nodeValue.value<QSequentialIterable>();
+
+        for (const QVariant &item : iterable)
+        {
+            QString itemValue;
+
+            if (!load(item, &itemValue, error))
+            {
+                if (error != nullptr)
+                {
+                    *error = QString("List items must be convertable to a string! Inner error: [%1]"
+                                     ).arg(*error);
+                }
+                return false;
+            }
+
+            value.append(itemValue);
+        }
+
+        *parameterValue = value;
+        return true;
+    }
+
+    if (error != nullptr)
+    {
+        *error = QStringLiteral("Node value must be a string list!");
+    }
+    return false;
 }
 
 } // namespace ConfigParameterLoader
