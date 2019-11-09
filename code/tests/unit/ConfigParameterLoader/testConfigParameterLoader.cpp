@@ -146,6 +146,9 @@ private slots:
 
     void testDateTime();
     void testDateTime_data();
+
+    void testVariant();
+    void testVariant_data();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -3337,6 +3340,34 @@ void TestConfigParameterLoader::testDateTime_data()
     QTest::newRow("Invalid: type") << QVariant::fromValue(true)
                                    << QDateTime()
                                    << false;
+}
+
+// Test: load variant value ------------------------------------------------------------------------
+
+void TestConfigParameterLoader::testVariant()
+{
+    QFETCH(QVariant, nodeValue);
+    QFETCH(bool, expectedResult);
+
+    QVariant parameterValue;
+    QString error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testVariant: error string:" << error;
+
+    QCOMPARE(parameterValue, nodeValue);
+}
+
+void TestConfigParameterLoader::testVariant_data()
+{
+    QTest::addColumn<QVariant>("nodeValue");
+    QTest::addColumn<bool>("expectedResult");
+
+    QTest::newRow("bool") << QVariant::fromValue(true) << true;
+    QTest::newRow("int") << QVariant::fromValue(123) << true;
+    QTest::newRow("string") << QVariant::fromValue(QString("test")) << true;
+    QTest::newRow("datetime")
+            << QVariant::fromValue(QDateTime(QDate(2019, 11, 8), QTime(22, 33, 44, 555), Qt::UTC))
+            << true;
 }
 
 // Main function -----------------------------------------------------------------------------------
