@@ -1079,9 +1079,9 @@ bool load(const QVariant &nodeValue, QSize *parameterValue, QString *error)
         // Needs to be a map with 'width' and 'height' parameters
         const auto container = nodeValue.toMap();
 
-        if ((container.size() != 2) &&
-            container.contains(QStringLiteral("width")) &&
-            container.contains(QStringLiteral("height")))
+        if ((container.size() != 2) ||
+            (!container.contains(QStringLiteral("width"))) ||
+            (!container.contains(QStringLiteral("height"))))
         {
             if (error != nullptr)
             {
@@ -1173,9 +1173,9 @@ bool load(const QVariant &nodeValue, QSizeF *parameterValue, QString *error)
         // Needs to be a map with 'width' and 'height' parameters
         const auto container = nodeValue.toMap();
 
-        if ((container.size() != 2) &&
-            container.contains(QStringLiteral("width")) &&
-            container.contains(QStringLiteral("height")))
+        if ((container.size() != 2) ||
+            (!container.contains(QStringLiteral("width"))) ||
+            (!container.contains(QStringLiteral("height"))))
         {
             if (error != nullptr)
             {
@@ -1256,9 +1256,9 @@ bool load(const QVariant &nodeValue, QPoint *parameterValue, QString *error)
         // Needs to be a map with 'x' and 'y' parameters
         const auto container = nodeValue.toMap();
 
-        if ((container.size() != 2) &&
-            container.contains(QStringLiteral("x")) &&
-            container.contains(QStringLiteral("y")))
+        if ((container.size() != 2) ||
+            (!container.contains(QStringLiteral("x"))) ||
+            (!container.contains(QStringLiteral("y"))))
         {
             if (error != nullptr)
             {
@@ -1324,9 +1324,9 @@ bool load(const QVariant &nodeValue, QPointF *parameterValue, QString *error)
         // Needs to be a map with 'x' and 'y' parameters
         const auto container = nodeValue.toMap();
 
-        if ((container.size() != 2) &&
-            container.contains(QStringLiteral("x")) &&
-            container.contains(QStringLiteral("y")))
+        if ((container.size() != 2) ||
+            (!container.contains(QStringLiteral("x"))) ||
+            (!container.contains(QStringLiteral("y"))))
         {
             if (error != nullptr)
             {
@@ -1376,23 +1376,27 @@ bool load(const QVariant &nodeValue, QPointF *parameterValue, QString *error)
 
 bool load(const QVariant &nodeValue, QLine *parameterValue, QString *error)
 {
-    if ((static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QLine) ||
-        (static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QLineF))
+    const auto nodeValueType = static_cast<QMetaType::Type>(nodeValue.type());
+
+    // Check for size types
+    if ((nodeValueType == QMetaType::QLine) ||
+        (nodeValueType == QMetaType::QLineF))
     {
         *parameterValue = nodeValue.toLine();
         return true;
     }
 
+    // Extract the value from a map
     if (nodeValue.canConvert<QVariantMap>())
     {
         // Needs to be a map with 'x1', 'y1', 'x2', and 'y2' parameters
         const auto container = nodeValue.toMap();
 
-        if ((container.size() != 4) &&
-            container.contains(QStringLiteral("x1")) &&
-            container.contains(QStringLiteral("y1")) &&
-            container.contains(QStringLiteral("x2")) &&
-            container.contains(QStringLiteral("y2")))
+        if ((container.size() != 4) ||
+            (!container.contains(QStringLiteral("x1"))) ||
+            (!container.contains(QStringLiteral("y1"))) ||
+            (!container.contains(QStringLiteral("x2"))) ||
+            (!container.contains(QStringLiteral("y2"))))
         {
             if (error != nullptr)
             {
@@ -1456,8 +1460,8 @@ bool load(const QVariant &nodeValue, QLine *parameterValue, QString *error)
 
     if (error != nullptr)
     {
-        *error = QStringLiteral("Node value must either be an Object value with only 'x1', 'y1', "
-                                "'x2', and 'y2' members!");
+        *error = QStringLiteral("Node value must either be a line object an Object container with "
+                                "only 'x1', 'y1', 'x2', and 'y2' members!");
     }
     return false;
 }
@@ -1466,23 +1470,27 @@ bool load(const QVariant &nodeValue, QLine *parameterValue, QString *error)
 
 bool load(const QVariant &nodeValue, QLineF *parameterValue, QString *error)
 {
-    if ((static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QLine) ||
-        (static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QLineF))
+    const auto nodeValueType = static_cast<QMetaType::Type>(nodeValue.type());
+
+    // Check for size types
+    if ((nodeValueType == QMetaType::QLine) ||
+        (nodeValueType == QMetaType::QLineF))
     {
         *parameterValue = nodeValue.toLineF();
         return true;
     }
 
+    // Extract the value from a map
     if (nodeValue.canConvert<QVariantMap>())
     {
         // Needs to be a map with 'x1', 'y1', 'x2', and 'y2' parameters
         const auto container = nodeValue.toMap();
 
-        if ((container.size() != 4) &&
-            container.contains(QStringLiteral("x1")) &&
-            container.contains(QStringLiteral("y1")) &&
-            container.contains(QStringLiteral("x2")) &&
-            container.contains(QStringLiteral("y2")))
+        if ((container.size() != 4) ||
+            (!container.contains(QStringLiteral("x1"))) ||
+            (!container.contains(QStringLiteral("y1"))) ||
+            (!container.contains(QStringLiteral("x2"))) ||
+            (!container.contains(QStringLiteral("y2"))))
         {
             if (error != nullptr)
             {
@@ -1554,8 +1562,8 @@ bool load(const QVariant &nodeValue, QLineF *parameterValue, QString *error)
 
     if (error != nullptr)
     {
-        *error = QStringLiteral("Node value must either be an Object value with only 'x1', 'y1', "
-                                "'x2', and 'y2' members!");
+        *error = QStringLiteral("Node value must either be a line object an Object container with "
+                                "only 'x1', 'y1', 'x2', and 'y2' members!");
     }
     return false;
 }

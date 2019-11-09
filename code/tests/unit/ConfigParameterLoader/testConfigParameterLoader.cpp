@@ -23,6 +23,7 @@
 
 // Qt includes
 #include <QtCore/QDebug>
+#include <QtCore/QLine>
 #include <QtTest/QTest>
 
 // System includes
@@ -161,6 +162,9 @@ private slots:
 
     void testPoint();
     void testPoint_data();
+
+    void testLine();
+    void testLine_data();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -3708,6 +3712,118 @@ void TestConfigParameterLoader::testPoint_data()
     QTest::newRow("Invalid: type") << QVariant::fromValue(true)
                                    << QPoint()
                                    << QPointF()
+                                   << false;
+}
+
+// Test: load line value ---------------------------------------------------------------------------
+
+void TestConfigParameterLoader::testLine()
+{
+    QFETCH(QVariant, nodeValue);
+    QFETCH(QLine, expectedParameterValue1);
+    QFETCH(QLineF, expectedParameterValue2);
+    QFETCH(bool, expectedResult);
+
+    QLine parameterValue1;
+    QString error1;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue1, &error1), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testLine: error string:" << error1;
+    QCOMPARE(parameterValue1, expectedParameterValue1);
+
+    QLineF parameterValue2;
+    QString error2;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue2, &error2), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testLine: error string:" << error2;
+    QCOMPARE(parameterValue2, expectedParameterValue2);
+}
+
+void TestConfigParameterLoader::testLine_data()
+{
+    QTest::addColumn<QVariant>("nodeValue");
+    QTest::addColumn<QLine>("expectedParameterValue1");
+    QTest::addColumn<QLineF>("expectedParameterValue2");
+    QTest::addColumn<bool>("expectedResult");
+
+    // line with integers
+    QTest::newRow("line (int): positive values")
+            << QVariant::fromValue(QLine(100, 200, 300, 400))
+            << QLine(100, 200, 300, 400)
+            << QLineF(100.0, 200.0, 300.0, 400.0)
+            << true;
+    QTest::newRow("line (int): negative values")
+            << QVariant::fromValue(QLine(-100, -200, -300, -400))
+            << QLine(-100, -200, -300, -400)
+            << QLineF(-100.0, -200.0, -300, -400)
+            << true;
+    QTest::newRow("line (int): null node value") << QVariant()
+                                                 << QLine()
+                                                 << QLineF()
+                                                 << false;
+    QTest::newRow("line (int): null line") << QVariant::fromValue(QLine())
+                                           << QLine(0, 0, 0, 0)
+                                           << QLineF(0.0, 0.0, 0.0, 0.0)
+                                           << true;
+
+    // line with floating-line
+    QTest::newRow("line (double): positive values")
+            << QVariant::fromValue(QLine(100.0, 200.0, 300.0, 400.0))
+            << QLine(100, 200, 300, 400)
+            << QLineF(100.0, 200.0, 300.0, 400.0)
+            << true;
+    QTest::newRow("line (double): negitive values")
+            << QVariant::fromValue(QLine(-100.0, -200.0, -300.0, -400.0))
+            << QLine(-100, -200, -300, -400)
+            << QLineF(-100.0, -200.0, -300.0, -400.0)
+            << true;
+    QTest::newRow("line (double): null node value") << QVariant()
+                                                    << QLine()
+                                                    << QLineF()
+                                                    << false;
+    QTest::newRow("line (double): null line") << QVariant::fromValue(QLineF())
+                                              << QLine(0, 0, 0, 0)
+                                              << QLineF(0.0, 0.0, 0.0, 0.0)
+                                              << true;
+
+    // map
+    QTest::newRow("map: valid")
+            << QVariant::fromValue(QVariantMap {
+                                       {"x1", 100}, {"y1", 200}, {"x2", 300}, {"y2", 400} } )
+            << QLine(100, 200, 300, 400)
+            << QLineF(100.0, 200.0, 300.0, 400.0)
+            << true;
+    QTest::newRow("map: empty") << QVariant::fromValue(QVariantMap())
+                                << QLine()
+                                << QLineF()
+                                << false;
+    QTest::newRow("map: missing y")
+            << QVariant::fromValue(QVariantMap { {"x1", 100}, {"x2", 300} } )
+            << QLine()
+            << QLineF()
+            << false;
+    QTest::newRow("map: missing x")
+            << QVariant::fromValue(QVariantMap { {"y1", 200}, {"y2", 400} } )
+            << QLine()
+            << QLineF()
+            << false;
+    QTest::newRow("map: invalid keys")
+            << QVariant::fromValue(QVariantMap {
+                                       {"X1", 100}, {"Y1", 200}, {"X2", 300}, {"Y2", 400} } )
+            << QLine()
+            << QLineF()
+            << false;
+    QTest::newRow("map: too many members")
+            << QVariant::fromValue(QVariantMap {
+                                       {"x1", 100}, {"y1", 200},
+                                       {"x2", 300}, {"y2", 400},
+                                       {"asd", 0} } )
+            << QLine()
+            << QLineF()
+            << false;
+
+    // Invalid type
+    QTest::newRow("Invalid: type") << QVariant::fromValue(true)
+                                   << QLine()
+                                   << QLineF()
                                    << false;
 }
 
