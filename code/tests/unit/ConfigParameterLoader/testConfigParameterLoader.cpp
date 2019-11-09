@@ -32,6 +32,11 @@
 
 // Macros
 
+// Test types --------------------------------------------------------------------------------------
+
+using TestPair = QPair<QString, int>;
+using TestStdPair = std::pair<QString, int>;
+
 // Test helper methods -----------------------------------------------------------------------------
 
 template<typename T>
@@ -171,6 +176,9 @@ private slots:
 
     void testStringList();
     void testStringList_data();
+
+    void testPair();
+    void testPair_data();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -4105,6 +4113,65 @@ void TestConfigParameterLoader::testStringList_data()
             << QVariant::fromValue(QVariantList { {"a"}, {1}, { QPoint() } } )
             << QStringList()
             << false;
+
+    // Invalid type
+    QTest::newRow("Invalid: type") << QVariant::fromValue(true) << QStringList() << false;
+}
+
+// Test: load pair value ---------------------------------------------------------------------------
+
+void TestConfigParameterLoader::testPair()
+{
+    QFETCH(QVariant, nodeValue);
+    QFETCH(TestPair, expectedParameterValue1);
+    QFETCH(TestStdPair, expectedParameterValue2);
+    QFETCH(bool, expectedResult);
+
+    TestPair parameterValue1;
+    QString error1;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue1, &error1), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testPair: error string:" << error1;
+    QCOMPARE(parameterValue1, expectedParameterValue1);
+
+    TestStdPair parameterValue2;
+    QString error2;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue2, &error2), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testPair: error string:" << error2;
+    QCOMPARE(parameterValue2, expectedParameterValue2);
+}
+
+void TestConfigParameterLoader::testPair_data()
+{
+    QTest::addColumn<QVariant>("nodeValue");
+    QTest::addColumn<TestPair>("expectedParameterValue1");
+    QTest::addColumn<TestStdPair>("expectedParameterValue2");
+    QTest::addColumn<bool>("expectedResult");
+
+    QTest::newRow("valid")
+            << QVariant::fromValue(QVariantMap { {"first", "test"}, {"second", 100} } )
+            << TestPair("test", 100)
+            << TestStdPair("test", 100)
+            << true;
+    QTest::newRow("empty") << QVariant::fromValue(QVariantMap())
+                           << TestPair()
+                           << TestStdPair()
+                           << false;
+    QTest::newRow("invalid first")
+            << QVariant::fromValue(QVariantMap { {"first", QPoint()}, {"second", 100} } )
+            << TestPair()
+            << TestStdPair()
+            << false;
+    QTest::newRow("invalid second")
+            << QVariant::fromValue(QVariantMap { {"first", "test"}, {"second", "asd"} } )
+            << TestPair()
+            << TestStdPair()
+            << false;
+
+    // Invalid type
+    QTest::newRow("Invalid: type") << QVariant::fromValue(true)
+                                   << TestPair()
+                                   << TestStdPair()
+                                   << false;
 }
 
 // Main function -----------------------------------------------------------------------------------

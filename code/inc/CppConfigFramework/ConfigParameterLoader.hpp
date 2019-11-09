@@ -222,9 +222,9 @@ bool load(const QVariant &nodeValue, QPair<T1, T2> *parameterValue, QString *err
 
     const auto container = nodeValue.toMap();
 
-    if ((container.size() != 2) &&
-        container.contains(QStringLiteral("first")) &&
-        container.contains(QStringLiteral("second")))
+    if ((container.size() != 2) ||
+        (!container.contains(QStringLiteral("first"))) ||
+        (!container.contains(QStringLiteral("second"))))
     {
         if (error != nullptr)
         {
@@ -281,9 +281,9 @@ bool load(const QVariant &nodeValue, std::pair<T1, T2> *parameterValue, QString 
 
     const auto container = nodeValue.toMap();
 
-    if ((container.size() != 2) &&
-        container.contains(QStringLiteral("first")) &&
-        container.contains(QStringLiteral("second")))
+    if ((container.size() != 2) ||
+        (!container.contains(QStringLiteral("first"))) ||
+        (!container.contains(QStringLiteral("second"))))
     {
         if (error != nullptr)
         {
@@ -318,7 +318,7 @@ bool load(const QVariant &nodeValue, std::pair<T1, T2> *parameterValue, QString 
     }
 
     // Load the parameter value
-    *parameterValue = std::pair<T1, T2>(first, second);
+    *parameterValue = std::make_pair(first, second);
     return true;
 }
 
