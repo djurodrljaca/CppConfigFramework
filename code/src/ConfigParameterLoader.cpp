@@ -1572,23 +1572,38 @@ bool load(const QVariant &nodeValue, QLineF *parameterValue, QString *error)
 
 bool load(const QVariant &nodeValue, QRect *parameterValue, QString *error)
 {
-    if ((static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QRect) ||
-        (static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QRectF))
+    const auto nodeValueType = static_cast<QMetaType::Type>(nodeValue.type());
+
+    // Check for size types
+    if ((nodeValueType == QMetaType::QRect) ||
+        (nodeValueType == QMetaType::QRectF))
     {
-        *parameterValue = nodeValue.toRect();
+        const auto value = nodeValue.toRect();
+
+        if (!value.isValid())
+        {
+            if (error != nullptr)
+            {
+                *error = QStringLiteral("Node value contains an invalid rect object!");
+            }
+            return false;
+        }
+
+        *parameterValue = value;
         return true;
     }
 
+    // Extract the value from a map
     if (nodeValue.canConvert<QVariantMap>())
     {
         // Needs to be a map with 'x', 'y', 'width', and 'height' parameters
         const auto container = nodeValue.toMap();
 
-        if ((container.size() != 4) &&
-            container.contains(QStringLiteral("x")) &&
-            container.contains(QStringLiteral("y")) &&
-            container.contains(QStringLiteral("width")) &&
-            container.contains(QStringLiteral("height")))
+        if ((container.size() != 4) ||
+            (!container.contains(QStringLiteral("x"))) ||
+            (!container.contains(QStringLiteral("y"))) ||
+            (!container.contains(QStringLiteral("width"))) ||
+            (!container.contains(QStringLiteral("height"))))
         {
             if (error != nullptr)
             {
@@ -1650,14 +1665,25 @@ bool load(const QVariant &nodeValue, QRect *parameterValue, QString *error)
             return false;
         }
 
-        *parameterValue = QRect(x, y, width, height);
+        const QRect value(x, y, width, height);
+
+        if (!value.isValid())
+        {
+            if (error != nullptr)
+            {
+                *error = QStringLiteral("Node value contains an invalid rect object!");
+            }
+            return false;
+        }
+
+        *parameterValue = value;
         return true;
     }
 
     if (error != nullptr)
     {
-        *error = QStringLiteral("Node value must either be an Object value with only 'x', 'y', "
-                                "'width', and 'height' members!");
+        *error = QStringLiteral("Node value must either be a rect object or an Object value with "
+                                "only 'x', 'y', 'width', and 'height' members!");
     }
     return false;
 }
@@ -1666,23 +1692,38 @@ bool load(const QVariant &nodeValue, QRect *parameterValue, QString *error)
 
 bool load(const QVariant &nodeValue, QRectF *parameterValue, QString *error)
 {
-    if ((static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QRect) ||
-        (static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QRectF))
+    const auto nodeValueType = static_cast<QMetaType::Type>(nodeValue.type());
+
+    // Check for size types
+    if ((nodeValueType == QMetaType::QRect) ||
+        (nodeValueType == QMetaType::QRectF))
     {
-        *parameterValue = nodeValue.toRectF();
+        const auto value = nodeValue.toRectF();
+
+        if (!value.isValid())
+        {
+            if (error != nullptr)
+            {
+                *error = QStringLiteral("Node value contains an invalid rect object!");
+            }
+            return false;
+        }
+
+        *parameterValue = value;
         return true;
     }
 
+    // Extract the value from a map
     if (nodeValue.canConvert<QVariantMap>())
     {
         // Needs to be a map with 'x', 'y', 'width', and 'height' parameters
         const auto container = nodeValue.toMap();
 
-        if ((container.size() != 4) &&
-            container.contains(QStringLiteral("x")) &&
-            container.contains(QStringLiteral("y")) &&
-            container.contains(QStringLiteral("width")) &&
-            container.contains(QStringLiteral("height")))
+        if ((container.size() != 4) ||
+            (!container.contains(QStringLiteral("x"))) ||
+            (!container.contains(QStringLiteral("y"))) ||
+            (!container.contains(QStringLiteral("width"))) ||
+            (!container.contains(QStringLiteral("height"))))
         {
             if (error != nullptr)
             {
@@ -1744,14 +1785,25 @@ bool load(const QVariant &nodeValue, QRectF *parameterValue, QString *error)
             return false;
         }
 
-        *parameterValue = QRectF(x, y, width, height);
+        const QRectF value(x, y, width, height);
+
+        if (!value.isValid())
+        {
+            if (error != nullptr)
+            {
+                *error = QStringLiteral("Node value contains an invalid rect object!");
+            }
+            return false;
+        }
+
+        *parameterValue = value;
         return true;
     }
 
     if (error != nullptr)
     {
-        *error = QStringLiteral("Node value must either be an Object value with only 'x', 'y', "
-                                "'width', and 'height' members!");
+        *error = QStringLiteral("Node value must either be a rect object or an Object value with "
+                                "only 'x', 'y', 'width', and 'height' members!");
     }
     return false;
 }
