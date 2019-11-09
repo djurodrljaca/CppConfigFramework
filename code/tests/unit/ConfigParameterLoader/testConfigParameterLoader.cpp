@@ -165,6 +165,9 @@ private slots:
 
     void testLine();
     void testLine_data();
+
+    void testRect();
+    void testRect_data();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -3868,6 +3871,177 @@ void TestConfigParameterLoader::testLine_data()
     QTest::newRow("Invalid: type") << QVariant::fromValue(true)
                                    << QLine()
                                    << QLineF()
+                                   << false;
+}
+
+// Test: load line value ---------------------------------------------------------------------------
+
+void TestConfigParameterLoader::testRect()
+{
+    QFETCH(QVariant, nodeValue);
+    QFETCH(QRect, expectedParameterValue1);
+    QFETCH(QRectF, expectedParameterValue2);
+    QFETCH(bool, expectedResult);
+
+    QRect parameterValue1;
+    QString error1;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue1, &error1), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testRect: error string:" << error1;
+    QCOMPARE(parameterValue1, expectedParameterValue1);
+
+    QRectF parameterValue2;
+    QString error2;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue2, &error2), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testRect: error string:" << error2;
+    QCOMPARE(parameterValue2, expectedParameterValue2);
+}
+
+void TestConfigParameterLoader::testRect_data()
+{
+    QTest::addColumn<QVariant>("nodeValue");
+    QTest::addColumn<QRect>("expectedParameterValue1");
+    QTest::addColumn<QRectF>("expectedParameterValue2");
+    QTest::addColumn<bool>("expectedResult");
+
+    // rect with integers
+    QTest::newRow("rect (int): positive values")
+            << QVariant::fromValue(QRect(100, 200, 300, 400))
+            << QRect(100, 200, 300, 400)
+            << QRectF(100.0, 200.0, 300.0, 400.0)
+            << true;
+    QTest::newRow("rect (int): negative values")
+            << QVariant::fromValue(QRect(-100, -200, 300, 400))
+            << QRect(-100, -200, 300, 400)
+            << QRectF(-100.0, -200.0, 300, 400)
+            << true;
+    QTest::newRow("rect (int): invalid width")
+            << QVariant::fromValue(QRect(-100, -200, -1, 400))
+            << QRect()
+            << QRectF()
+            << false;
+    QTest::newRow("rect (int): invalid height")
+            << QVariant::fromValue(QRect(-100, -200, 300, -1))
+            << QRect()
+            << QRectF()
+            << false;
+    QTest::newRow("rect (int): null node value") << QVariant()
+                                                 << QRect()
+                                                 << QRectF()
+                                                 << false;
+    QTest::newRow("rect (int): null rect") << QVariant::fromValue(QRect())
+                                           << QRect()
+                                           << QRectF()
+                                           << false;
+
+    // rect with floating-rect
+    QTest::newRow("rect (double): positive values")
+            << QVariant::fromValue(QRect(100.0, 200.0, 300.0, 400.0))
+            << QRect(100, 200, 300, 400)
+            << QRectF(100.0, 200.0, 300.0, 400.0)
+            << true;
+    QTest::newRow("rect (double): negitive values")
+            << QVariant::fromValue(QRect(-100.0, -200.0, 300.0, 400.0))
+            << QRect(-100, -200, 300, 400)
+            << QRectF(-100.0, -200.0, 300.0, 400.0)
+            << true;
+    QTest::newRow("rect (double): invalid width")
+            << QVariant::fromValue(QRect(-100.0, -200.0, -1.0, 400.0))
+            << QRect()
+            << QRectF()
+            << false;
+    QTest::newRow("rect (double): invalid height")
+            << QVariant::fromValue(QRect(-100.0, -200.0, 300.0, -1.0))
+            << QRect()
+            << QRectF()
+            << false;
+    QTest::newRow("rect (double): null node value") << QVariant()
+                                                    << QRect()
+                                                    << QRectF()
+                                                    << false;
+    QTest::newRow("rect (double): null rect") << QVariant::fromValue(QRectF())
+                                              << QRect()
+                                              << QRectF()
+                                              << false;
+
+    // map
+    QTest::newRow("map: valid")
+            << QVariant::fromValue(QVariantMap {
+                                       {"x", 100}, {"y", 200}, {"width", 300}, {"height", 400} } )
+            << QRect(100, 200, 300, 400)
+            << QRectF(100.0, 200.0, 300.0, 400.0)
+            << true;
+    QTest::newRow("map: empty") << QVariant::fromValue(QVariantMap())
+                                << QRect()
+                                << QRectF()
+                                << false;
+    QTest::newRow("map: missing x")
+            << QVariant::fromValue(QVariantMap { {"y", 200}, {"width", 300}, {"height", 400} } )
+            << QRect()
+            << QRectF()
+            << false;
+    QTest::newRow("map: missing y")
+            << QVariant::fromValue(QVariantMap { {"x", 100}, {"width", 300}, {"height", 400} } )
+            << QRect()
+            << QRectF()
+            << false;
+    QTest::newRow("map: missing width")
+            << QVariant::fromValue(QVariantMap { {"x", 100}, {"y", 200}, {"height", 400} } )
+            << QRect()
+            << QRectF()
+            << false;
+    QTest::newRow("map: missing height")
+            << QVariant::fromValue(QVariantMap { {"x", 100}, {"y", 200}, {"width", 300} } )
+            << QRect()
+            << QRectF()
+            << false;
+    QTest::newRow("map: invalid keys")
+            << QVariant::fromValue(QVariantMap {
+                                       {"X", 100}, {"Y", 200}, {"WIDTH", 300}, {"HEIGHT", 400} } )
+            << QRect()
+            << QRectF()
+            << false;
+    QTest::newRow("map: too many members")
+            << QVariant::fromValue(QVariantMap {
+                                       {"x", 100}, {"y", 200}, {"width", 300}, {"height", 400},
+                                       {"asd", 0} } )
+            << QRect()
+            << QRectF()
+            << false;
+    QTest::newRow("map: invalid x")
+            << QVariant::fromValue(QVariantMap {
+                                       {"x", "asd"}, {"y", 200}, {"width", 300}, {"height", 400} } )
+            << QRect()
+            << QRectF()
+            << false;
+    QTest::newRow("map: invalid y")
+            << QVariant::fromValue(QVariantMap {
+                                       {"x", 100}, {"y", "asd"}, {"width", 300}, {"height", 400} } )
+            << QRect()
+            << QRectF()
+            << false;
+    QTest::newRow("map: invalid width")
+            << QVariant::fromValue(QVariantMap {
+                                       {"x", 100}, {"y", 200}, {"width", "asd"}, {"height", 400} } )
+            << QRect()
+            << QRectF()
+            << false;
+    QTest::newRow("map: invalid height")
+            << QVariant::fromValue(QVariantMap {
+                                       {"x", 100}, {"y", 200}, {"width", 300}, {"height", "asd"} } )
+            << QRect()
+            << QRectF()
+            << false;
+    QTest::newRow("map: invalid rect")
+            << QVariant::fromValue(QVariantMap {
+                                       {"x", 100}, {"y", 200}, {"width", -1}, {"height", -1} } )
+            << QRect()
+            << QRectF()
+            << false;
+
+    // Invalid type
+    QTest::newRow("Invalid: type") << QVariant::fromValue(true)
+                                   << QRect()
+                                   << QRectF()
                                    << false;
 }
 
