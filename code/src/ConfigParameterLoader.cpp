@@ -951,13 +951,28 @@ bool load(const QVariant &nodeValue, QVariant *parameterValue, QString *error)
 
 bool load(const QVariant &nodeValue, QUrl *parameterValue, QString *error)
 {
-    if (static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QUrl)
+    const auto nodeValueType = static_cast<QMetaType::Type>(nodeValue.type());
+
+    // Check for the same type
+    if (nodeValueType == QMetaType::QUrl)
     {
-        *parameterValue = nodeValue.toUrl();
+        const auto value = nodeValue.toUrl();
+
+        if (!value.isValid())
+        {
+            if (error != nullptr)
+            {
+                *error = QStringLiteral("Node value contains an invalid URL!");
+            }
+            return false;
+        }
+
+        *parameterValue = value;
         return true;
     }
 
-    if (static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QString)
+    // Convert it to string first and then to URL
+    if (nodeValueType == QMetaType::QString)
     {
         const auto value = QUrl(nodeValue.toString());
 
@@ -976,7 +991,7 @@ bool load(const QVariant &nodeValue, QUrl *parameterValue, QString *error)
 
     if (error != nullptr)
     {
-        *error = QStringLiteral("Node value must be a string!");
+        *error = QStringLiteral("Node value must be a valid URL!");
     }
     return false;
 }
@@ -985,13 +1000,28 @@ bool load(const QVariant &nodeValue, QUrl *parameterValue, QString *error)
 
 bool load(const QVariant &nodeValue, QUuid *parameterValue, QString *error)
 {
-    if (static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QUuid)
+    const auto nodeValueType = static_cast<QMetaType::Type>(nodeValue.type());
+
+    // Check for the same type
+    if (nodeValueType == QMetaType::QUuid)
     {
-        *parameterValue = nodeValue.toUuid();
+        const auto value = nodeValue.toUuid();
+
+        if (value.isNull())
+        {
+            if (error != nullptr)
+            {
+                *error = QStringLiteral("Node value contains an invalid UUID!");
+            }
+            return false;
+        }
+
+        *parameterValue = value;
         return true;
     }
 
-    if (static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QString)
+    // Convert it to string first and then to URL
+    if (nodeValueType == QMetaType::QString)
     {
         const auto value = QUuid(nodeValue.toString());
 
@@ -1012,7 +1042,7 @@ bool load(const QVariant &nodeValue, QUuid *parameterValue, QString *error)
 
     if (error != nullptr)
     {
-        *error = QStringLiteral("Node value must be a string in format "
+        *error = QStringLiteral("Node value must be a valid UUID object or a string in format "
                                 "'{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}'!");
     }
     return false;
