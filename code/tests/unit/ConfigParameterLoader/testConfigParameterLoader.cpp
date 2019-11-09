@@ -158,6 +158,9 @@ private slots:
 
     void testSize();
     void testSize_data();
+
+    void testPoint();
+    void testPoint_data();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -3598,6 +3601,113 @@ void TestConfigParameterLoader::testSize_data()
     QTest::newRow("Invalid: type") << QVariant::fromValue(true)
                                    << QSize()
                                    << QSizeF()
+                                   << false;
+}
+
+// Test: load point value --------------------------------------------------------------------------
+
+void TestConfigParameterLoader::testPoint()
+{
+    QFETCH(QVariant, nodeValue);
+    QFETCH(QPoint, expectedParameterValue1);
+    QFETCH(QPointF, expectedParameterValue2);
+    QFETCH(bool, expectedResult);
+
+    QPoint parameterValue1;
+    QString error1;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue1, &error1), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testPoint: error string:" << error1;
+    QCOMPARE(parameterValue1, expectedParameterValue1);
+
+    QPointF parameterValue2;
+    QString error2;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue2, &error2), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testPoint: error string:" << error2;
+    QCOMPARE(parameterValue2, expectedParameterValue2);
+}
+
+void TestConfigParameterLoader::testPoint_data()
+{
+    QTest::addColumn<QVariant>("nodeValue");
+    QTest::addColumn<QPoint>("expectedParameterValue1");
+    QTest::addColumn<QPointF>("expectedParameterValue2");
+    QTest::addColumn<bool>("expectedResult");
+
+    // point with integers
+    QTest::newRow("point (int): positive values")
+            << QVariant::fromValue(QPoint(100, 200))
+            << QPoint(100, 200)
+            << QPointF(100.0, 200.0)
+            << true;
+    QTest::newRow("point (int): negative values")
+            << QVariant::fromValue(QPoint(-100, -200))
+            << QPoint(-100, -200)
+            << QPointF(-100.0, -200.0)
+            << true;
+    QTest::newRow("point (int): null node value") << QVariant()
+                                                  << QPoint()
+                                                  << QPointF()
+                                                  << false;
+    QTest::newRow("point (int): null point") << QVariant::fromValue(QPoint())
+                                             << QPoint(0, 0)
+                                             << QPointF(0.0, 0.0)
+                                             << true;
+
+    // point with floating-point
+    QTest::newRow("point (double): positive values")
+            << QVariant::fromValue(QPoint(100.0, 200.0))
+            << QPoint(100, 200)
+            << QPointF(100.0, 200.0)
+            << true;
+    QTest::newRow("point (double): negitive values")
+            << QVariant::fromValue(QPoint(-100.0, -200.0))
+            << QPoint(-100, -200)
+            << QPointF(-100.0, -200.0)
+            << true;
+    QTest::newRow("point (double): null node value") << QVariant()
+                                                     << QPoint()
+                                                     << QPointF()
+                                                     << false;
+    QTest::newRow("point (double): null point") << QVariant::fromValue(QPointF())
+                                                << QPoint(0, 0)
+                                                << QPointF(0.0, 0.0)
+                                                << true;
+
+    // map
+    QTest::newRow("map: valid")
+            << QVariant::fromValue(QVariantMap { {"x", 100}, {"y", 200} } )
+            << QPoint(100, 200)
+            << QPointF(100.0, 200.0)
+            << true;
+    QTest::newRow("map: empty") << QVariant::fromValue(QVariantMap())
+                                << QPoint()
+                                << QPointF()
+                                << false;
+    QTest::newRow("map: missing y")
+            << QVariant::fromValue(QVariantMap { {"x", 100} } )
+            << QPoint()
+            << QPointF()
+            << false;
+    QTest::newRow("map: missing x")
+            << QVariant::fromValue(QVariantMap { {"y", 200} } )
+            << QPoint()
+            << QPointF()
+            << false;
+    QTest::newRow("map: invalid keys")
+            << QVariant::fromValue(QVariantMap { {"X", 100}, {"Y", 200} } )
+            << QPoint()
+            << QPointF()
+            << false;
+    QTest::newRow("map: too many members")
+            << QVariant::fromValue(QVariantMap { {"x", 100}, {"y", 200}, {"asd", 0} } )
+            << QPoint()
+            << QPointF()
+            << false;
+
+    // Invalid type
+    QTest::newRow("Invalid: type") << QVariant::fromValue(true)
+                                   << QPoint()
+                                   << QPointF()
                                    << false;
 }
 
