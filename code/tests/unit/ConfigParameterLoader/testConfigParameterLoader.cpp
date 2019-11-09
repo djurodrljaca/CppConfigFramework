@@ -155,6 +155,9 @@ private slots:
 
     void testUuid();
     void testUuid_data();
+
+    void testSize();
+    void testSize_data();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -3399,18 +3402,18 @@ void TestConfigParameterLoader::testUrl_data()
     QTest::addColumn<bool>("expectedResult");
 
     // URL
-    QTest::newRow("date: valid") << QVariant::fromValue(QUrl("http://www.google.com"))
-                                 << QUrl("http://www.google.com")
-                                 << true;
-    QTest::newRow("date: null node value") << QVariant()
-                                           << QUrl()
-                                           << false;
-    QTest::newRow("date: null URL") << QVariant::fromValue(QUrl())
-                                     << QUrl()
-                                     << false;
-    QTest::newRow("date: invalid URL value") << QVariant::fromValue(QUrl("http://..."))
-                                              << QUrl()
-                                              << false;
+    QTest::newRow("URL: valid") << QVariant::fromValue(QUrl("http://www.google.com"))
+                                << QUrl("http://www.google.com")
+                                << true;
+    QTest::newRow("URL: null node value") << QVariant()
+                                          << QUrl()
+                                          << false;
+    QTest::newRow("URL: null URL") << QVariant::fromValue(QUrl())
+                                   << QUrl()
+                                   << false;
+    QTest::newRow("URL: invalid URL value") << QVariant::fromValue(QUrl("http://..."))
+                                            << QUrl()
+                                            << false;
 
     // string
     QTest::newRow("string: valid") << QVariant::fromValue(QString("http://www.google.com"))
@@ -3452,17 +3455,17 @@ void TestConfigParameterLoader::testUuid_data()
     QTest::addColumn<bool>("expectedResult");
 
     // UUID
-    QTest::newRow("date: valid")
+    QTest::newRow("UUID: valid")
             << QVariant::fromValue(QUuid("{01234567-8901-2345-6789-012345678901}"))
             << QUuid("{01234567-8901-2345-6789-012345678901}")
             << true;
-    QTest::newRow("date: null node value") << QVariant()
+    QTest::newRow("UUID: null node value") << QVariant()
                                            << QUuid()
                                            << false;
-    QTest::newRow("date: null UUID") << QVariant::fromValue(QUuid())
+    QTest::newRow("UUID: null UUID") << QVariant::fromValue(QUuid())
                                     << QUuid()
                                     << false;
-    QTest::newRow("date: invalid UUID value")
+    QTest::newRow("UUID: invalid UUID value")
             << QVariant::fromValue(QUuid("{01234567890123456789012345678901}"))
             << QUuid()
             << false;
@@ -3483,6 +3486,118 @@ void TestConfigParameterLoader::testUuid_data()
     // Invalid type
     QTest::newRow("Invalid: type") << QVariant::fromValue(true)
                                    << QUuid()
+                                   << false;
+}
+
+// Test: load size value ---------------------------------------------------------------------------
+
+void TestConfigParameterLoader::testSize()
+{
+    QFETCH(QVariant, nodeValue);
+    QFETCH(QSize, expectedParameterValue1);
+    QFETCH(QSizeF, expectedParameterValue2);
+    QFETCH(bool, expectedResult);
+
+    QSize parameterValue1;
+    QString error1;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue1, &error1), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testSize: error string:" << error1;
+    QCOMPARE(parameterValue1, expectedParameterValue1);
+
+    QSizeF parameterValue2;
+    QString error2;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue2, &error2), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testSize: error string:" << error2;
+    QCOMPARE(parameterValue2, expectedParameterValue2);
+}
+
+void TestConfigParameterLoader::testSize_data()
+{
+    QTest::addColumn<QVariant>("nodeValue");
+    QTest::addColumn<QSize>("expectedParameterValue1");
+    QTest::addColumn<QSizeF>("expectedParameterValue2");
+    QTest::addColumn<bool>("expectedResult");
+
+    // size with integers
+    QTest::newRow("size (int): valid")
+            << QVariant::fromValue(QSize(100, 200))
+            << QSize(100, 200)
+            << QSizeF(100.0, 200.0)
+            << true;
+    QTest::newRow("size (int): null node value") << QVariant()
+                                                 << QSize()
+                                                 << QSizeF()
+                                                 << false;
+    QTest::newRow("size (int): null size") << QVariant::fromValue(QSize())
+                                           << QSize()
+                                           << QSizeF()
+                                           << false;
+    QTest::newRow("size (int): invalid size value")
+            << QVariant::fromValue(QSize(-1, -1))
+            << QSize()
+            << QSizeF()
+            << false;
+
+    // size with floating-point
+    QTest::newRow("size (double): valid")
+            << QVariant::fromValue(QSize(100.0, 200.0))
+            << QSize(100, 200)
+            << QSizeF(100.0, 200.0)
+            << true;
+    QTest::newRow("size (double): null node value") << QVariant()
+                                                 << QSize()
+                                                 << QSizeF()
+                                                 << false;
+    QTest::newRow("size (double): null size") << QVariant::fromValue(QSizeF())
+                                           << QSize()
+                                           << QSizeF()
+                                           << false;
+    QTest::newRow("size (double): invalid size value")
+            << QVariant::fromValue(QSize(-1.0, -1.0))
+            << QSize()
+            << QSizeF()
+            << false;
+
+    // map
+    QTest::newRow("map: valid")
+            << QVariant::fromValue(QVariantMap { {"width", 100}, {"height", 200} } )
+            << QSize(100, 200)
+            << QSizeF(100.0, 200.0)
+            << true;
+    QTest::newRow("map: empty") << QVariant::fromValue(QVariantMap())
+                                << QSize()
+                                << QSizeF()
+                                   << false;
+    QTest::newRow("map: missing height")
+            << QVariant::fromValue(QVariantMap { {"width", 100} } )
+            << QSize()
+            << QSizeF()
+            << false;
+    QTest::newRow("map: missing width")
+            << QVariant::fromValue(QVariantMap { {"height", 200} } )
+            << QSize()
+            << QSizeF()
+            << false;
+    QTest::newRow("map: invalid keys")
+            << QVariant::fromValue(QVariantMap { {"WIDTH", 100}, {"HEIGHT", 200} } )
+            << QSize()
+            << QSizeF()
+            << false;
+    QTest::newRow("map: invalid values")
+            << QVariant::fromValue(QVariantMap { {"width", -1}, {"height", -1} } )
+            << QSize()
+            << QSizeF()
+            << false;
+    QTest::newRow("map: too many members")
+            << QVariant::fromValue(QVariantMap { {"width", 100}, {"height", 200}, {"asd", 0} } )
+            << QSize()
+            << QSizeF()
+            << false;
+
+    // Invalid type
+    QTest::newRow("Invalid: type") << QVariant::fromValue(true)
+                                   << QSize()
+                                   << QSizeF()
                                    << false;
 }
 

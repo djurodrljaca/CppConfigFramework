@@ -1052,13 +1052,28 @@ bool load(const QVariant &nodeValue, QUuid *parameterValue, QString *error)
 
 bool load(const QVariant &nodeValue, QSize *parameterValue, QString *error)
 {
-    if ((static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QSize) ||
-        (static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QSizeF))
+    const auto nodeValueType = static_cast<QMetaType::Type>(nodeValue.type());
+
+    // Check for size types
+    if ((nodeValueType == QMetaType::QSize) ||
+        (nodeValueType == QMetaType::QSizeF))
     {
-        *parameterValue = nodeValue.toSize();
+        const auto value = nodeValue.toSize();
+
+        if (!value.isValid())
+        {
+            if (error != nullptr)
+            {
+                *error = QStringLiteral("Node value contains an invalid size object!");
+            }
+            return false;
+        }
+
+        *parameterValue = value;
         return true;
     }
 
+    // Extract the value from a map
     if (nodeValue.canConvert<QVariantMap>())
     {
         // Needs to be a map with 'width' and 'height' parameters
@@ -1104,14 +1119,25 @@ bool load(const QVariant &nodeValue, QSize *parameterValue, QString *error)
             return false;
         }
 
-        *parameterValue = QSize(width, height);
+        const QSize value(width, height);
+
+        if (!value.isValid())
+        {
+            if (error != nullptr)
+            {
+                *error = QStringLiteral("Node value contains an invalid size object!");
+            }
+            return false;
+        }
+
+        *parameterValue = value;
         return true;
     }
 
     if (error != nullptr)
     {
-        *error = QStringLiteral("Node value must either be an Object value with only 'width' and "
-                                "'height' members!");
+        *error = QStringLiteral("Node value must either be a size object an Object container with "
+                                "only 'width' and 'height' members!");
     }
     return false;
 }
@@ -1120,13 +1146,28 @@ bool load(const QVariant &nodeValue, QSize *parameterValue, QString *error)
 
 bool load(const QVariant &nodeValue, QSizeF *parameterValue, QString *error)
 {
-    if ((static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QSize) ||
-        (static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QSizeF))
+    const auto nodeValueType = static_cast<QMetaType::Type>(nodeValue.type());
+
+    // Check for size types
+    if ((nodeValueType == QMetaType::QSize) ||
+        (nodeValueType == QMetaType::QSizeF))
     {
-        *parameterValue = nodeValue.toSizeF();
+        const auto value = nodeValue.toSizeF();
+
+        if (!value.isValid())
+        {
+            if (error != nullptr)
+            {
+                *error = QStringLiteral("Node value contains an invalid size object!");
+            }
+            return false;
+        }
+
+        *parameterValue = value;
         return true;
     }
 
+    // Extract the value from a map
     if (nodeValue.canConvert<QVariantMap>())
     {
         // Needs to be a map with 'width' and 'height' parameters
@@ -1172,14 +1213,25 @@ bool load(const QVariant &nodeValue, QSizeF *parameterValue, QString *error)
             return false;
         }
 
-        *parameterValue = QSizeF(width, height);
+        const QSizeF value(width, height);
+
+        if (!value.isValid())
+        {
+            if (error != nullptr)
+            {
+                *error = QStringLiteral("Node value contains an invalid size object!");
+            }
+            return false;
+        }
+
+        *parameterValue = value;
         return true;
     }
 
     if (error != nullptr)
     {
-        *error = QStringLiteral("Node value must either be an Object value with only 'width' and "
-                                "'height' members!");
+        *error = QStringLiteral("Node value must either be a size object an Object container with "
+                                "only 'width' and 'height' members!");
     }
     return false;
 }
