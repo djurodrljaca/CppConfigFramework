@@ -149,6 +149,12 @@ private slots:
 
     void testVariant();
     void testVariant_data();
+
+    void testUrl();
+    void testUrl_data();
+
+    void testUuid();
+    void testUuid_data();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -3368,6 +3374,116 @@ void TestConfigParameterLoader::testVariant_data()
     QTest::newRow("datetime")
             << QVariant::fromValue(QDateTime(QDate(2019, 11, 8), QTime(22, 33, 44, 555), Qt::UTC))
             << true;
+}
+
+// Test: load URL value ----------------------------------------------------------------------------
+
+void TestConfigParameterLoader::testUrl()
+{
+    QFETCH(QVariant, nodeValue);
+    QFETCH(QUrl, expectedParameterValue);
+    QFETCH(bool, expectedResult);
+
+    QUrl parameterValue;
+    QString error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testUrl: error string:" << error;
+
+    QCOMPARE(parameterValue, expectedParameterValue);
+}
+
+void TestConfigParameterLoader::testUrl_data()
+{
+    QTest::addColumn<QVariant>("nodeValue");
+    QTest::addColumn<QUrl>("expectedParameterValue");
+    QTest::addColumn<bool>("expectedResult");
+
+    // URL
+    QTest::newRow("date: valid") << QVariant::fromValue(QUrl("http://www.google.com"))
+                                 << QUrl("http://www.google.com")
+                                 << true;
+    QTest::newRow("date: null node value") << QVariant()
+                                           << QUrl()
+                                           << false;
+    QTest::newRow("date: null URL") << QVariant::fromValue(QUrl())
+                                     << QUrl()
+                                     << false;
+    QTest::newRow("date: invalid URL value") << QVariant::fromValue(QUrl("http://..."))
+                                              << QUrl()
+                                              << false;
+
+    // string
+    QTest::newRow("string: valid") << QVariant::fromValue(QString("http://www.google.com"))
+                                   << QUrl("http://www.google.com")
+                                   << true;
+    QTest::newRow("string: empty") << QVariant::fromValue(QString())
+                                   << QUrl()
+                                   << false;
+    QTest::newRow("string: invalid") << QVariant::fromValue(QString("http://..."))
+                                     << QUrl()
+                                     << false;
+
+    // Invalid type
+    QTest::newRow("Invalid: type") << QVariant::fromValue(true)
+                                   << QUrl()
+                                   << false;
+}
+
+// Test: load UUID value ---------------------------------------------------------------------------
+
+void TestConfigParameterLoader::testUuid()
+{
+    QFETCH(QVariant, nodeValue);
+    QFETCH(QUuid, expectedParameterValue);
+    QFETCH(bool, expectedResult);
+
+    QUuid parameterValue;
+    QString error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testUuid: error string:" << error;
+
+    QCOMPARE(parameterValue, expectedParameterValue);
+}
+
+void TestConfigParameterLoader::testUuid_data()
+{
+    QTest::addColumn<QVariant>("nodeValue");
+    QTest::addColumn<QUuid>("expectedParameterValue");
+    QTest::addColumn<bool>("expectedResult");
+
+    // UUID
+    QTest::newRow("date: valid")
+            << QVariant::fromValue(QUuid("{01234567-8901-2345-6789-012345678901}"))
+            << QUuid("{01234567-8901-2345-6789-012345678901}")
+            << true;
+    QTest::newRow("date: null node value") << QVariant()
+                                           << QUuid()
+                                           << false;
+    QTest::newRow("date: null UUID") << QVariant::fromValue(QUuid())
+                                    << QUuid()
+                                    << false;
+    QTest::newRow("date: invalid UUID value")
+            << QVariant::fromValue(QUuid("{01234567890123456789012345678901}"))
+            << QUuid()
+            << false;
+
+    // string
+    QTest::newRow("string: valid")
+            << QVariant::fromValue(QString("{01234567-8901-2345-6789-012345678901}"))
+            << QUuid("{01234567-8901-2345-6789-012345678901}")
+            << true;
+    QTest::newRow("string: empty") << QVariant::fromValue(QString())
+                                   << QUuid()
+                                   << false;
+    QTest::newRow("string: invalid")
+            << QVariant::fromValue(QString("{01234567890123456789012345678901}"))
+            << QUuid()
+            << false;
+
+    // Invalid type
+    QTest::newRow("Invalid: type") << QVariant::fromValue(true)
+                                   << QUuid()
+                                   << false;
 }
 
 // Main function -----------------------------------------------------------------------------------
