@@ -1240,13 +1240,17 @@ bool load(const QVariant &nodeValue, QSizeF *parameterValue, QString *error)
 
 bool load(const QVariant &nodeValue, QPoint *parameterValue, QString *error)
 {
-    if ((static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QPoint) ||
-        (static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QPointF))
+    const auto nodeValueType = static_cast<QMetaType::Type>(nodeValue.type());
+
+    // Check for size types
+    if ((nodeValueType == QMetaType::QPoint) ||
+        (nodeValueType == QMetaType::QPointF))
     {
         *parameterValue = nodeValue.toPoint();
         return true;
     }
 
+    // Extract the value from a map
     if (nodeValue.canConvert<QVariantMap>())
     {
         // Needs to be a map with 'x' and 'y' parameters
@@ -1294,8 +1298,8 @@ bool load(const QVariant &nodeValue, QPoint *parameterValue, QString *error)
 
     if (error != nullptr)
     {
-        *error = QStringLiteral("Node value must either be an Object value with only 'x' and 'y' "
-                                "members!");
+        *error = QStringLiteral("Node value must either be a point object an Object container with "
+                                "only 'x' and 'y' members!");
     }
     return false;
 }
@@ -1304,13 +1308,17 @@ bool load(const QVariant &nodeValue, QPoint *parameterValue, QString *error)
 
 bool load(const QVariant &nodeValue, QPointF *parameterValue, QString *error)
 {
-    if ((static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QPoint) ||
-        (static_cast<QMetaType::Type>(nodeValue.type()) == QMetaType::QPointF))
+    const auto nodeValueType = static_cast<QMetaType::Type>(nodeValue.type());
+
+    // Check for size types
+    if ((nodeValueType == QMetaType::QPoint) ||
+        (nodeValueType == QMetaType::QPointF))
     {
         *parameterValue = nodeValue.toPointF();
         return true;
     }
 
+    // Extract the value from a map
     if (nodeValue.canConvert<QVariantMap>())
     {
         // Needs to be a map with 'x' and 'y' parameters
@@ -1358,8 +1366,8 @@ bool load(const QVariant &nodeValue, QPointF *parameterValue, QString *error)
 
     if (error != nullptr)
     {
-        *error = QStringLiteral("Node value must either be an Object value with only 'x' and 'y' "
-                                "members!");
+        *error = QStringLiteral("Node value must either be a point object an Object container with "
+                                "only 'x' and 'y' members!");
     }
     return false;
 }
