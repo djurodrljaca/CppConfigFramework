@@ -377,7 +377,6 @@ bool load(const QVariant &nodeValue, std::list<T> *parameterValue, QString *erro
 
     auto iterable = nodeValue.value<QSequentialIterable>();
     std::list<T> container;
-    container.reserve(iterable.size());
 
     for (const QVariant &item : iterable)
     {

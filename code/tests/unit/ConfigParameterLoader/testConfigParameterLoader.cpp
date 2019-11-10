@@ -36,6 +36,8 @@
 
 using TestPair = QPair<QString, int>;
 using TestStdPair = std::pair<QString, int>;
+using TestList = QList<QDate>;
+using TestStdList = std::list<QTime>;
 
 // Test helper methods -----------------------------------------------------------------------------
 
@@ -179,6 +181,12 @@ private slots:
 
     void testPair();
     void testPair_data();
+
+    void testList();
+    void testList_data();
+
+    void testStdList();
+    void testStdList_data();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -4079,7 +4087,7 @@ void TestConfigParameterLoader::testStringList_data()
 
     // string list
     QTest::newRow("string list: valid")
-            << QVariant::fromValue(QStringList { {"a"}, {"b"}, {"c"} } )
+            << QVariant(QStringList { {"a"}, {"b"}, {"c"} } )
             << QStringList { {"a"}, {"b"}, {"c"} }
             << true;
     QTest::newRow("string list: empty")
@@ -4104,15 +4112,13 @@ void TestConfigParameterLoader::testStringList_data()
 
     // variant list
     QTest::newRow("variant list: valid")
-            << QVariant::fromValue(QVariantList { {"a"}, {"b"}, {"c"} } )
+            << QVariant(QVariantList { {"a"}, {"b"}, {"c"} } )
             << QStringList { {"a"}, {"b"}, {"c"} }
             << true;
-    QTest::newRow("string list: empty")
-            << QVariant::fromValue(QVariantList()) << QStringList() << true;
-    QTest::newRow("variant list: invalid")
-            << QVariant::fromValue(QVariantList { {"a"}, {1}, { QPoint() } } )
-            << QStringList()
-            << false;
+    QTest::newRow("string list: empty") << QVariant(QVariantList()) << QStringList() << true;
+    QTest::newRow("variant list: invalid") << QVariant(QVariantList { {"a"}, {1}, { QPoint() } } )
+                                           << QStringList()
+                                           << false;
 
     // Invalid type
     QTest::newRow("Invalid: type") << QVariant::fromValue(true) << QStringList() << false;
@@ -4172,6 +4178,112 @@ void TestConfigParameterLoader::testPair_data()
                                    << TestPair()
                                    << TestStdPair()
                                    << false;
+}
+
+// Test: load list value ---------------------------------------------------------------------------
+
+void TestConfigParameterLoader::testList()
+{
+    QFETCH(QVariant, nodeValue);
+    QFETCH(TestList, expectedParameterValue);
+    QFETCH(bool, expectedResult);
+
+    TestList parameterValue;
+    QString error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testList: error string:" << error;
+    QCOMPARE(parameterValue, expectedParameterValue);
+}
+
+void TestConfigParameterLoader::testList_data()
+{
+    QTest::addColumn<QVariant>("nodeValue");
+    QTest::addColumn<TestList>("expectedParameterValue");
+    QTest::addColumn<bool>("expectedResult");
+
+    // string list
+    QTest::newRow("string list: valid")
+            << QVariant(QStringList { {"2019-11-19"}, {"2019-11-20"}, {"2019-11-21"} } )
+            << TestList { QDate(2019, 11, 19), QDate(2019, 11, 20), QDate(2019, 11, 21) }
+            << true;
+    QTest::newRow("string list: empty") << QVariant(QStringList()) << TestList() << true;
+    QTest::newRow("string list: invalid")
+            << QVariant(QStringList { {"2019-13-19"}, {"2019-11-20"}, {"2019-11-21"} } )
+            << TestList()
+            << false;
+
+    // date list
+    QTest::newRow("date list: valid")
+            << QVariant::fromValue(TestList {
+                            QDate(2019, 11, 19), QDate(2019, 11, 20), QDate(2019, 11, 21) } )
+            << TestList { QDate(2019, 11, 19), QDate(2019, 11, 20), QDate(2019, 11, 21) }
+            << true;
+    QTest::newRow("date list: empty") << QVariant::fromValue(TestList()) << TestList() << true;
+    QTest::newRow("date list: invalid")
+            << QVariant::fromValue(TestList {
+                                       QDate(2019, 13, 19), QDate(2019, 11, 20), QDate(2019, 11, 21) } )
+            << TestList()
+            << false;
+
+    // null node
+    QTest::newRow("null node value") << QVariant() << TestList() << false;
+
+    // Invalid type
+    QTest::newRow("Invalid: type") << QVariant::fromValue(1) << TestList() << false;
+}
+
+// Test: load std::list value ----------------------------------------------------------------------
+
+void TestConfigParameterLoader::testStdList()
+{
+    QFETCH(QVariant, nodeValue);
+    QFETCH(TestStdList, expectedParameterValue);
+    QFETCH(bool, expectedResult);
+
+    TestStdList parameterValue;
+    QString error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testStdList: error string:" << error;
+    QCOMPARE(parameterValue, expectedParameterValue);
+}
+
+void TestConfigParameterLoader::testStdList_data()
+{
+    QTest::addColumn<QVariant>("nodeValue");
+    QTest::addColumn<TestStdList>("expectedParameterValue");
+    QTest::addColumn<bool>("expectedResult");
+
+    // string list
+    QTest::newRow("string list: valid")
+            << QVariant(QStringList { {"12:34:56"}, {"12:34:57"}, {"12:34:58"} } )
+            << TestStdList { QTime(12, 34, 56), QTime(12, 34, 57), QTime(12, 34, 58) }
+            << true;
+    QTest::newRow("string list: invalid")
+            << QVariant(QStringList { {"24:34:56"}, {"12:34:57"}, {"12:34:58"} } )
+            << TestStdList()
+            << false;
+    QTest::newRow("string list: empty") << QVariant(QStringList()) << TestStdList() << true;
+
+    // time list
+    QTest::newRow("time list: valid")
+            << QVariant::fromValue(TestStdList {
+                            QTime(12, 34, 56), QTime(12, 34, 57), QTime(12, 34, 58) } )
+            << TestStdList { QTime(12, 34, 56), QTime(12, 34, 57), QTime(12, 34, 58) }
+            << true;
+    QTest::newRow("time list: empty") << QVariant::fromValue(TestStdList())
+                                      << TestStdList()
+                                      << true;
+    QTest::newRow("time list: invalid")
+            << QVariant::fromValue(TestStdList {
+                                       QTime(24, 34, 56), QTime(12, 34, 57), QTime(12, 34, 58) } )
+            << TestStdList()
+            << false;
+
+    // null node
+    QTest::newRow("null node value") << QVariant() << TestStdList() << false;
+
+    // Invalid type
+    QTest::newRow("Invalid: type") << QVariant::fromValue(1) << TestStdList() << false;
 }
 
 // Main function -----------------------------------------------------------------------------------

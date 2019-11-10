@@ -1822,37 +1822,15 @@ bool load(const QVariant &nodeValue, QStringList *parameterValue, QString *error
     }
 
     // Extract the value from a list
-    if (nodeValue.canConvert<QVariantList>())
+    QList<QString> value;
+
+    if (!load(nodeValue, &value, error))
     {
-        QStringList value;
-        auto iterable = nodeValue.value<QSequentialIterable>();
-
-        for (const QVariant &item : iterable)
-        {
-            QString itemValue;
-
-            if (!load(item, &itemValue, error))
-            {
-                if (error != nullptr)
-                {
-                    *error = QString("List items must be convertable to a string! Inner error: [%1]"
-                                     ).arg(*error);
-                }
-                return false;
-            }
-
-            value.append(itemValue);
-        }
-
-        *parameterValue = value;
-        return true;
+        return false;
     }
 
-    if (error != nullptr)
-    {
-        *error = QStringLiteral("Node value must be a string list!");
-    }
-    return false;
+    *parameterValue = value;
+    return true;
 }
 
 } // namespace ConfigParameterLoader
