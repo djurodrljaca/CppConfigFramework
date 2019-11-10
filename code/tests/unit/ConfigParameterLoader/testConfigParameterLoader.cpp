@@ -38,6 +38,8 @@ using TestPair = QPair<QString, int>;
 using TestStdPair = std::pair<QString, int>;
 using TestList = QList<QDate>;
 using TestStdList = std::list<QTime>;
+using TestVector = QVector<float>;
+using TestStdVector = std::vector<double>;
 
 // Test helper methods -----------------------------------------------------------------------------
 
@@ -187,6 +189,12 @@ private slots:
 
     void testStdList();
     void testStdList_data();
+
+    void testVector();
+    void testVector_data();
+
+    void testStdVector();
+    void testStdVector_data();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -4086,37 +4094,33 @@ void TestConfigParameterLoader::testStringList_data()
     QTest::addColumn<bool>("expectedResult");
 
     // string list
-    QTest::newRow("string list: valid")
-            << QVariant(QStringList { {"a"}, {"b"}, {"c"} } )
-            << QStringList { {"a"}, {"b"}, {"c"} }
-            << true;
+    QTest::newRow("string list: valid") << QVariant(QStringList { "a", "b", "c" } )
+                                        << QStringList { "a", "b", "c" }
+                                        << true;
     QTest::newRow("string list: empty")
             << QVariant::fromValue(QStringList()) << QStringList() << true;
     QTest::newRow("string list: null node value") << QVariant() << QStringList() << false;
 
     // int list
-    QTest::newRow("int list: valid")
-            << QVariant::fromValue(QList<int> { 1, 2, 3 } )
-            << QStringList { {"1"}, {"2"}, {"3"} }
-            << true;
-    QTest::newRow("int list: empty")
-            << QVariant::fromValue(QList<int>()) << QStringList() << true;
+    QTest::newRow("int list: valid") << QVariant::fromValue(QList<int> { 1, 2, 3 } )
+                                     << QStringList { "1", "2", "3" }
+                                     << true;
+    QTest::newRow("int list: empty") << QVariant::fromValue(QList<int>()) << QStringList() << true;
 
     // uint vector
-    QTest::newRow("uint vector: valid")
-            << QVariant::fromValue(QVector<uint32_t> { 1u, 2u, 3u } )
-            << QStringList { {"1"}, {"2"}, {"3"} }
-            << true;
-    QTest::newRow("int list: empty")
-            << QVariant::fromValue(QVector<uint32_t>()) << QStringList() << true;
+    QTest::newRow("uint vector: valid") << QVariant::fromValue(QVector<uint32_t> { 1u, 2u, 3u } )
+                                        << QStringList { "1", "2", "3" }
+                                        << true;
+    QTest::newRow("int list: empty") << QVariant::fromValue(QVector<uint32_t>())
+                                     << QStringList()
+                                     << true;
 
     // variant list
-    QTest::newRow("variant list: valid")
-            << QVariant(QVariantList { {"a"}, {"b"}, {"c"} } )
-            << QStringList { {"a"}, {"b"}, {"c"} }
-            << true;
+    QTest::newRow("variant list: valid") << QVariant(QVariantList { "a", "b", "c" } )
+                                         << QStringList { "a", "b", "c" }
+                                         << true;
     QTest::newRow("string list: empty") << QVariant(QVariantList()) << QStringList() << true;
-    QTest::newRow("variant list: invalid") << QVariant(QVariantList { {"a"}, {1}, { QPoint() } } )
+    QTest::newRow("variant list: invalid") << QVariant(QVariantList { "a", 1, QPoint() } )
                                            << QStringList()
                                            << false;
 
@@ -4203,7 +4207,7 @@ void TestConfigParameterLoader::testList_data()
 
     // string list
     QTest::newRow("string list: valid")
-            << QVariant(QStringList { {"2019-11-19"}, {"2019-11-20"}, {"2019-11-21"} } )
+            << QVariant(QStringList { "2019-11-19", "2019-11-20", "2019-11-21" } )
             << TestList { QDate(2019, 11, 19), QDate(2019, 11, 20), QDate(2019, 11, 21) }
             << true;
     QTest::newRow("string list: empty") << QVariant(QStringList()) << TestList() << true;
@@ -4220,8 +4224,20 @@ void TestConfigParameterLoader::testList_data()
             << true;
     QTest::newRow("date list: empty") << QVariant::fromValue(TestList()) << TestList() << true;
     QTest::newRow("date list: invalid")
-            << QVariant::fromValue(TestList {
-                                       QDate(2019, 13, 19), QDate(2019, 11, 20), QDate(2019, 11, 21) } )
+            << QVariant::fromValue(
+                   TestList { QDate(2019, 13, 19), QDate(2019, 11, 20), QDate(2019, 11, 21) } )
+            << TestList()
+            << false;
+
+    // variant list
+    QTest::newRow("variant list: valid")
+            << QVariant(
+                   QVariantList { QDate(2019, 11, 19), QDate(2019, 11, 20), QDate(2019, 11, 21) } )
+            << TestList { QDate(2019, 11, 19), QDate(2019, 11, 20), QDate(2019, 11, 21) }
+            << true;
+    QTest::newRow("variant list: empty") << QVariant(QVariantList()) << TestList() << true;
+    QTest::newRow("variant list: invalid")
+            << QVariant(QVariantList { "asd", QDate(2019, 11, 20), QDate(2019, 11, 21) } )
             << TestList()
             << false;
 
@@ -4255,27 +4271,38 @@ void TestConfigParameterLoader::testStdList_data()
 
     // string list
     QTest::newRow("string list: valid")
-            << QVariant(QStringList { {"12:34:56"}, {"12:34:57"}, {"12:34:58"} } )
+            << QVariant(QStringList { "12:34:56", "12:34:57", "12:34:58" } )
             << TestStdList { QTime(12, 34, 56), QTime(12, 34, 57), QTime(12, 34, 58) }
             << true;
     QTest::newRow("string list: invalid")
-            << QVariant(QStringList { {"24:34:56"}, {"12:34:57"}, {"12:34:58"} } )
+            << QVariant(QStringList { "24:34:56", "12:34:57", "12:34:58" } )
             << TestStdList()
             << false;
     QTest::newRow("string list: empty") << QVariant(QStringList()) << TestStdList() << true;
 
     // time list
     QTest::newRow("time list: valid")
-            << QVariant::fromValue(TestStdList {
-                            QTime(12, 34, 56), QTime(12, 34, 57), QTime(12, 34, 58) } )
+            << QVariant::fromValue(
+                   TestStdList { QTime(12, 34, 56), QTime(12, 34, 57), QTime(12, 34, 58) } )
             << TestStdList { QTime(12, 34, 56), QTime(12, 34, 57), QTime(12, 34, 58) }
             << true;
     QTest::newRow("time list: empty") << QVariant::fromValue(TestStdList())
                                       << TestStdList()
                                       << true;
     QTest::newRow("time list: invalid")
-            << QVariant::fromValue(TestStdList {
-                                       QTime(24, 34, 56), QTime(12, 34, 57), QTime(12, 34, 58) } )
+            << QVariant::fromValue(
+                   TestStdList { QTime(24, 34, 56), QTime(12, 34, 57), QTime(12, 34, 58) } )
+            << TestStdList()
+            << false;
+
+    // variant list
+    QTest::newRow("variant list: valid")
+            << QVariant(QVariantList { QTime(12, 34, 56), QTime(12, 34, 57), QTime(12, 34, 58) } )
+            << TestStdList { QTime(12, 34, 56), QTime(12, 34, 57), QTime(12, 34, 58) }
+            << true;
+    QTest::newRow("variant list: empty") << QVariant(QVariantList()) << TestStdList() << true;
+    QTest::newRow("variant list: invalid")
+            << QVariant(QVariantList { "asd", QTime(12, 34, 57), QTime(12, 34, 58) } )
             << TestStdList()
             << false;
 
@@ -4284,6 +4311,114 @@ void TestConfigParameterLoader::testStdList_data()
 
     // Invalid type
     QTest::newRow("Invalid: type") << QVariant::fromValue(1) << TestStdList() << false;
+}
+
+// Test: load vector value -------------------------------------------------------------------------
+
+void TestConfigParameterLoader::testVector()
+{
+    QFETCH(QVariant, nodeValue);
+    QFETCH(TestVector, expectedParameterValue);
+    QFETCH(bool, expectedResult);
+
+    TestVector parameterValue;
+    QString error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testVector: error string:" << error;
+    QCOMPARE(parameterValue, expectedParameterValue);
+}
+
+void TestConfigParameterLoader::testVector_data()
+{
+    QTest::addColumn<QVariant>("nodeValue");
+    QTest::addColumn<TestVector>("expectedParameterValue");
+    QTest::addColumn<bool>("expectedResult");
+
+    // string list
+    QTest::newRow("string list: valid") << QVariant(QStringList { "1.2", "3.4", "5.6" } )
+                                        << TestVector { 1.2f, 3.4f, 5.6f }
+                                        << true;
+    QTest::newRow("string list: empty") << QVariant(QStringList()) << TestVector() << true;
+    QTest::newRow("string list: invalid") << QVariant(QStringList { "asd", "3.4", "5.6" } )
+                                          << TestVector()
+                                          << false;
+
+    // float vector
+    QTest::newRow("float vector: valid") << QVariant::fromValue(TestVector { 1.2f, 3.4f, 5.6f } )
+                                         << TestVector { 1.2f, 3.4f, 5.6f }
+                                         << true;
+    QTest::newRow("float vector: empty") << QVariant::fromValue(TestVector())
+                                         << TestVector()
+                                         << true;
+
+    // variant list
+    QTest::newRow("variant list: valid") << QVariant(QVariantList { "1.2", 3.4f, 5.6 } )
+                                        << TestVector { 1.2f, 3.4f, 5.6f }
+                                        << true;
+    QTest::newRow("variant list: empty") << QVariant(QVariantList()) << TestVector() << true;
+    QTest::newRow("variant list: invalid") << QVariant(QVariantList { "asd", "3.4", "5.6" } )
+                                           << TestVector()
+                                           << false;
+
+    // null node
+    QTest::newRow("null node value") << QVariant() << TestVector() << false;
+
+    // Invalid type
+    QTest::newRow("Invalid: type") << QVariant::fromValue(1) << TestVector() << false;
+}
+
+// Test: load std::vector value --------------------------------------------------------------------
+
+void TestConfigParameterLoader::testStdVector()
+{
+    QFETCH(QVariant, nodeValue);
+    QFETCH(TestStdVector, expectedParameterValue);
+    QFETCH(bool, expectedResult);
+
+    TestStdVector parameterValue;
+    QString error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testStdVector: error string:" << error;
+    QCOMPARE(parameterValue, expectedParameterValue);
+}
+
+void TestConfigParameterLoader::testStdVector_data()
+{
+    QTest::addColumn<QVariant>("nodeValue");
+    QTest::addColumn<TestStdVector>("expectedParameterValue");
+    QTest::addColumn<bool>("expectedResult");
+
+    // string list
+    QTest::newRow("string list: valid") << QVariant(QStringList { "1.2", "3.4", "5.6" } )
+                                        << TestStdVector { 1.2, 3.4, 5.6 }
+                                        << true;
+    QTest::newRow("string list: empty") << QVariant(QStringList()) << TestStdVector() << true;
+    QTest::newRow("string list: invalid") << QVariant(QStringList { "asd", "3.4", "5.6" } )
+                                          << TestStdVector()
+                                          << false;
+
+    // float vector
+    QTest::newRow("float vector: valid") << QVariant::fromValue(TestStdVector { 1.2, 3.4, 5.6 } )
+                                         << TestStdVector { 1.2, 3.4, 5.6 }
+                                         << true;
+    QTest::newRow("float vector: empty") << QVariant::fromValue(TestStdVector())
+                                         << TestStdVector()
+                                         << true;
+
+    // variant list
+    QTest::newRow("variant list: valid") << QVariant(QVariantList { "1.2", 3.4, 5.6 } )
+                                         << TestStdVector { 1.2, 3.4, 5.6 }
+                                         << true;
+    QTest::newRow("variant list: empty") << QVariant(QVariantList()) << TestStdVector() << true;
+    QTest::newRow("variant list: invalid") << QVariant(QVariantList { "asd", "3.4", "5.6" } )
+                                           << TestStdVector()
+                                           << false;
+
+    // null node
+    QTest::newRow("null node value") << QVariant() << TestStdVector() << false;
+
+    // Invalid type
+    QTest::newRow("Invalid: type") << QVariant::fromValue(1) << TestStdVector() << false;
 }
 
 // Main function -----------------------------------------------------------------------------------
