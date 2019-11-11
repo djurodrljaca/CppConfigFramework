@@ -499,7 +499,7 @@ bool load(const QVariant &nodeValue, QMap<K, V> *parameterValue, QString *error)
         // Load key
         K key;
 
-        if (!load(it.value(), &key, error))
+        if (!load(it.key(), &key, error))
         {
             if (error != nullptr)
             {
@@ -550,7 +550,7 @@ bool load(const QVariant &nodeValue, std::map<K, V> *parameterValue, QString *er
         // Load key
         K key;
 
-        if (!load(it.value(), &key, error))
+        if (!load(it.key(), &key, error))
         {
             if (error != nullptr)
             {
@@ -572,7 +572,7 @@ bool load(const QVariant &nodeValue, std::map<K, V> *parameterValue, QString *er
             return false;
         }
 
-        container.insert(key, value);
+        container.emplace(key, value);
     }
 
     *parameterValue = container;
@@ -601,7 +601,7 @@ bool load(const QVariant &nodeValue, QHash<K, V> *parameterValue, QString *error
         // Load key
         K key;
 
-        if (!load(it.value(), &key, error))
+        if (!load(it.key(), &key, error))
         {
             if (error != nullptr)
             {
@@ -652,7 +652,7 @@ bool load(const QVariant &nodeValue, std::unordered_map<K, V> *parameterValue, Q
         // Load key
         K key;
 
-        if (!load(it.value(), &key, error))
+        if (!load(it.key(), &key, error))
         {
             if (error != nullptr)
             {
@@ -674,7 +674,7 @@ bool load(const QVariant &nodeValue, std::unordered_map<K, V> *parameterValue, Q
             return false;
         }
 
-        container.insert(key, value);
+        container.emplace(key, value);
     }
 
     *parameterValue = container;
@@ -703,7 +703,7 @@ bool load(const QVariant &nodeValue, QMultiMap<K, V> *parameterValue, QString *e
         // Load key
         K key;
 
-        if (!load(it.value(), &key, error))
+        if (!load(it.key(), &key, error))
         {
             if (error != nullptr)
             {
@@ -757,7 +757,7 @@ bool load(const QVariant &nodeValue, QMultiHash<K, V> *parameterValue, QString *
         // Load key
         K key;
 
-        if (!load(it.value(), &key, error))
+        if (!load(it.key(), &key, error))
         {
             if (error != nullptr)
             {

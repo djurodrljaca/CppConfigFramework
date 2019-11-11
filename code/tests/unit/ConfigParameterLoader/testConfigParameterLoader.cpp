@@ -40,6 +40,12 @@ using TestList = QList<QDate>;
 using TestStdList = std::list<QTime>;
 using TestVector = QVector<float>;
 using TestStdVector = std::vector<double>;
+using TestMap = QMap<QString, int>;
+using TestStdMap = std::map<QString, int>;
+using TestHash = QHash<QString, int>;
+using TestStdHash = std::unordered_map<QString, int>;
+
+Q_DECLARE_METATYPE(TestStdHash);
 
 // Test helper methods -----------------------------------------------------------------------------
 
@@ -195,6 +201,18 @@ private slots:
 
     void testStdVector();
     void testStdVector_data();
+
+    void testMap();
+    void testMap_data();
+
+    void testStdMap();
+    void testStdMap_data();
+
+    void testHash();
+    void testHash_data();
+
+    void testStdHash();
+    void testStdHash_data();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -4419,6 +4437,199 @@ void TestConfigParameterLoader::testStdVector_data()
 
     // Invalid type
     QTest::newRow("Invalid: type") << QVariant::fromValue(1) << TestStdVector() << false;
+}
+
+// Test: load map value ----------------------------------------------------------------------------
+
+void TestConfigParameterLoader::testMap()
+{
+    QFETCH(QVariant, nodeValue);
+    QFETCH(TestMap, expectedParameterValue);
+    QFETCH(bool, expectedResult);
+
+    TestMap parameterValue;
+    QString error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testMap: error string:" << error;
+    QCOMPARE(parameterValue, expectedParameterValue);
+}
+
+void TestConfigParameterLoader::testMap_data()
+{
+    QTest::addColumn<QVariant>("nodeValue");
+    QTest::addColumn<TestMap>("expectedParameterValue");
+    QTest::addColumn<bool>("expectedResult");
+
+    // map
+    QTest::newRow("map: valid")
+            << QVariant::fromValue(TestMap { {"a", 1}, {"b", 2}, {"c", 3} } )
+            << TestMap { {"a", 1}, {"b", 2}, {"c", 3} }
+            << true;
+    QTest::newRow("map: empty") << QVariant::fromValue(TestMap()) << TestMap() << true;
+
+    // variant map
+    QTest::newRow("variant map: valid")
+            << QVariant(QVariantMap { {"a", 1}, {"b", "2"}, {"c", 3u} } )
+            << TestMap { {"a", 1}, {"b", 2}, {"c", 3} }
+            << true;
+    QTest::newRow("variant map: empty") << QVariant(QVariantMap()) << TestMap() << true;
+    QTest::newRow("variant map: invalid key")
+            << QVariant::fromValue(QMap<QPair<int, int>, int> { {{1, 2}, 3} } )
+            << TestMap()
+            << false;
+    QTest::newRow("variant map: invalid value")
+            << QVariant(QVariantMap { {"a", "a"}, {"b", 2}, {"c", 3} } )
+            << TestMap()
+            << false;
+
+    // null node
+    QTest::newRow("null node value") << QVariant() << TestMap() << false;
+
+    // Invalid type
+    QTest::newRow("Invalid: type") << QVariant::fromValue(1) << TestMap() << false;
+}
+
+// Test: load std::map value -----------------------------------------------------------------------
+
+void TestConfigParameterLoader::testStdMap()
+{
+    QFETCH(QVariant, nodeValue);
+    QFETCH(TestStdMap, expectedParameterValue);
+    QFETCH(bool, expectedResult);
+
+    TestStdMap parameterValue;
+    QString error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
+    qDebug() << "TestConfigParameterLoader::TestStdMap: error string:" << error;
+    QCOMPARE(parameterValue, expectedParameterValue);
+}
+
+void TestConfigParameterLoader::testStdMap_data()
+{
+    QTest::addColumn<QVariant>("nodeValue");
+    QTest::addColumn<TestStdMap>("expectedParameterValue");
+    QTest::addColumn<bool>("expectedResult");
+
+    // map
+    QTest::newRow("map: valid")
+            << QVariant::fromValue(TestStdMap { {"a", 1}, {"b", 2}, {"c", 3} } )
+            << TestStdMap { {"a", 1}, {"b", 2}, {"c", 3} }
+            << true;
+    QTest::newRow("map: empty") << QVariant::fromValue(TestStdMap()) << TestStdMap() << true;
+
+    // variant map
+    QTest::newRow("variant map: valid")
+            << QVariant(QVariantMap { {"a", 1}, {"b", "2"}, {"c", 3u} } )
+            << TestStdMap { {"a", 1}, {"b", 2}, {"c", 3} }
+            << true;
+    QTest::newRow("variant map: empty") << QVariant(QVariantMap()) << TestStdMap() << true;
+    QTest::newRow("variant map: invalid key")
+            << QVariant::fromValue(QMap<QPair<int, int>, int> { {{1, 2}, 3} } )
+            << TestStdMap()
+            << false;
+    QTest::newRow("variant map: invalid value")
+            << QVariant(QVariantMap { {"a", "a"}, {"b", 2}, {"c", 3} } )
+            << TestStdMap()
+            << false;
+
+    // null node
+    QTest::newRow("null node value") << QVariant() << TestStdMap() << false;
+
+    // Invalid type
+    QTest::newRow("Invalid: type") << QVariant::fromValue(1) << TestStdMap() << false;
+}
+
+// Test: load hash value ---------------------------------------------------------------------------
+
+void TestConfigParameterLoader::testHash()
+{
+    QFETCH(QVariant, nodeValue);
+    QFETCH(TestHash, expectedParameterValue);
+    QFETCH(bool, expectedResult);
+
+    TestHash parameterValue;
+    QString error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testHash: error string:" << error;
+    QCOMPARE(parameterValue, expectedParameterValue);
+}
+
+void TestConfigParameterLoader::testHash_data()
+{
+    QTest::addColumn<QVariant>("nodeValue");
+    QTest::addColumn<TestHash>("expectedParameterValue");
+    QTest::addColumn<bool>("expectedResult");
+
+    // hash
+    QTest::newRow("hash: valid")
+            << QVariant::fromValue(TestHash { {"a", 1}, {"b", 2}, {"c", 3} } )
+            << TestHash { {"a", 1}, {"b", 2}, {"c", 3} }
+            << true;
+    QTest::newRow("hash: empty") << QVariant::fromValue(TestHash()) << TestHash() << true;
+
+    // variant map
+    QTest::newRow("variant map: valid")
+            << QVariant(QVariantMap { {"a", 1}, {"b", "2"}, {"c", 3u} } )
+            << TestHash { {"a", 1}, {"b", 2}, {"c", 3} }
+            << true;
+    QTest::newRow("variant map: empty") << QVariant(QVariantMap()) << TestHash() << true;
+    QTest::newRow("variant map: invalid key")
+            << QVariant::fromValue(QHash<QPair<int, int>, int> { {{1, 2}, 3} } )
+            << TestHash()
+            << false;
+    QTest::newRow("variant map: invalid value")
+            << QVariant(QVariantMap { {"a", "a"}, {"b", 2}, {"c", 3} } )
+            << TestHash()
+            << false;
+
+    // null node
+    QTest::newRow("null node value") << QVariant() << TestHash() << false;
+
+    // Invalid type
+    QTest::newRow("Invalid: type") << QVariant::fromValue(1) << TestHash() << false;
+}
+
+// Test: load std::unordered_map value -------------------------------------------------------------
+
+void TestConfigParameterLoader::testStdHash()
+{
+    QFETCH(QVariant, nodeValue);
+    QFETCH(TestStdHash, expectedParameterValue);
+    QFETCH(bool, expectedResult);
+
+    TestStdHash parameterValue;
+    QString error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
+    qDebug() << "TestConfigParameterLoader::TestStdHash: error string:" << error;
+    QCOMPARE(parameterValue, expectedParameterValue);
+}
+
+void TestConfigParameterLoader::testStdHash_data()
+{
+    QTest::addColumn<QVariant>("nodeValue");
+    QTest::addColumn<TestStdHash>("expectedParameterValue");
+    QTest::addColumn<bool>("expectedResult");
+
+    // variant map
+    QTest::newRow("variant map: valid")
+            << QVariant(QVariantMap { {"a", 1}, {"b", "2"}, {"c", 3u} } )
+            << TestStdHash { {"a", 1}, {"b", 2}, {"c", 3} }
+            << true;
+    QTest::newRow("variant map: empty") << QVariant(QVariantMap()) << TestStdHash() << true;
+    QTest::newRow("variant map: invalid key")
+            << QVariant::fromValue(QHash<QPair<int, int>, int> { {{1, 2}, 3} } )
+            << TestStdHash()
+            << false;
+    QTest::newRow("variant map: invalid value")
+            << QVariant(QVariantMap { {"a", "a"}, {"b", 2}, {"c", 3} } )
+            << TestStdHash()
+            << false;
+
+    // null node
+    QTest::newRow("null node value") << QVariant() << TestStdHash() << false;
+
+    // Invalid type
+    QTest::newRow("Invalid: type") << QVariant::fromValue(1) << TestStdHash() << false;
 }
 
 // Main function -----------------------------------------------------------------------------------
