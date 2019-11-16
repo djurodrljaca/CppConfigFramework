@@ -947,7 +947,7 @@ ConfigReader::ReferenceResolutionResult ConfigReader::resolveObjectReferences(
         QString *error)
 {
     // Iterate over all members and try to resolve their references
-    auto result = ReferenceResolutionResult::Resolved;
+    auto result = ReferenceResolutionResult::Unchanged;
 
     for (const QString &name : node->names())
     {
@@ -1003,6 +1003,12 @@ ConfigReader::ReferenceResolutionResult ConfigReader::resolveObjectReferences(
         }
     }
 
+    // Check if the object is fully resolved
+    if (isFullyResolved(*node))
+    {
+        return ReferenceResolutionResult::Resolved;
+    }
+
     return result;
 }
 
@@ -1029,7 +1035,7 @@ ConfigReader::ReferenceResolutionResult ConfigReader::updateObjectResolutionResu
         {
             if (result == ReferenceResolutionResult::Resolved)
             {
-                result = ReferenceResolutionResult::Unchanged;
+                result = ReferenceResolutionResult::PartiallyResolved;
             }
             break;
         }
