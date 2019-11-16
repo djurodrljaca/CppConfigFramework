@@ -1,0 +1,15 @@
+{
+    "includes":
+    [
+        {
+            "file_path": "Include1.json"
+        },
+        {
+            "file_path": "IncludeWithExternalConfigReferences.json"
+        }
+    ],
+
+    "config":
+    {
+    }
+}

@@ -5,9 +5,11 @@
         <file>TestData/ConfigWithDerivedObjects.json</file>
         <file>TestData/ConfigWithIncludes.json</file>
         <file>TestData/ConfigWithOnlyIncludes.json</file>
+        <file>TestData/ConfigWithExternalConfigReferences.json</file>
         <file>TestData/Include1.json</file>
         <file>TestData/Include2.json</file>
         <file>TestData/Include3.json</file>
+        <file>TestData/IncludeWithExternalConfigReferences.json</file>
         <file>TestData/InvalidJsonFile.json</file>
         <file>TestData/NonObjectConfigFile.json</file>
         <file>TestData/IncludesNotArray.json</file>
@@ -34,8 +36,13 @@
         <file>TestData/ConfigInvalidDerivedObject6.json</file>
         <file>TestData/ConfigInvalidDerivedObject7.json</file>
         <file>TestData/ConfigInvalidDerivedObject8.json</file>
+        <file>TestData/ConfigInvalidDerivedObject9.json</file>
+        <file>TestData/ConfigInvalidDerivedObject10.json</file>
         <file>TestData/ConfigInvalidReferenceType.json</file>
         <file>TestData/ConfigInvalidSubObjectNode.json</file>
         <file>TestData/ConfigUnresolvedReference.json</file>
+        <file>TestData/ConfigUnresolvableExternalConfigReferences.json</file>
+        <file>TestData/IncludeWithUnresolvableExternalConfigReferences.json</file>
+        <file>TestData/IncludeWithInvalidDerivedObjectBase.json</file>
     </qresource>
 </RCC>

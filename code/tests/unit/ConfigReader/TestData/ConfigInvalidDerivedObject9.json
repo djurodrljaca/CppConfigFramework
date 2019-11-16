@@ -1,0 +1,10 @@
+{
+    "config":
+    {
+        "value": 1,
+        "&ref":
+        {
+            "base": "/value"
+        }
+    }
+}

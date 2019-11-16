@@ -1,0 +1,15 @@
+{
+    "includes":
+    [
+        {
+            "file_path": "Include1.json"
+        },
+        {
+            "file_path": "IncludeWithInvalidDerivedObjectBase.json"
+        }
+    ],
+
+    "config":
+    {
+    }
+}
