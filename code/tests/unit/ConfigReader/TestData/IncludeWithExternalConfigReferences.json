@@ -1,0 +1,6 @@
+{
+    "config":
+    {
+        "&resolved_external_config_ref": "/included_config1/value"
+    }
+}

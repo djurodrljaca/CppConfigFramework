@@ -56,6 +56,7 @@ private slots:
     void testReadConfigWithDerivedObject();
     void testReadConfigWithIncludes();
     void testReadConfigWithOnlyIncludes();
+    void testReadConfigWithExternalConfigReferences();
     void testReadInvalidPathParameters();
     void testReadInvalidPathParameters_data();
     void testReadInvalidExternalConfigsParameter();
@@ -435,6 +436,50 @@ void TestConfigReader::testReadConfigWithOnlyIncludes()
     }
 }
 
+// Test: read a config file with an include that references a node from "external configs" ---------
+
+void TestConfigReader::testReadConfigWithExternalConfigReferences()
+{
+    // Read config file
+    const QString configFilePath(
+                QStringLiteral(":/TestData/ConfigWithExternalConfigReferences.json"));
+    ConfigReader configReader;
+    QString error;
+
+    auto config = configReader.read(configFilePath,
+                                    QDir::current(),
+                                    ConfigNodePath::ROOT_PATH,
+                                    ConfigNodePath::ROOT_PATH,
+                                    {},
+                                    &error);
+    QVERIFY(config);
+    QVERIFY(config->isObject());
+    QCOMPARE(config->count(), 2);
+
+    // Check "/included_config1"
+    {
+        const auto *included_config1 = config->nodeAtPath("/included_config1");
+        QVERIFY(included_config1 != nullptr);
+        QVERIFY(included_config1->isObject());
+        QCOMPARE(included_config1->toObject().count(), 1);
+
+        // Check "/included_config1/value
+        {
+            QVERIFY(included_config1->toObject().contains("value"));
+            const auto *value = included_config1->toObject().member("value");
+            QVERIFY(value->isValue());
+            QCOMPARE(value->toValue().value(), 1);
+        }
+    }
+
+    // Check "/resolved_external_config_ref"
+    {
+        const auto *value = config->nodeAtPath("/resolved_external_config_ref");
+        QVERIFY(value->isValue());
+        QCOMPARE(value->toValue().value(), 1);
+    }
+}
+
 // Test: read a config file with invalid file, source, and destination parameters ------------------
 
 void TestConfigReader::testReadInvalidPathParameters()
@@ -548,9 +593,13 @@ void TestConfigReader::testReadInvalidConfigFile_data()
     QTest::newRow("ConfigInvalidDerivedObject6") << ":/TestData/ConfigInvalidDerivedObject6.json";
     QTest::newRow("ConfigInvalidDerivedObject7") << ":/TestData/ConfigInvalidDerivedObject7.json";
     QTest::newRow("ConfigInvalidDerivedObject8") << ":/TestData/ConfigInvalidDerivedObject8.json";
+    QTest::newRow("ConfigInvalidDerivedObject9") << ":/TestData/ConfigInvalidDerivedObject9.json";
+    QTest::newRow("ConfigInvalidDerivedObject10") << ":/TestData/ConfigInvalidDerivedObject10.json";
     QTest::newRow("ConfigInvalidReferenceType") << ":/TestData/ConfigInvalidReferenceType.json";
     QTest::newRow("ConfigInvalidSubObjectNode") << ":/TestData/ConfigInvalidSubObjectNode.json";
     QTest::newRow("ConfigUnresolvedReference") << ":/TestData/ConfigUnresolvedReference.json";
+    QTest::newRow("ConfigUnresolvableExternalConfigReferences")
+            << ":/TestData/ConfigUnresolvableExternalConfigReferences.json";
 }
 
 // Main function -----------------------------------------------------------------------------------

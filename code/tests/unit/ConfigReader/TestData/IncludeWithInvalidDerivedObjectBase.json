@@ -1,0 +1,9 @@
+{
+    "config":
+    {
+        "&ref":
+        {
+            "base": "/included_config1/value"
+        }
+    }
+}

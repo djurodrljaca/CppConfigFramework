@@ -530,7 +530,9 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readIncludesMember(
         {
             if (error != nullptr)
             {
-                *error = QString("Failed to read config for include at index [%1]").arg(i);
+                *error = QString("Failed to read config for include:"
+                                 "\n    index: %1"
+                                 "\n    inner error: [%2]").arg(i).arg(*error);
             }
             return {};
         }
