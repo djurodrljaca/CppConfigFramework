@@ -2,6 +2,7 @@
     "includes":
     [
         {
+            "type": "CppConfigFramework",
             "file_path": "Include1.json",
             "destination_node": "/included_path"
         }

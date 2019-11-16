@@ -1,0 +1,13 @@
+{
+    "includes":
+    [
+        {
+            "file_path": "ValidConfig.json",
+            "destination_node": 1
+        }
+    ],
+
+    "config":
+    {
+    }
+}

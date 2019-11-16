@@ -1,0 +1,13 @@
+{
+    "config":
+    {
+        "&ref":
+        {
+            "base": "asd",
+            "config":
+            {
+                "0invalid": 1
+            }
+        }
+    }
+}

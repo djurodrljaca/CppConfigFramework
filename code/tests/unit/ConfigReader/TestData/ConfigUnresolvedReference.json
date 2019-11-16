@@ -1,0 +1,9 @@
+{
+    "config":
+    {
+        "sub":
+        {
+            "&unresolved_ref": "/asd"
+        }
+    }
+}

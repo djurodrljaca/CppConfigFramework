@@ -622,17 +622,6 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readObjectNode(
             return {};
         }
 
-        // Check if a member with the same name already exists
-        if (objectNode->contains(memberName))
-        {
-            if (error != nullptr)
-            {
-                *error = QString("object already contains a member with the same name [%1] in path "
-                                 "[%2]").arg(memberName, currentNodePath.path());
-            }
-            return {};
-        }
-
         // Create a node based considering the decorator
         std::unique_ptr<ConfigNode> memberNode;
         const ConfigNodePath memberNodePath = currentNodePath.append(memberName);
@@ -652,7 +641,9 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readObjectNode(
                 // One of the reference types
                 if (it.value().isString())
                 {
-                    memberNode = readNodeReferenceNode(it.value().toString(), memberNodePath, error);
+                    memberNode = readNodeReferenceNode(it.value().toString(),
+                                                       memberNodePath,
+                                                       error);
 
                     if (!memberNode)
                     {
@@ -909,10 +900,9 @@ bool ConfigReader::isFullyResolved(const ConfigNode &node)
             return true;
         }
 
-        case ConfigNode::Type::NodeReference:
-        case ConfigNode::Type::DerivedObject:
+        default:
         {
-            return false;
+            break;
         }
     }
 
