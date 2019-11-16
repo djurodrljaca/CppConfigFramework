@@ -1,0 +1,10 @@
+{
+    "config":
+    {
+        "&ref":
+        {
+            "base": "asd",
+            "config": 1
+        }
+    }
+}

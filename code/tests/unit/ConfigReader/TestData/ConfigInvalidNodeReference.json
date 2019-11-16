@@ -1,0 +1,6 @@
+{
+    "config":
+    {
+        "&ref": "0invalid"
+    }
+}

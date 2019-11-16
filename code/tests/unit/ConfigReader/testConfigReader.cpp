@@ -55,6 +55,12 @@ private slots:
     void testReadConfigWithNodeReference();
     void testReadConfigWithDerivedObject();
     void testReadConfigWithIncludes();
+    void testReadConfigWithOnlyIncludes();
+    void testReadInvalidPathParameters();
+    void testReadInvalidPathParameters_data();
+    void testReadInvalidExternalConfigsParameter();
+    void testReadInvalidConfigFile();
+    void testReadInvalidConfigFile_data();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -90,7 +96,7 @@ void TestConfigReader::testReadValidConfig()
                                     QDir::current(),
                                     ConfigNodePath::ROOT_PATH,
                                     ConfigNodePath::ROOT_PATH,
-                                    std::vector<const ConfigObjectNode *>(),
+                                    {},
                                     &error);
     QVERIFY(config);
 
@@ -162,7 +168,7 @@ void TestConfigReader::testReadConfigWithNodeReference()
                                     QDir::current(),
                                     ConfigNodePath::ROOT_PATH,
                                     ConfigNodePath::ROOT_PATH,
-                                    std::vector<const ConfigObjectNode *>(),
+                                    {},
                                     &error);
     QVERIFY(config);
 
@@ -218,7 +224,7 @@ void TestConfigReader::testReadConfigWithDerivedObject()
                                     QDir::current(),
                                     ConfigNodePath::ROOT_PATH,
                                     ConfigNodePath::ROOT_PATH,
-                                    std::vector<const ConfigObjectNode *>(),
+                                    {},
                                     &error);
     QVERIFY(config);
 
@@ -329,7 +335,7 @@ void TestConfigReader::testReadConfigWithIncludes()
                                     QDir::current(),
                                     ConfigNodePath::ROOT_PATH,
                                     ConfigNodePath::ROOT_PATH,
-                                    std::vector<const ConfigObjectNode *>(),
+                                    {},
                                     &error);
     QVERIFY(config);
     QVERIFY(config->isObject());
@@ -391,6 +397,160 @@ void TestConfigReader::testReadConfigWithIncludes()
         QVERIFY(included_value3->isValue());
         QCOMPARE(included_value3->toValue().value(), 3);
     }
+}
+
+// Test: read a config file with only includes (empty config) --------------------------------------
+
+void TestConfigReader::testReadConfigWithOnlyIncludes()
+{
+    // Read config file
+    const QString configFilePath(QStringLiteral(":/TestData/ConfigWithOnlyIncludes.json"));
+    ConfigReader configReader;
+    QString error;
+
+    auto config = configReader.read(configFilePath,
+                                    QDir::current(),
+                                    ConfigNodePath::ROOT_PATH,
+                                    ConfigNodePath::ROOT_PATH,
+                                    {},
+                                    &error);
+    QVERIFY(config);
+    QVERIFY(config->isObject());
+    QCOMPARE(config->count(), 1);
+
+    // Check "/included_config1"
+    {
+        const auto *included_config1 = config->nodeAtPath("/included_config1");
+        QVERIFY(included_config1 != nullptr);
+        QVERIFY(included_config1->isObject());
+        QCOMPARE(included_config1->toObject().count(), 1);
+
+        // Check "/included_config1/value
+        {
+            QVERIFY(included_config1->toObject().contains("value"));
+            const auto *value = included_config1->toObject().member("value");
+            QVERIFY(value->isValue());
+            QCOMPARE(value->toValue().value(), 1);
+        }
+    }
+}
+
+// Test: read a config file with invalid file, source, and destination parameters ------------------
+
+void TestConfigReader::testReadInvalidPathParameters()
+{
+    QFETCH(QString, filePath);
+    QFETCH(QString, sourceNodePath);
+    QFETCH(QString, destinationNodePath);
+
+    // Read config file
+    const QString configFilePath(filePath);
+    ConfigReader configReader;
+    QString error;
+
+    auto config = configReader.read(configFilePath,
+                                    QDir::current(),
+                                    ConfigNodePath(sourceNodePath),
+                                    ConfigNodePath(destinationNodePath),
+                                    {},
+                                    &error);
+    qDebug() << "TestConfigReader::testReadInvalidPathParameters: error string:" << error;
+    QVERIFY(!config);
+}
+
+void TestConfigReader::testReadInvalidPathParameters_data()
+{
+    QTest::addColumn<QString>("filePath");
+    QTest::addColumn<QString>("sourceNodePath");
+    QTest::addColumn<QString>("destinationNodePath");
+
+    QTest::newRow("File path: invalid") << ":/TestData/MissingConfigFile.json" << "/" << "/";
+    QTest::newRow("Source node path: relative") << ":/TestData/ValidConfig.json" << "asd" << "/";
+    QTest::newRow("Source node path: invalid") << ":/TestData/ValidConfig.json" << "0asd" << "/";
+    QTest::newRow("Destination node path: relative")
+            << ":/TestData/ValidConfig.json" << "/" << "asd";
+    QTest::newRow("Destination node path: invalid")
+            << ":/TestData/ValidConfig.json" << "/" << "0asd";
+}
+
+// Test: read a config file with invalid external config parameters --------------------------------
+
+void TestConfigReader::testReadInvalidExternalConfigsParameter()
+{
+    // Read config file
+    const QString configFilePath(QStringLiteral(":/TestData/ValidConfig.json"));
+    ConfigReader configReader;
+    QString error;
+
+    auto config = configReader.read(configFilePath,
+                                    QDir::current(),
+                                    ConfigNodePath::ROOT_PATH,
+                                    ConfigNodePath::ROOT_PATH,
+                                    {nullptr},
+                                    &error);
+    qDebug() << "TestConfigReader::testReadInvalidExternalConfigsParameter: error string:" << error;
+    QVERIFY(!config);
+}
+
+// Test: read an invalid config file ---------------------------------------------------------------
+
+void TestConfigReader::testReadInvalidConfigFile()
+{
+    QFETCH(QString, filePath);
+
+    // Read config file
+    ConfigReader configReader;
+    QString error;
+
+    auto config = configReader.read(filePath,
+                                    QDir::current(),
+                                    ConfigNodePath::ROOT_PATH,
+                                    ConfigNodePath::ROOT_PATH,
+                                    {},
+                                    &error);
+    qDebug() << "TestConfigReader::testReadInvalidConfigFile: error string:" << error;
+    QVERIFY(!config);
+}
+
+void TestConfigReader::testReadInvalidConfigFile_data()
+{
+    QTest::addColumn<QString>("filePath");
+
+    QTest::newRow("InvalidJsonFile") << ":/TestData/InvalidJsonFile.json";
+    QTest::newRow("NonObjectConfigFile") << ":/TestData/NonObjectConfigFile.json";
+    QTest::newRow("IncludesNotArray") << ":/TestData/IncludesNotArray.json";
+    QTest::newRow("IncludesItemNotObject") << ":/TestData/IncludesItemNotObject.json";
+    QTest::newRow("IncludesItemInvalidType1") << ":/TestData/IncludesItemInvalidType1.json";
+    QTest::newRow("IncludesItemInvalidType2") << ":/TestData/IncludesItemInvalidType2.json";
+    QTest::newRow("IncludesItemMissingFilePath") << ":/TestData/IncludesItemMissingFilePath.json";
+    QTest::newRow("IncludesItemInvalidFilePath") << ":/TestData/IncludesItemInvalidFilePath.json";
+    QTest::newRow("IncludesItemInvalidSourceNode1")
+            << ":/TestData/IncludesItemInvalidSourceNode1.json";
+    QTest::newRow("IncludesItemInvalidSourceNode2")
+            << ":/TestData/IncludesItemInvalidSourceNode2.json";
+    QTest::newRow("IncludesItemInvalidSourceNode3")
+            << ":/TestData/IncludesItemInvalidSourceNode3.json";
+    QTest::newRow("IncludesItemInvalidDestinationNode1")
+            << ":/TestData/IncludesItemInvalidDestinationNode1.json";
+    QTest::newRow("IncludesItemInvalidDestinationNode2")
+            << ":/TestData/IncludesItemInvalidDestinationNode2.json";
+    QTest::newRow("IncludesItemInvalidDestinationNode3")
+            << ":/TestData/IncludesItemInvalidDestinationNode3.json";
+    QTest::newRow("IncludesItemInvalidConfig") << ":/TestData/IncludesItemInvalidConfig.json";
+    QTest::newRow("ConfigNotObject") << ":/TestData/ConfigNotObject.json";
+    QTest::newRow("ConfigInvalidMemberName") << ":/TestData/ConfigInvalidMemberName.json";
+    QTest::newRow("ConfigInvalidNodeReference") << ":/TestData/ConfigInvalidNodeReference.json";
+    QTest::newRow("ConfigInvalidDerivedObject1") << ":/TestData/ConfigInvalidDerivedObject1.json";
+    QTest::newRow("ConfigInvalidDerivedObject2") << ":/TestData/ConfigInvalidDerivedObject2.json";
+    QTest::newRow("ConfigInvalidDerivedObject3") << ":/TestData/ConfigInvalidDerivedObject3.json";
+    QTest::newRow("ConfigInvalidDerivedObject4") << ":/TestData/ConfigInvalidDerivedObject4.json";
+    QTest::newRow("ConfigInvalidDerivedObject5") << ":/TestData/ConfigInvalidDerivedObject5.json";
+    QTest::newRow("ConfigInvalidDerivedObject6") << ":/TestData/ConfigInvalidDerivedObject6.json";
+    QTest::newRow("ConfigInvalidDerivedObject7") << ":/TestData/ConfigInvalidDerivedObject7.json";
+    QTest::newRow("ConfigInvalidDerivedObject8") << ":/TestData/ConfigInvalidDerivedObject8.json";
+    QTest::newRow("ConfigInvalidReferenceType") << ":/TestData/ConfigInvalidReferenceType.json";
+    QTest::newRow("ConfigInvalidSubObjectNode") << ":/TestData/ConfigInvalidSubObjectNode.json";
+    QTest::newRow("ConfigUnresolvedReference") << ":/TestData/ConfigUnresolvedReference.json";
 }
 
 // Main function -----------------------------------------------------------------------------------

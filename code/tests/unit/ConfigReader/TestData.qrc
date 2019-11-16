@@ -1,11 +1,41 @@
 <RCC>
     <qresource prefix="/">
+        <file>TestData/ValidConfig.json</file>
+        <file>TestData/ConfigWithNodeReferences.json</file>
         <file>TestData/ConfigWithDerivedObjects.json</file>
         <file>TestData/ConfigWithIncludes.json</file>
-        <file>TestData/ConfigWithNodeReferences.json</file>
+        <file>TestData/ConfigWithOnlyIncludes.json</file>
         <file>TestData/Include1.json</file>
         <file>TestData/Include2.json</file>
         <file>TestData/Include3.json</file>
-        <file>TestData/ValidConfig.json</file>
+        <file>TestData/InvalidJsonFile.json</file>
+        <file>TestData/NonObjectConfigFile.json</file>
+        <file>TestData/IncludesNotArray.json</file>
+        <file>TestData/IncludesItemNotObject.json</file>
+        <file>TestData/IncludesItemInvalidType1.json</file>
+        <file>TestData/IncludesItemInvalidType2.json</file>
+        <file>TestData/IncludesItemMissingFilePath.json</file>
+        <file>TestData/IncludesItemInvalidFilePath.json</file>
+        <file>TestData/IncludesItemInvalidSourceNode1.json</file>
+        <file>TestData/IncludesItemInvalidSourceNode2.json</file>
+        <file>TestData/IncludesItemInvalidSourceNode3.json</file>
+        <file>TestData/IncludesItemInvalidDestinationNode1.json</file>
+        <file>TestData/IncludesItemInvalidDestinationNode2.json</file>
+        <file>TestData/IncludesItemInvalidDestinationNode3.json</file>
+        <file>TestData/IncludesItemInvalidConfig.json</file>
+        <file>TestData/ConfigNotObject.json</file>
+        <file>TestData/ConfigInvalidMemberName.json</file>
+        <file>TestData/ConfigInvalidNodeReference.json</file>
+        <file>TestData/ConfigInvalidDerivedObject1.json</file>
+        <file>TestData/ConfigInvalidDerivedObject2.json</file>
+        <file>TestData/ConfigInvalidDerivedObject3.json</file>
+        <file>TestData/ConfigInvalidDerivedObject4.json</file>
+        <file>TestData/ConfigInvalidDerivedObject5.json</file>
+        <file>TestData/ConfigInvalidDerivedObject6.json</file>
+        <file>TestData/ConfigInvalidDerivedObject7.json</file>
+        <file>TestData/ConfigInvalidDerivedObject8.json</file>
+        <file>TestData/ConfigInvalidReferenceType.json</file>
+        <file>TestData/ConfigInvalidSubObjectNode.json</file>
+        <file>TestData/ConfigUnresolvedReference.json</file>
     </qresource>
 </RCC>
