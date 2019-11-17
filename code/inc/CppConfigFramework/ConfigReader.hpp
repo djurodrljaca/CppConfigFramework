@@ -155,14 +155,18 @@ private:
     /*!
      * Reads the 'config' member of the configuration file
      *
-     * \param   rootObject  Root JSON Object
+     * \param   rootObject      Root JSON Object
+     * \param   externalConfigs Configuration nodes provided by an external source
+     * \param   includesConfig  Configuration node loaded from includes
      *
      * \param[out]  error   Optional output for the error string
      *
      * \return  Configuration node instance or null in case of failure
      */
-    static std::unique_ptr<ConfigObjectNode> readConfigMember(const QJsonObject &rootObject,
-                                                              QString *error);
+    std::unique_ptr<ConfigObjectNode> readConfigMember(const QJsonObject &rootObject,
+            const std::vector<const ConfigObjectNode *> &externalConfigs,
+            const ConfigObjectNode &includesConfig,
+            QString *error) const;
 
     /*!
      * Reads a Value node from the JSON Value
@@ -251,6 +255,22 @@ private:
      * \return  List of unresolved references
      */
     static QStringList unresolvedReferences(const ConfigObjectNode &node);
+
+    /*!
+     * Tries to resolve all references in the specified configuration node
+     *
+     * \param   externalConfigs     Configuration nodes provided by an external source
+     *
+     * \param[in,out]   config  Configuration node
+     *
+     * \param[out]  error   Optional output for the error string
+     *
+     * \return  Reference resolution result
+     */
+    bool resolveReferences(
+            const std::vector<const ConfigObjectNode *> &externalConfigs,
+            ConfigObjectNode *config,
+            QString *error) const;
 
     /*!
      * Tries to resolve all references in the specified Object node
