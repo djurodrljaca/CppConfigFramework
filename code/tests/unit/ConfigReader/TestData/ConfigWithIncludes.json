@@ -11,7 +11,7 @@
         {
             "file_path": "Include3.json",
             "source_node": "/included_config3/xyz/value",
-            "destination_node": "/included_value3"
+            "destination_node": "/included_value3/sub_node/value"
         }
     ],
 

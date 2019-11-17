@@ -1,0 +1,13 @@
+{
+    "includes":
+    [
+        {
+            "file_path": "ValidConfig.json",
+            "source_node": "/root_node/sub_node/sub_node1/bool_param"
+        }
+    ],
+
+    "config":
+    {
+    }
+}
