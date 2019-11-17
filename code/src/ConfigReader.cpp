@@ -204,7 +204,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
     }
 
     // Read 'config' member
-    auto configMember = readConfigMember(rootObject,  error);
+    auto configMember = readConfigMember(rootObject, externalConfigs, *completeConfig, error);
 
     if (!configMember)
     {
@@ -221,111 +221,13 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
     completeConfig->apply(*configMember);
 
     // Resolve references
-    auto result = ReferenceResolutionResult::Unchanged;
-    uint32_t resolutionCycle;
-
-    for (resolutionCycle = 0;
-         (resolutionCycle < m_referenceResolutionMaxCycles) &&
-         (result != ReferenceResolutionResult::Resolved);
-         resolutionCycle++)
-    {
-        // Try to resolve references without external configuration nodes
-        auto newResult = resolveObjectReferences({}, completeConfig.get(), error);
-
-        switch (newResult)
-        {
-            case ReferenceResolutionResult::Resolved:
-            case ReferenceResolutionResult::PartiallyResolved:
-            {
-                result = newResult;
-                break;
-            }
-
-            case ReferenceResolutionResult::Unchanged:
-            {
-                // Check if external configuration nodes are provided
-                if (externalConfigs.empty())
-                {
-                    result = ReferenceResolutionResult::Unchanged;
-                    break;
-                }
-
-                // External configuration nodes are provided, try to resolve references with them
-                newResult = resolveObjectReferences(externalConfigs, completeConfig.get(), error);
-
-                switch (newResult)
-                {
-                    case ReferenceResolutionResult::Resolved:
-                    case ReferenceResolutionResult::PartiallyResolved:
-                    {
-                        result = newResult;
-                        break;
-                    }
-
-                    case ReferenceResolutionResult::Unchanged:
-                    {
-                        // Still unchanged
-                        if (error != nullptr)
-                        {
-                            *error = QString("No references were resolved in the last cycle even "
-                                             "after using the external configuration nodes:"
-                                             "\n    file path: %1"
-                                             "\n    cycle no.: %2"
-                                             "\n    unresolved references: [%3]")
-                                     .arg(absoluteFilePath)
-                                     .arg(resolutionCycle)
-                                     .arg(unresolvedReferences(*completeConfig).join("; "));
-                        }
-                        return {};
-                    }
-
-                    case ReferenceResolutionResult::Error:
-                    {
-                        if (error != nullptr)
-                        {
-                            *error = QString("Failed to resolve references when using the external "
-                                             "configuration nodes:"
-                                             "\n    file path: %1"
-                                             "\n    inner error: [%2]"
-                                             "\n    unresolved references: [%3]")
-                                     .arg(absoluteFilePath,
-                                          *error,
-                                          unresolvedReferences(*completeConfig).join("; "));
-                        }
-                        return {};
-                    }
-                }
-                break;
-            }
-
-            case ReferenceResolutionResult::Error:
-            {
-                if (error != nullptr)
-                {
-                    *error = QString("Failed to resolve references:"
-                                     "\n    file path: %1"
-                                     "\n    inner error: [%2]"
-                                     "\n    unresolved references: [%3]")
-                             .arg(absoluteFilePath,
-                                  *error,
-                                  unresolvedReferences(*completeConfig).join("; "));
-                }
-                return {};
-            }
-        }
-    }
-
-    if (result != ReferenceResolutionResult::Resolved)
+    if (!resolveReferences(externalConfigs, completeConfig.get(), error))
     {
         if (error != nullptr)
         {
-            *error = QString("Failed to fully resolve references:"
+            *error = QString("Failed to resolve references:"
                              "\n    file path: %1"
-                             "\n    cycle no.: %2"
-                             "\n    unresolved references: [%3]")
-                     .arg(absoluteFilePath)
-                     .arg(resolutionCycle)
-                     .arg(unresolvedReferences(*completeConfig).join("; "));
+                             "\n    inner error: [%2]").arg(absoluteFilePath, *error);
         }
         return {};
     }
@@ -546,8 +448,11 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readIncludesMember(
 
 // -------------------------------------------------------------------------------------------------
 
-std::unique_ptr<ConfigObjectNode> ConfigReader::readConfigMember(const QJsonObject &rootObject,
-                                                                 QString *error)
+std::unique_ptr<ConfigObjectNode> ConfigReader::readConfigMember(
+        const QJsonObject &rootObject,
+        const std::vector<const ConfigObjectNode *> &externalConfigs,
+        const ConfigObjectNode &includesConfig,
+        QString *error) const
 {
     // The root object must contain the 'config' member (but it can be an empty object)
     const auto configValue = rootObject.value(QStringLiteral("config"));
@@ -576,6 +481,24 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readConfigMember(const QJsonObje
         {
             *error = QString("Failed to read the 'config' member in the root JSON Object:"
                              "\n    error: [%1]").arg(*error);
+        }
+        return {};
+    }
+
+    // Extend the external configs with the includesConfig value if necessary
+    auto extendedExternalConfigs = externalConfigs;
+
+    if (includesConfig.count() > 0)
+    {
+        extendedExternalConfigs.push_back(&includesConfig);
+    }
+
+    // Resolve references
+    if (!resolveReferences(extendedExternalConfigs, config.get(), error))
+    {
+        if (error != nullptr)
+        {
+            *error = QString("Failed to resolve references. Inner error: [%1]").arg(*error);
         }
         return {};
     }
@@ -937,6 +860,114 @@ QStringList ConfigReader::unresolvedReferences(const ConfigObjectNode &node)
     }
 
     return references;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+bool ConfigReader::resolveReferences(const std::vector<const ConfigObjectNode *> &externalConfigs,
+                                     ConfigObjectNode *config,
+                                     QString *error) const
+{
+    auto result = ReferenceResolutionResult::Unchanged;
+    uint32_t resolutionCycle;
+
+    for (resolutionCycle = 0;
+         (resolutionCycle < m_referenceResolutionMaxCycles) &&
+         (result != ReferenceResolutionResult::Resolved);
+         resolutionCycle++)
+    {
+        // Try to resolve references without external configuration nodes
+        auto newResult = resolveObjectReferences({}, config, error);
+
+        switch (newResult)
+        {
+            case ReferenceResolutionResult::Resolved:
+            case ReferenceResolutionResult::PartiallyResolved:
+            {
+                result = newResult;
+                break;
+            }
+
+            case ReferenceResolutionResult::Unchanged:
+            {
+                // Check if external configuration nodes are provided
+                if (externalConfigs.empty())
+                {
+                    result = ReferenceResolutionResult::Unchanged;
+                    break;
+                }
+
+                // External configuration nodes are provided, try to resolve references with them
+                newResult = resolveObjectReferences(externalConfigs, config, error);
+
+                switch (newResult)
+                {
+                    case ReferenceResolutionResult::Resolved:
+                    case ReferenceResolutionResult::PartiallyResolved:
+                    {
+                        result = newResult;
+                        break;
+                    }
+
+                    case ReferenceResolutionResult::Unchanged:
+                    {
+                        // Still unchanged
+                        if (error != nullptr)
+                        {
+                            *error = QString("No references were resolved in the last cycle even "
+                                             "after using the external configuration nodes:"
+                                             "\n    cycle no.: %1"
+                                             "\n    unresolved references: [%2]")
+                                     .arg(resolutionCycle)
+                                     .arg(unresolvedReferences(*config).join("; "));
+                        }
+                        return false;
+                    }
+
+                    case ReferenceResolutionResult::Error:
+                    {
+                        if (error != nullptr)
+                        {
+                            *error = QString("Failed to resolve references when using the external "
+                                             "configuration nodes:"
+                                             "\n    inner error: [%1]"
+                                             "\n    unresolved references: [%2]")
+                                     .arg(*error, unresolvedReferences(*config).join("; "));
+                        }
+                        return false;
+                    }
+                }
+                break;
+            }
+
+            case ReferenceResolutionResult::Error:
+            {
+                if (error != nullptr)
+                {
+                    *error = QString("Failed to resolve references:"
+                                     "\n    inner error: [%1]"
+                                     "\n    unresolved references: [%2]")
+                             .arg(*error, unresolvedReferences(*config).join("; "));
+                }
+                return false;
+            }
+        }
+    }
+
+    if (result != ReferenceResolutionResult::Resolved)
+    {
+        if (error != nullptr)
+        {
+            *error = QString("Failed to fully resolve references:"
+                             "\n    cycle no.: %1"
+                             "\n    unresolved references: [%2]")
+                     .arg(resolutionCycle)
+                     .arg(unresolvedReferences(*config).join("; "));
+        }
+        return false;
+    }
+
+    return true;
 }
 
 // -------------------------------------------------------------------------------------------------
