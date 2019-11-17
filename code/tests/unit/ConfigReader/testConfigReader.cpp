@@ -393,10 +393,26 @@ void TestConfigReader::testReadConfigWithIncludes()
 
     // Check "/included_value3"
     {
-        const auto *included_value3 = config->nodeAtPath("/included_value3");
-        QVERIFY(included_value3 != nullptr);
-        QVERIFY(included_value3->isValue());
-        QCOMPARE(included_value3->toValue().value(), 3);
+        const auto *included_config3 = config->nodeAtPath("/included_value3");
+        QVERIFY(included_config3 != nullptr);
+        QVERIFY(included_config3->isObject());
+        QCOMPARE(included_config3->toObject().count(), 1);
+
+        // Check "/included_value3/sub_node"
+        {
+            const auto *sub_node = included_config3->nodeAtPath("sub_node");
+            QVERIFY(sub_node != nullptr);
+            QVERIFY(sub_node->isObject());
+            QCOMPARE(sub_node->toObject().count(), 1);
+
+            // Check "/included_value3/sub_node/value
+            {
+                QVERIFY(sub_node->toObject().contains("value"));
+                const auto *value = sub_node->toObject().member("value");
+                QVERIFY(value->isValue());
+                QCOMPARE(value->toValue().value(), 3);
+            }
+        }
     }
 }
 
@@ -454,7 +470,7 @@ void TestConfigReader::testReadConfigWithExternalConfigReferences()
                                     &error);
     QVERIFY(config);
     QVERIFY(config->isObject());
-    QCOMPARE(config->count(), 2);
+    QCOMPARE(config->count(), 3);
 
     // Check "/included_config1"
     {
@@ -472,9 +488,16 @@ void TestConfigReader::testReadConfigWithExternalConfigReferences()
         }
     }
 
-    // Check "/resolved_external_config_ref"
+    // Check "/ref_absolute_path"
     {
-        const auto *value = config->nodeAtPath("/resolved_external_config_ref");
+        const auto *value = config->nodeAtPath("/ref_absolute_path");
+        QVERIFY(value->isValue());
+        QCOMPARE(value->toValue().value(), 1);
+    }
+
+    // Check "/ref_relative_path"
+    {
+        const auto *value = config->nodeAtPath("/ref_relative_path");
         QVERIFY(value->isValue());
         QCOMPARE(value->toValue().value(), 1);
     }
@@ -575,6 +598,10 @@ void TestConfigReader::testReadInvalidConfigFile_data()
             << ":/TestData/IncludesItemInvalidSourceNode2.json";
     QTest::newRow("IncludesItemInvalidSourceNode3")
             << ":/TestData/IncludesItemInvalidSourceNode3.json";
+    QTest::newRow("IncludesItemInvalidSourceNode4")
+            << ":/TestData/IncludesItemInvalidSourceNode4.json";
+    QTest::newRow("IncludesItemInvalidSourceNode5")
+            << ":/TestData/IncludesItemInvalidSourceNode5.json";
     QTest::newRow("IncludesItemInvalidDestinationNode1")
             << ":/TestData/IncludesItemInvalidDestinationNode1.json";
     QTest::newRow("IncludesItemInvalidDestinationNode2")
@@ -600,6 +627,8 @@ void TestConfigReader::testReadInvalidConfigFile_data()
     QTest::newRow("ConfigUnresolvedReference") << ":/TestData/ConfigUnresolvedReference.json";
     QTest::newRow("ConfigUnresolvableExternalConfigReferences")
             << ":/TestData/ConfigUnresolvableExternalConfigReferences.json";
+
+    // TODO: prepare more test data for transformConfig() method
 }
 
 // Main function -----------------------------------------------------------------------------------

@@ -1176,12 +1176,17 @@ const ConfigNode *ConfigReader::findReferencedConfigNode(
     if (referencedNode == nullptr)
     {
         // Unable to find the node reference, try to find it in one of the external configuration
-        // nodes
+        // nodes (use last found node)
         for (const auto *externalConfig : externalConfigs)
         {
             if (referenceNodePath.isAbsolute())
             {
-                referencedNode = externalConfig->nodeAtPath(referenceNodePath);
+                const auto *foundNode = externalConfig->nodeAtPath(referenceNodePath);
+
+                if (foundNode != nullptr)
+                {
+                    referencedNode = foundNode;
+                }
             }
             else
             {
@@ -1192,7 +1197,12 @@ const ConfigNode *ConfigReader::findReferencedConfigNode(
 
                 if (externalConfigParent != nullptr)
                 {
-                    referencedNode = externalConfigParent->nodeAtPath(referenceNodePath);
+                    const auto *foundNode = externalConfigParent->nodeAtPath(referenceNodePath);
+
+                    if (foundNode != nullptr)
+                    {
+                        referencedNode = foundNode;
+                    }
                 }
             }
         }

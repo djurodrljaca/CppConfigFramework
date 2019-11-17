@@ -21,6 +21,8 @@
         <file>TestData/IncludesItemInvalidSourceNode1.json</file>
         <file>TestData/IncludesItemInvalidSourceNode2.json</file>
         <file>TestData/IncludesItemInvalidSourceNode3.json</file>
+        <file>TestData/IncludesItemInvalidSourceNode4.json</file>
+        <file>TestData/IncludesItemInvalidSourceNode5.json</file>
         <file>TestData/IncludesItemInvalidDestinationNode1.json</file>
         <file>TestData/IncludesItemInvalidDestinationNode2.json</file>
         <file>TestData/IncludesItemInvalidDestinationNode3.json</file>

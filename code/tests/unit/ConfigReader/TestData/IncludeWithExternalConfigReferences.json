@@ -1,6 +1,7 @@
 {
     "config":
     {
-        "&resolved_external_config_ref": "/included_config1/value"
+        "&ref_absolute_path": "/included_config1/value",
+        "&ref_relative_path": "included_config1/value"
     }
 }
