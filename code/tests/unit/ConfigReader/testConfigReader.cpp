@@ -445,7 +445,7 @@ void TestConfigReader::testReadConfigWithIncludesAndEnv()
                                     &error);
     QVERIFY(config);
     QVERIFY(config->isObject());
-    QCOMPARE(config->count(), 2);
+    QCOMPARE(config->count(), 5);
 
     // Check "/included_value1"
     {
@@ -461,6 +461,40 @@ void TestConfigReader::testReadConfigWithIncludesAndEnv()
         QVERIFY(included_value2 != nullptr);
         QVERIFY(included_value2->isValue());
         QCOMPARE(included_value2->toValue().value(), 2);
+    }
+
+    // Check "/value"
+    {
+        const auto *value = config->member("value");
+        QVERIFY(value != nullptr);
+        QVERIFY(value->isValue());
+        QCOMPARE(value->toValue().value(), "Value 1");
+    }
+
+    // Check "/array"
+    {
+        const auto *array = config->member("array");
+        QVERIFY(array != nullptr);
+        QVERIFY(array->isValue());
+
+        const QVariantList expected {
+            { QVariantMap { { "k1", "v1" } } },
+            { QVariantMap { { "k0", "v0" } } }
+        };
+        QCOMPARE(array->toValue().value(), expected);
+    }
+
+    // Check "/object"
+    {
+        const auto *object = config->member("object");
+        QVERIFY(object != nullptr);
+        QVERIFY(object->isValue());
+
+        const QVariantMap expected {
+            { "value1", "v1" },
+            { "value2", "v0" }
+        };
+        QCOMPARE(object->toValue().value(), expected);
     }
 }
 
@@ -586,7 +620,8 @@ void TestConfigReader::testReadInvalidPathParameters_data()
     QTest::addColumn<QString>("sourceNodePath");
     QTest::addColumn<QString>("destinationNodePath");
 
-    QTest::newRow("File path: invalid") << ":/TestData/MissingConfigFile.json" << "/" << "/";
+    QTest::newRow("File path: invalid 1") << "" << "/" << "/";
+    QTest::newRow("File path: invalid 2") << ":/TestData/MissingConfigFile.json" << "/" << "/";
     QTest::newRow("Source node path: relative") << ":/TestData/ValidConfig.json" << "asd" << "/";
     QTest::newRow("Source node path: invalid") << ":/TestData/ValidConfig.json" << "0asd" << "/";
     QTest::newRow("Destination node path: relative")
@@ -685,6 +720,11 @@ void TestConfigReader::testReadInvalidConfigFile_data()
     QTest::newRow("ConfigUnresolvedReference") << ":/TestData/ConfigUnresolvedReference.json";
     QTest::newRow("ConfigUnresolvableExternalConfigReferences")
             << ":/TestData/ConfigUnresolvableExternalConfigReferences.json";
+    QTest::newRow("ConfigUnresolvedFilePath") << ":/TestData/ConfigUnresolvedFilePath.json";
+    QTest::newRow("ConfigInvalidEnvVar1") << ":/TestData/ConfigInvalidEnvVar1.json";
+    QTest::newRow("ConfigInvalidEnvVar2") << ":/TestData/ConfigInvalidEnvVar2.json";
+    QTest::newRow("ConfigInvalidEnvVar3") << ":/TestData/ConfigInvalidEnvVar3.json";
+    QTest::newRow("ConfigInvalidEnvVar4") << ":/TestData/ConfigInvalidEnvVar4.json";
 }
 
 // Main function -----------------------------------------------------------------------------------

@@ -1,0 +1,12 @@
+{
+    "environment_variables":
+    {
+        "var1": "${var2}",
+        "var2": "${var1}"
+    },
+
+    "config":
+    {
+        "$value": "${var1}"
+    }
+}

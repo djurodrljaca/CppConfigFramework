@@ -1,0 +1,10 @@
+{
+    "environment_variables":
+    {
+        "invalid name": "1"
+    },
+
+    "config":
+    {
+    }
+}

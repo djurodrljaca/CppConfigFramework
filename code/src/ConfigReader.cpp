@@ -227,7 +227,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
         {
             *error = QString("Failed to read the 'environment_variables' member:"
                              "\n    file path: %1"
-                             "\n    inner error: [%2]").arg(absoluteFilePath, *error);
+                             "\n    error: [%2]").arg(absoluteFilePath, *error);
         }
         return {};
     }
@@ -245,13 +245,17 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
         {
             *error = QString("Failed to read the 'includes' member:"
                              "\n    file path: %1"
-                             "\n    inner error: [%2]").arg(absoluteFilePath, *error);
+                             "\n    error: [%2]").arg(absoluteFilePath, *error);
         }
         return {};
     }
 
     // Read 'config' member
-    auto configMember = readConfigMember(rootObject, externalConfigs, *completeConfig, error);
+    auto configMember = readConfigMember(rootObject,
+                                         externalConfigs,
+                                         *completeConfig,
+                                         *environmentVariables,
+                                         error);
 
     if (!configMember)
     {
@@ -259,7 +263,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
         {
             *error = QString("Failed to read the 'config' member:"
                              "\n    file path: %1"
-                             "\n    inner error: [%2]").arg(absoluteFilePath, *error);
+                             "\n    error: [%2]").arg(absoluteFilePath, *error);
         }
         return {};
     }
@@ -274,7 +278,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
         {
             *error = QString("Failed to resolve references:"
                              "\n    file path: %1"
-                             "\n    inner error: [%2]").arg(absoluteFilePath, *error);
+                             "\n    error: [%2]").arg(absoluteFilePath, *error);
         }
         return {};
     }
@@ -291,7 +295,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
         {
             *error = QString("Failed to transform the config:"
                              "\n    file path: %1"
-                             "\n    inner error: [%2]").arg(absoluteFilePath, *error);
+                             "\n    error: [%2]").arg(absoluteFilePath, *error);
         }
         return {};
     }
@@ -331,19 +335,57 @@ bool ConfigReader::readEnvironmentVariablesMember(const QJsonObject &rootObject,
 
     for (auto it = envVarsObject.begin(); it != envVarsObject.end(); it++)
     {
-        if (!it.value().isString())
+        // Extract the name
+        static const QRegularExpression regex("^\\w+$");
+        const QString name = it.key();
+
+        if (!regex.match(name).hasMatch())
         {
             if (error != nullptr)
             {
-                *error = QString("Environment variable [%1] does not have a string value!")
-                         .arg(it.key());
+                *error = QStringLiteral("Invalid environment variable name: ") % name;
             }
             return false;
         }
 
-        if (!environmentVariables->contains(it.key()))
+        // Extract the value
+        const QJsonValue jsonValue = it.value();
+        QString value;
+
+        switch (jsonValue.type())
         {
-            environmentVariables->setValue(it.key(), it.value().toString());
+            case QJsonValue::Bool:
+            {
+                value = jsonValue.toBool() ? "1" : "0";
+                break;
+            }
+
+            case QJsonValue::Double:
+            {
+                value = QString::number(jsonValue.toDouble());
+                break;
+            }
+
+            case QJsonValue::String:
+            {
+                value = jsonValue.toString();
+                break;
+            }
+
+            default:
+            {
+                if (error != nullptr)
+                {
+                    *error = QString("Environment variable [%1] does not have a value that can be "
+                                     "converted to a string!").arg(it.key());
+                }
+                return false;
+            }
+        }
+
+        if (!environmentVariables->contains(name))
+        {
+            environmentVariables->setValue(name, value);
         }
     }
 
@@ -535,7 +577,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readIncludesMember(
             {
                 *error = QString("Failed to read config for include:"
                                  "\n    index: %1"
-                                 "\n    inner error: [%2]").arg(i).arg(*error);
+                                 "\n    error: [%2]").arg(i).arg(*error);
             }
             return {};
         }
@@ -553,6 +595,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readConfigMember(
         const QJsonObject &rootObject,
         const std::vector<const ConfigObjectNode *> &externalConfigs,
         const ConfigObjectNode &includesConfig,
+        const EnvironmentVariables &environmentVariables,
         QString *error) const
 {
     // The root object must contain the 'config' member (but it can be an empty object)
@@ -575,7 +618,10 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readConfigMember(
     }
 
     // Read 'config' object
-    auto config = readObjectNode(configValue.toObject(), ConfigNodePath::ROOT_PATH, error);
+    auto config = readObjectNode(configValue.toObject(),
+                                 ConfigNodePath::ROOT_PATH,
+                                 environmentVariables,
+                                 error);
 
     if (!config)
     {
@@ -600,7 +646,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readConfigMember(
     {
         if (error != nullptr)
         {
-            *error = QString("Failed to resolve references. Inner error: [%1]").arg(*error);
+            *error = QString("Failed to resolve references. Error: [%1]").arg(*error);
         }
         return {};
     }
@@ -613,6 +659,8 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readConfigMember(
 std::unique_ptr<ConfigValueNode> ConfigReader::readValueNode(const QJsonValue &jsonValue,
                                                              const ConfigNodePath &currentNodePath)
 {
+    Q_UNUSED(currentNodePath)
+
     return std::make_unique<ConfigValueNode>(jsonValue.toVariant());
 }
 
@@ -621,6 +669,7 @@ std::unique_ptr<ConfigValueNode> ConfigReader::readValueNode(const QJsonValue &j
 std::unique_ptr<ConfigObjectNode> ConfigReader::readObjectNode(
         const QJsonObject &jsonObject,
         const ConfigNodePath &currentNodePath,
+        const EnvironmentVariables &environmentVariables,
         QString *error)
 {
     auto objectNode = std::make_unique<ConfigObjectNode>();
@@ -630,7 +679,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readObjectNode(
         QString memberName = it.key();
 
         // Check for "decorators" in the member name (reference type or Value node)
-        QChar decorator('\0');
+        QChar decorator;
 
         if (hasDecorator(memberName))
         {
@@ -663,6 +712,31 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readObjectNode(
                 break;
             }
 
+            case '$':
+            {
+                // Explicit Value node (even if it is an Array or an Object JSON type) where
+                // references to environment variables in the value are resolved
+                const QJsonValue resolvedValue =
+                        resolveJsonValue(it.value(), environmentVariables, error);
+
+                if (resolvedValue.isUndefined())
+                {
+                    if (error != nullptr)
+                    {
+                        *error = QString("Failed to resolve a Value node with references to "
+                                         "environment variables:"
+                                         "\n    member node path: %1"
+                                         "\n    error: [%2]")
+                                 .arg(memberNodePath.path(), *error);
+                    }
+                    return {};
+                }
+
+                memberNode = readValueNode(resolvedValue, memberNodePath);
+                Q_ASSERT(memberNode);
+                break;
+            }
+
             case '&':
             {
                 // One of the reference types
@@ -688,6 +762,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readObjectNode(
                 {
                     memberNode = readDerivedObjectNode(it.value().toObject(),
                                                        memberNodePath,
+                                                       environmentVariables,
                                                        error);
 
                     if (!memberNode)
@@ -719,7 +794,10 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readObjectNode(
                 // No decorators, just an ordinary node
                 if (it.value().isObject())
                 {
-                    memberNode = readObjectNode(it.value().toObject(), memberNodePath, error);
+                    memberNode = readObjectNode(it.value().toObject(),
+                                                memberNodePath,
+                                                environmentVariables,
+                                                error);
 
                     if (!memberNode)
                     {
@@ -777,6 +855,7 @@ std::unique_ptr<ConfigNodeReference> ConfigReader::readNodeReferenceNode(
 std::unique_ptr<ConfigDerivedObjectNode> ConfigReader::readDerivedObjectNode(
         const QJsonObject &jsonObject,
         const ConfigNodePath &currentNodePath,
+        const EnvironmentVariables &environmentVariables,
         QString *error)
 {
     // Extract bases
@@ -860,7 +939,10 @@ std::unique_ptr<ConfigDerivedObjectNode> ConfigReader::readDerivedObjectNode(
         if (configValue.isObject())
         {
             // Read overrides for the object derived from bases
-            config = readObjectNode(configValue.toObject(), currentNodePath, error);
+            config = readObjectNode(configValue.toObject(),
+                                    currentNodePath,
+                                    environmentVariables,
+                                    error);
 
             if (!config)
             {
@@ -896,9 +978,156 @@ std::unique_ptr<ConfigDerivedObjectNode> ConfigReader::readDerivedObjectNode(
 
 // -------------------------------------------------------------------------------------------------
 
+QJsonValue ConfigReader::resolveJsonValue(const QJsonValue &jsonValue,
+                                          const EnvironmentVariables &environmentVariables,
+                                          QString *error)
+{
+    QJsonValue resolvedJsonValue;
+
+    switch (jsonValue.type())
+    {
+        case QJsonValue::Array:
+        {
+            resolvedJsonValue = resolveJsonArray(jsonValue.toArray(), environmentVariables, error);
+            break;
+        }
+
+        case QJsonValue::Object:
+        {
+            resolvedJsonValue = resolveJsonObject(jsonValue.toObject(),
+                                                  environmentVariables,
+                                                  error);
+            break;
+        }
+
+        case QJsonValue::String:
+        {
+            QString value = jsonValue.toString();
+
+            if (!value.isEmpty())
+            {
+                // Value is not an empty string, expand it
+                value = environmentVariables.expandText(value);
+
+                if (value.isNull())
+                {
+                    if (error != nullptr)
+                    {
+                        *error = QStringLiteral("Failed to resolve String value: ") %
+                                 jsonValue.toString();
+                    }
+                    return QJsonValue(QJsonValue::Undefined);
+                }
+            }
+
+            resolvedJsonValue = QJsonValue(value);
+            break;
+        }
+
+        default:
+        {
+            // For all other types, just copy the value
+            resolvedJsonValue = jsonValue;
+            break;
+        }
+    }
+
+    return resolvedJsonValue;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+QJsonValue ConfigReader::resolveJsonArray(const QJsonArray &jsonArray,
+                                          const EnvironmentVariables &environmentVariables,
+                                          QString *error)
+{
+    QJsonArray array;
+
+    for (int i = 0; i < jsonArray.size(); i++)
+    {
+        QJsonValue item = jsonArray.at(i);
+
+        if (!item.isUndefined())
+        {
+            item = resolveJsonValue(item, environmentVariables, error);
+
+            if (item.isUndefined())
+            {
+                if (error != nullptr)
+                {
+                    *error = QString("Failed to resolve Array item:"
+                                     "\n    index: %1"
+                                     "\n    error: [%2]").arg(i).arg(*error);
+                }
+                return QJsonValue(QJsonValue::Undefined);
+            }
+        }
+
+        // Insert the item into the output Array
+        array.append(item);
+    }
+
+    return array;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+QJsonValue ConfigReader::resolveJsonObject(const QJsonObject &jsonObject,
+                                           const EnvironmentVariables &environmentVariables,
+                                           QString *error)
+{
+    QJsonObject object;
+
+    for (auto it = jsonObject.begin(); it != jsonObject.end(); it++)
+    {
+        // Resolve key
+        QString key = it.key();
+
+        if (!key.isEmpty())
+        {
+            key = environmentVariables.expandText(key);
+
+            if (key.isNull())
+            {
+                if (error != nullptr)
+                {
+                    *error = QStringLiteral("Failed to resolve Object key: ") % it.key();
+                }
+                return QJsonValue(QJsonValue::Undefined);
+            }
+        }
+
+        // Resolve value
+        QJsonValue value = it.value();
+
+        if (!value.isUndefined())
+        {
+            value = resolveJsonValue(value, environmentVariables, error);
+
+            if (value.isUndefined())
+            {
+                if (error != nullptr)
+                {
+                    *error = QString("Failed to resolve Object value:"
+                                     "\n    key: %1"
+                                     "\n    error: [%2]").arg(it.key(), *error);
+                }
+                return QJsonValue(QJsonValue::Undefined);
+            }
+        }
+
+        // Insert the key-value pair into the output Object
+        object.insert(key, value);
+    }
+
+    return object;
+}
+
+// -------------------------------------------------------------------------------------------------
+
 bool ConfigReader::hasDecorator(const QString &memberName)
 {
-    static QRegularExpression regex("^[&#]");
+    static QRegularExpression regex("^[&#$]");
 
     return regex.match(memberName).hasMatch();
 }
@@ -1034,7 +1263,7 @@ bool ConfigReader::resolveReferences(const std::vector<const ConfigObjectNode *>
                         {
                             *error = QString("Failed to resolve references when using the external "
                                              "configuration nodes:"
-                                             "\n    inner error: [%1]"
+                                             "\n    error: [%1]"
                                              "\n    unresolved references: [%2]")
                                      .arg(*error, unresolvedReferences(*config).join("; "));
                         }
@@ -1049,7 +1278,7 @@ bool ConfigReader::resolveReferences(const std::vector<const ConfigObjectNode *>
                 if (error != nullptr)
                 {
                     *error = QString("Failed to resolve references:"
-                                     "\n    inner error: [%1]"
+                                     "\n    error: [%1]"
                                      "\n    unresolved references: [%2]")
                              .arg(*error, unresolvedReferences(*config).join("; "));
                 }
