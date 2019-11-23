@@ -1,0 +1,11 @@
+{
+    "environment_variables":
+    {
+        "include2_file_path": "${TEST_DATA_DIR}/includes/Include2.json"
+    },
+
+    "config":
+    {
+        "included_value1": 1
+    }
+}

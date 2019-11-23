@@ -34,6 +34,7 @@ add_library(CppConfigFramework SHARED
     inc/CppConfigFramework/ConfigParameterValidator.hpp
     inc/CppConfigFramework/ConfigReader.hpp
     inc/CppConfigFramework/ConfigValueNode.hpp
+    inc/CppConfigFramework/EnvironmentVariables.hpp
     inc/CppConfigFramework/HashFunctions.hpp
 
     src/ConfigDerivedObjectNode.cpp
@@ -45,6 +46,7 @@ add_library(CppConfigFramework SHARED
     src/ConfigParameterLoader.cpp
     src/ConfigReader.cpp
     src/ConfigValueNode.cpp
+    src/EnvironmentVariables.cpp
     )
 
 include(GenerateExportHeader)

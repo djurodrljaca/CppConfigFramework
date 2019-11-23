@@ -263,9 +263,15 @@ void TestConfigLoader::testLoadConfigAtPath()
 
     // Read config file
     const QString configFilePath(QStringLiteral(":/TestData/TestLoadConfigAtPath.json"));
+    auto environmentVariables = EnvironmentVariables::loadFromProcess();
     ConfigReader configReader;
 
-    auto config = configReader.read(configFilePath);
+    auto config = configReader.read(configFilePath,
+                                    QDir::current(),
+                                    ConfigNodePath::ROOT_PATH,
+                                    ConfigNodePath::ROOT_PATH,
+                                    std::vector<const ConfigObjectNode *>(),
+                                    &environmentVariables);
     QVERIFY(config);
 
     TestRequiredConfigParameter configStructure;
@@ -307,9 +313,15 @@ void TestConfigLoader::testLoadOptionalConfigAtPath()
 
     // Read config file
     const QString configFilePath(QStringLiteral(":/TestData/TestLoadConfigAtPath.json"));
+    auto environmentVariables = EnvironmentVariables::loadFromProcess();
     ConfigReader configReader;
 
-    auto config = configReader.read(configFilePath);
+    auto config = configReader.read(configFilePath,
+                                    QDir::current(),
+                                    ConfigNodePath::ROOT_PATH,
+                                    ConfigNodePath::ROOT_PATH,
+                                    std::vector<const ConfigObjectNode *>(),
+                                    &environmentVariables);
     QVERIFY(config);
 
     TestRequiredConfigParameter configStructure;
@@ -355,9 +367,15 @@ void TestConfigLoader::testLoadConfig()
 
     // Read config file
     const QString configFilePath(QStringLiteral(":/TestData/TestLoadConfig.json"));
+    auto environmentVariables = EnvironmentVariables::loadFromProcess();
     ConfigReader configReader;
 
-    auto config = configReader.read(configFilePath);
+    auto config = configReader.read(configFilePath,
+                                    QDir::current(),
+                                    ConfigNodePath::ROOT_PATH,
+                                    ConfigNodePath::ROOT_PATH,
+                                    std::vector<const ConfigObjectNode *>(),
+                                    &environmentVariables);
     QVERIFY(config);
 
     TestRequiredConfigParameter configStructure;
@@ -395,9 +413,15 @@ void TestConfigLoader::testLoadOptionalConfig()
 
     // Read config file
     const QString configFilePath(QStringLiteral(":/TestData/TestLoadConfig.json"));
+    auto environmentVariables = EnvironmentVariables::loadFromProcess();
     ConfigReader configReader;
 
-    auto config = configReader.read(configFilePath);
+    auto config = configReader.read(configFilePath,
+                                    QDir::current(),
+                                    ConfigNodePath::ROOT_PATH,
+                                    ConfigNodePath::ROOT_PATH,
+                                    std::vector<const ConfigObjectNode *>(),
+                                    &environmentVariables);
     QVERIFY(config);
 
     TestRequiredConfigParameter configStructure;
@@ -432,9 +456,15 @@ void TestConfigLoader::testLoadConfigParameter()
 {
     // Read config file
     const QString configFilePath(QStringLiteral(":/TestData/LoadConfigParameter.json"));
+    auto environmentVariables = EnvironmentVariables::loadFromProcess();
     ConfigReader configReader;
 
-    auto config = configReader.read(configFilePath);
+    auto config = configReader.read(configFilePath,
+                                    QDir::current(),
+                                    ConfigNodePath::ROOT_PATH,
+                                    ConfigNodePath::ROOT_PATH,
+                                    std::vector<const ConfigObjectNode *>(),
+                                    &environmentVariables);
     QVERIFY(config);
 
     // Load config with "param" parameter
@@ -514,9 +544,15 @@ void TestConfigLoader::testLoadConfigContainer()
 {
     // Read config file
     const QString configFilePath(QStringLiteral(":/TestData/LoadConfigContainer.json"));
+    auto environmentVariables = EnvironmentVariables::loadFromProcess();
     ConfigReader configReader;
 
-    auto config = configReader.read(configFilePath);
+    auto config = configReader.read(configFilePath,
+                                    QDir::current(),
+                                    ConfigNodePath::ROOT_PATH,
+                                    ConfigNodePath::ROOT_PATH,
+                                    std::vector<const ConfigObjectNode *>(),
+                                    &environmentVariables);
     QVERIFY(config);
 
     QMap<QString, int> expected =
