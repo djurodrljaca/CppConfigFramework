@@ -4,8 +4,11 @@
         <file>TestData/ConfigWithNodeReferences.json</file>
         <file>TestData/ConfigWithDerivedObjects.json</file>
         <file>TestData/ConfigWithIncludes.json</file>
+        <file>TestData/ConfigWithIncludesAndEnv.json</file>
         <file>TestData/ConfigWithOnlyIncludes.json</file>
         <file>TestData/ConfigWithExternalConfigReferences.json</file>
+        <file>TestData/includes/Include1.json</file>
+        <file>TestData/includes/Include2.json</file>
         <file>TestData/Include1.json</file>
         <file>TestData/Include2.json</file>
         <file>TestData/Include3.json</file>

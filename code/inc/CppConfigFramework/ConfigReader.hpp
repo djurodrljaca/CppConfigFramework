@@ -23,6 +23,7 @@
 
 // C++ Config Framework includes
 #include <CppConfigFramework/ConfigNode.hpp>
+#include <CppConfigFramework/EnvironmentVariables.hpp>
 
 // Qt includes
 #include <QtCore/QString>
@@ -108,7 +109,9 @@ public:
      *                              stored (must be absolute node path)
      * \param   externalConfigs     Configuration nodes provided by an external source
      *
-     * \param[out]  error   Optional output for the error string
+     * \param[in,out]   environmentVariables    Environment variables
+     *
+     * \param[out]  error                   Optional output for the error string
      *
      * \return  Configuration node instance or in case of failure a null pointer
      *
@@ -118,10 +121,11 @@ public:
      */
     std::unique_ptr<ConfigObjectNode> read(
             const QString &filePath,
-            const QDir &workingDir = QDir::current(),
-            const ConfigNodePath &sourceNodePath = ConfigNodePath::ROOT_PATH,
-            const ConfigNodePath &destinationNodePath = ConfigNodePath::ROOT_PATH,
-            const std::vector<const ConfigObjectNode *> &externalConfigs = {},
+            const QDir &workingDir,
+            const ConfigNodePath &sourceNodePath,
+            const ConfigNodePath &destinationNodePath,
+            const std::vector<const ConfigObjectNode *> &externalConfigs,
+            EnvironmentVariables *environmentVariables,
             QString *error = nullptr) const;
 
 private:
@@ -136,11 +140,33 @@ private:
 
 private:
     /*!
+     * Reads the 'environment_variables' member of the configuration file
+     *
+     * \param   rootObject      Root JSON Object
+     *
+     * \param[in,out]   environmentVariables    Environment variables
+     *
+     * \param[out]  error   Optional output for the error string
+     *
+     * \retval  true    Success
+     * \retval  false   Failure
+     *
+     * \note    Read environment variables are set in the environmentVariables parameter only if the
+     *          variables are not already set!
+     */
+    bool readEnvironmentVariablesMember(
+            const QJsonObject &rootObject,
+            EnvironmentVariables *environmentVariables,
+            QString *error) const;
+
+    /*!
      * Reads the 'includes' member of the configuration file
      *
      * \param   rootObject      Root JSON Object
      * \param   workingDir      Path to the working directory
      * \param   externalConfigs Configuration nodes provided by an external source
+     *
+     * \param[in,out]   environmentVariables    Environment variables
      *
      * \param[out]  error   Optional output for the error string
      *
@@ -150,6 +176,7 @@ private:
             const QJsonObject &rootObject,
             const QDir &workingDir,
             const std::vector<const ConfigObjectNode *> &externalConfigs,
+            EnvironmentVariables *environmentVariables,
             QString *error) const;
 
     /*!

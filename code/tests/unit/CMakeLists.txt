@@ -43,6 +43,7 @@ add_subdirectory(ConfigNodePath)
 add_subdirectory(ConfigParameterLoader)
 add_subdirectory(ConfigParameterValidator)
 add_subdirectory(ConfigReader)
+add_subdirectory(EnvironmentVariables)
 
 # --------------------------------------------------------------------------------------------------
 # Code Coverage

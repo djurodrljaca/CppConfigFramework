@@ -1,0 +1,21 @@
+{
+    "environment_variables":
+    {
+        "TEST_DATA_DIR": "value set in the test has higher priority",
+        "IncludeDir": "${TEST_DATA_DIR}/includes"
+    },
+    
+    "includes":
+    [
+        {
+            "file_path": "${IncludeDir}/Include1.json"
+        },
+        {
+            "file_path": "${include2_file_path}"
+        }
+    ],
+
+    "config":
+    {
+    }
+}

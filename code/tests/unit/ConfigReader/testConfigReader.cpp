@@ -55,6 +55,7 @@ private slots:
     void testReadConfigWithNodeReference();
     void testReadConfigWithDerivedObject();
     void testReadConfigWithIncludes();
+    void testReadConfigWithIncludesAndEnv();
     void testReadConfigWithOnlyIncludes();
     void testReadConfigWithExternalConfigReferences();
     void testReadInvalidPathParameters();
@@ -90,6 +91,7 @@ void TestConfigReader::testReadValidConfig()
 {
     // Read config file
     const QString configFilePath(QStringLiteral(":/TestData/ValidConfig.json"));
+    auto environmentVariables = EnvironmentVariables::loadFromProcess();
     ConfigReader configReader;
     QString error;
 
@@ -97,7 +99,8 @@ void TestConfigReader::testReadValidConfig()
                                     QDir::current(),
                                     ConfigNodePath::ROOT_PATH,
                                     ConfigNodePath::ROOT_PATH,
-                                    {},
+                                    std::vector<const ConfigObjectNode *>(),
+                                    &environmentVariables,
                                     &error);
     QVERIFY(config);
 
@@ -162,6 +165,7 @@ void TestConfigReader::testReadConfigWithNodeReference()
 {
     // Read config file
     const QString configFilePath(QStringLiteral(":/TestData/ConfigWithNodeReferences.json"));
+    auto environmentVariables = EnvironmentVariables::loadFromProcess();
     ConfigReader configReader;
     QString error;
 
@@ -169,7 +173,8 @@ void TestConfigReader::testReadConfigWithNodeReference()
                                     QDir::current(),
                                     ConfigNodePath::ROOT_PATH,
                                     ConfigNodePath::ROOT_PATH,
-                                    {},
+                                    std::vector<const ConfigObjectNode *>(),
+                                    &environmentVariables,
                                     &error);
     QVERIFY(config);
 
@@ -218,6 +223,7 @@ void TestConfigReader::testReadConfigWithDerivedObject()
 {
     // Read config file
     const QString configFilePath(QStringLiteral(":/TestData/ConfigWithDerivedObjects.json"));
+    auto environmentVariables = EnvironmentVariables::loadFromProcess();
     ConfigReader configReader;
     QString error;
 
@@ -225,7 +231,8 @@ void TestConfigReader::testReadConfigWithDerivedObject()
                                     QDir::current(),
                                     ConfigNodePath::ROOT_PATH,
                                     ConfigNodePath::ROOT_PATH,
-                                    {},
+                                    std::vector<const ConfigObjectNode *>(),
+                                    &environmentVariables,
                                     &error);
     QVERIFY(config);
 
@@ -329,6 +336,7 @@ void TestConfigReader::testReadConfigWithIncludes()
 {
     // Read config file
     const QString configFilePath(QStringLiteral(":/TestData/ConfigWithIncludes.json"));
+    auto environmentVariables = EnvironmentVariables::loadFromProcess();
     ConfigReader configReader;
     QString error;
 
@@ -336,7 +344,8 @@ void TestConfigReader::testReadConfigWithIncludes()
                                     QDir::current(),
                                     ConfigNodePath::ROOT_PATH,
                                     ConfigNodePath::ROOT_PATH,
-                                    {},
+                                    std::vector<const ConfigObjectNode *>(),
+                                    &environmentVariables,
                                     &error);
     QVERIFY(config);
     QVERIFY(config->isObject());
@@ -416,12 +425,14 @@ void TestConfigReader::testReadConfigWithIncludes()
     }
 }
 
-// Test: read a config file with only includes (empty config) --------------------------------------
+// Test: read a config file with includes and environment variables --------------------------------
 
-void TestConfigReader::testReadConfigWithOnlyIncludes()
+void TestConfigReader::testReadConfigWithIncludesAndEnv()
 {
     // Read config file
-    const QString configFilePath(QStringLiteral(":/TestData/ConfigWithOnlyIncludes.json"));
+    const QString configFilePath(QStringLiteral(":/TestData/ConfigWithIncludesAndEnv.json"));
+    auto environmentVariables = EnvironmentVariables::loadFromProcess();
+    environmentVariables.setValue("TEST_DATA_DIR", ":/TestData");
     ConfigReader configReader;
     QString error;
 
@@ -429,7 +440,46 @@ void TestConfigReader::testReadConfigWithOnlyIncludes()
                                     QDir::current(),
                                     ConfigNodePath::ROOT_PATH,
                                     ConfigNodePath::ROOT_PATH,
-                                    {},
+                                    std::vector<const ConfigObjectNode *>(),
+                                    &environmentVariables,
+                                    &error);
+    QVERIFY(config);
+    QVERIFY(config->isObject());
+    QCOMPARE(config->count(), 2);
+
+    // Check "/included_value1"
+    {
+        const auto *included_value1 = config->member("included_value1");
+        QVERIFY(included_value1 != nullptr);
+        QVERIFY(included_value1->isValue());
+        QCOMPARE(included_value1->toValue().value(), 1);
+    }
+
+    // Check "/included_value2"
+    {
+        const auto *included_value2 = config->member("included_value2");
+        QVERIFY(included_value2 != nullptr);
+        QVERIFY(included_value2->isValue());
+        QCOMPARE(included_value2->toValue().value(), 2);
+    }
+}
+
+// Test: read a config file with only includes (empty config) --------------------------------------
+
+void TestConfigReader::testReadConfigWithOnlyIncludes()
+{
+    // Read config file
+    const QString configFilePath(QStringLiteral(":/TestData/ConfigWithOnlyIncludes.json"));
+    auto environmentVariables = EnvironmentVariables::loadFromProcess();
+    ConfigReader configReader;
+    QString error;
+
+    auto config = configReader.read(configFilePath,
+                                    QDir::current(),
+                                    ConfigNodePath::ROOT_PATH,
+                                    ConfigNodePath::ROOT_PATH,
+                                    std::vector<const ConfigObjectNode *>(),
+                                    &environmentVariables,
                                     &error);
     QVERIFY(config);
     QVERIFY(config->isObject());
@@ -459,6 +509,7 @@ void TestConfigReader::testReadConfigWithExternalConfigReferences()
     // Read config file
     const QString configFilePath(
                 QStringLiteral(":/TestData/ConfigWithExternalConfigReferences.json"));
+    auto environmentVariables = EnvironmentVariables::loadFromProcess();
     ConfigReader configReader;
     QString error;
 
@@ -466,7 +517,8 @@ void TestConfigReader::testReadConfigWithExternalConfigReferences()
                                     QDir::current(),
                                     ConfigNodePath::ROOT_PATH,
                                     ConfigNodePath::ROOT_PATH,
-                                    {},
+                                    std::vector<const ConfigObjectNode *>(),
+                                    &environmentVariables,
                                     &error);
     QVERIFY(config);
     QVERIFY(config->isObject());
@@ -513,6 +565,7 @@ void TestConfigReader::testReadInvalidPathParameters()
 
     // Read config file
     const QString configFilePath(filePath);
+    auto environmentVariables = EnvironmentVariables::loadFromProcess();
     ConfigReader configReader;
     QString error;
 
@@ -520,10 +573,11 @@ void TestConfigReader::testReadInvalidPathParameters()
                                     QDir::current(),
                                     ConfigNodePath(sourceNodePath),
                                     ConfigNodePath(destinationNodePath),
-                                    {},
+                                    std::vector<const ConfigObjectNode *>(),
+                                    &environmentVariables,
                                     &error);
-    qDebug() << "TestConfigReader::testReadInvalidPathParameters: error string:" << error;
     QVERIFY(!config);
+    qDebug() << "TestConfigReader::testReadInvalidPathParameters: error string:" << error;
 }
 
 void TestConfigReader::testReadInvalidPathParameters_data()
@@ -547,6 +601,7 @@ void TestConfigReader::testReadInvalidExternalConfigsParameter()
 {
     // Read config file
     const QString configFilePath(QStringLiteral(":/TestData/ValidConfig.json"));
+    auto environmentVariables = EnvironmentVariables::loadFromProcess();
     ConfigReader configReader;
     QString error;
 
@@ -554,10 +609,11 @@ void TestConfigReader::testReadInvalidExternalConfigsParameter()
                                     QDir::current(),
                                     ConfigNodePath::ROOT_PATH,
                                     ConfigNodePath::ROOT_PATH,
-                                    {nullptr},
+                                    std::vector<const ConfigObjectNode *> {nullptr},
+                                    &environmentVariables,
                                     &error);
-    qDebug() << "TestConfigReader::testReadInvalidExternalConfigsParameter: error string:" << error;
     QVERIFY(!config);
+    qDebug() << "TestConfigReader::testReadInvalidExternalConfigsParameter: error string:" << error;
 }
 
 // Test: read an invalid config file ---------------------------------------------------------------
@@ -567,6 +623,7 @@ void TestConfigReader::testReadInvalidConfigFile()
     QFETCH(QString, filePath);
 
     // Read config file
+    auto environmentVariables = EnvironmentVariables::loadFromProcess();
     ConfigReader configReader;
     QString error;
 
@@ -574,10 +631,11 @@ void TestConfigReader::testReadInvalidConfigFile()
                                     QDir::current(),
                                     ConfigNodePath::ROOT_PATH,
                                     ConfigNodePath::ROOT_PATH,
-                                    {},
+                                    std::vector<const ConfigObjectNode *>(),
+                                    &environmentVariables,
                                     &error);
-    qDebug() << "TestConfigReader::testReadInvalidConfigFile: error string:" << error;
     QVERIFY(!config);
+    qDebug() << "TestConfigReader::testReadInvalidConfigFile: error string:" << error;
 }
 
 void TestConfigReader::testReadInvalidConfigFile_data()
@@ -627,8 +685,6 @@ void TestConfigReader::testReadInvalidConfigFile_data()
     QTest::newRow("ConfigUnresolvedReference") << ":/TestData/ConfigUnresolvedReference.json";
     QTest::newRow("ConfigUnresolvableExternalConfigReferences")
             << ":/TestData/ConfigUnresolvableExternalConfigReferences.json";
-
-    // TODO: prepare more test data for transformConfig() method
 }
 
 // Main function -----------------------------------------------------------------------------------
