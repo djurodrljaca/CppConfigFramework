@@ -2,7 +2,10 @@
     "environment_variables":
     {
         "TEST_DATA_DIR": "value set in the test has higher priority",
-        "IncludeDir": "${TEST_DATA_DIR}/includes"
+        "IncludeDir": "${TEST_DATA_DIR}/includes",
+        "TestValue1": true,
+        "TestValue2": false,
+        "TestValue3": 1
     },
     
     "includes":
@@ -17,5 +20,20 @@
 
     "config":
     {
+        "$value": "Value ${TestValue3}",
+        "$array":
+        [
+            {
+                "k${TestValue1}": "v${TestValue1}"
+            },
+            {
+                "k${TestValue2}": "v${TestValue2}"
+            }
+        ],
+        "$object":
+        {
+            "value1": "v${TestValue1}",
+            "value2": "v${TestValue2}"
+        }
     }
 }

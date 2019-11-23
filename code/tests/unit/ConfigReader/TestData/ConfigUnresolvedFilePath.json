@@ -1,0 +1,16 @@
+{
+    "environment_variables":
+    {
+    },
+    
+    "includes":
+    [
+        {
+            "file_path": "${TestInvalidEnvVar}"
+        }
+    ],
+
+    "config":
+    {
+    }
+}

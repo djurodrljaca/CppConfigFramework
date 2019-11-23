@@ -49,5 +49,10 @@
         <file>TestData/ConfigUnresolvableExternalConfigReferences.json</file>
         <file>TestData/IncludeWithUnresolvableExternalConfigReferences.json</file>
         <file>TestData/IncludeWithInvalidDerivedObjectBase.json</file>
+        <file>TestData/ConfigUnresolvedFilePath.json</file>
+        <file>TestData/ConfigInvalidEnvVar1.json</file>
+        <file>TestData/ConfigInvalidEnvVar2.json</file>
+        <file>TestData/ConfigInvalidEnvVar3.json</file>
+        <file>TestData/ConfigInvalidEnvVar4.json</file>
     </qresource>
 </RCC>

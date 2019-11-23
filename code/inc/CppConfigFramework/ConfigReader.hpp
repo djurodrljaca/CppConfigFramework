@@ -182,17 +182,20 @@ private:
     /*!
      * Reads the 'config' member of the configuration file
      *
-     * \param   rootObject      Root JSON Object
-     * \param   externalConfigs Configuration nodes provided by an external source
-     * \param   includesConfig  Configuration node loaded from includes
+     * \param   rootObject              Root JSON Object
+     * \param   externalConfigs         Configuration nodes provided by an external source
+     * \param   includesConfig          Configuration node loaded from includes
+     * \param   environmentVariables    Environment variables
      *
      * \param[out]  error   Optional output for the error string
      *
      * \return  Configuration node instance or null in case of failure
      */
-    std::unique_ptr<ConfigObjectNode> readConfigMember(const QJsonObject &rootObject,
+    std::unique_ptr<ConfigObjectNode> readConfigMember(
+            const QJsonObject &rootObject,
             const std::vector<const ConfigObjectNode *> &externalConfigs,
             const ConfigObjectNode &includesConfig,
+            const EnvironmentVariables &environmentVariables,
             QString *error) const;
 
     /*!
@@ -209,16 +212,19 @@ private:
     /*!
      * Reads an Object node from the JSON Object
      *
-     * \param   jsonObject      JSON Object
-     * \param   currentNodePath Current node path
+     * \param   jsonObject              JSON Object
+     * \param   currentNodePath         Current node path
+     * \param   environmentVariables    Environment variables
      *
      * \param[out]  error   Optional output for the error string
      *
      * \return  Configuration node instance or null in case of failure
      */
-    static std::unique_ptr<ConfigObjectNode> readObjectNode(const QJsonObject &jsonObject,
-                                                            const ConfigNodePath &currentNodePath,
-                                                            QString *error);
+    static std::unique_ptr<ConfigObjectNode> readObjectNode(
+            const QJsonObject &jsonObject,
+            const ConfigNodePath &currentNodePath,
+            const EnvironmentVariables &environmentVariables,
+            QString *error);
 
     /*!
      * Reads a NodeReference node from the JSON String
@@ -238,8 +244,9 @@ private:
     /*!
      * Reads a DeriverObject node from the JSON Object
      *
-     * \param   jsonObject      JSON Object
-     * \param   currentNodePath Current node path
+     * \param   jsonObject              JSON Object
+     * \param   currentNodePath         Current node path
+     * \param   environmentVariables    Environment variables
      *
      * \param[out]  error   Optional output for the error string
      *
@@ -248,7 +255,50 @@ private:
     static std::unique_ptr<ConfigDerivedObjectNode> readDerivedObjectNode(
             const QJsonObject &jsonObject,
             const ConfigNodePath &currentNodePath,
+            const EnvironmentVariables &environmentVariables,
             QString *error);
+
+    /*!
+     * Resolves references to environment variables in a JSON Value
+     *
+     * \param   jsonValue               JSON Value
+     * \param   environmentVariables    Environment variables
+     *
+     * \param[out]  error   Optional output for the error string
+     *
+     * \return  Resolved JSON Value or an undefined value in case of failure
+     */
+    static QJsonValue resolveJsonValue(const QJsonValue &jsonValue,
+                                       const EnvironmentVariables &environmentVariables,
+                                       QString *error);
+
+    /*!
+     * Resolves references to environment variables in a JSON Array
+     *
+     * \param   jsonArray               JSON Array
+     * \param   environmentVariables    Environment variables
+     *
+     * \param[out]  error   Optional output for the error string
+     *
+     * \return  Resolved JSON Array or an undefined value in case of failure
+     */
+    static QJsonValue resolveJsonArray(const QJsonArray &jsonArray,
+                                       const EnvironmentVariables &environmentVariables,
+                                       QString *error);
+
+    /*!
+     * Resolves references to environment variables in a JSON Object
+     *
+     * \param   jsonObject               JSON Object
+     * \param   environmentVariables    Environment variables
+     *
+     * \param[out]  error   Optional output for the error string
+     *
+     * \return  Resolved JSON Object or an undefined value in case of failure
+     */
+    static QJsonValue resolveJsonObject(const QJsonObject &jsonObject,
+                                        const EnvironmentVariables &environmentVariables,
+                                        QString *error);
 
     /*!
      * Checks if a member name starts with one of the decorator characters
