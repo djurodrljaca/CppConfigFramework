@@ -71,3 +71,20 @@ void ConfigValueNode::setValue(const QVariant &value)
 }
 
 } // namespace CppConfigFramework
+
+// -------------------------------------------------------------------------------------------------
+
+bool operator==(const CppConfigFramework::ConfigValueNode &left,
+                const CppConfigFramework::ConfigValueNode &right)
+{
+    return ((left.nodePath() == right.nodePath()) &&
+            (left.value() == right.value()));
+}
+
+// -------------------------------------------------------------------------------------------------
+
+bool operator!=(const CppConfigFramework::ConfigValueNode &left,
+                const CppConfigFramework::ConfigValueNode &right)
+{
+    return !(left == right);
+}

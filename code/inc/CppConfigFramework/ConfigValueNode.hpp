@@ -102,4 +102,28 @@ private:
 
 } // namespace CppConfigFramework
 
+/*!
+ * Global "equal to" operator for ConfigValueNode
+ *
+ * \param   left    Node to compare
+ * \param   right   Node to compare
+ *
+ * \retval  true    Nodes are equal
+ * \retval  false   Node are not equal
+ */
+CPPCONFIGFRAMEWORK_EXPORT bool operator==(const CppConfigFramework::ConfigValueNode &left,
+                                          const CppConfigFramework::ConfigValueNode &right);
+
+/*!
+ * Global "not equal to" operator for ConfigValueNode
+ *
+ * \param   left    Node to compare
+ * \param   right   Node to compare
+ *
+ * \retval  true    Node are not equal
+ * \retval  false   Node are equal
+ */
+CPPCONFIGFRAMEWORK_EXPORT bool operator!=(const CppConfigFramework::ConfigValueNode &left,
+                                          const CppConfigFramework::ConfigValueNode &right);
+
 #endif // CPPCONFIGFRAMEWORK_CONFIGVALUENODE_HPP
