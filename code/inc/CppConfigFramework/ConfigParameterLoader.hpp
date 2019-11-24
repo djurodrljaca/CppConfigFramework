@@ -177,6 +177,10 @@ template<typename T>
 bool load(const QVariant &nodeValue, std::vector<T> *parameterValue, QString *error = nullptr);
 
 //! \copydoc    ConfigParameterLoader::load()
+template<typename T>
+bool load(const QVariant &nodeValue, QSet<T> *parameterValue, QString *error = nullptr);
+
+//! \copydoc    ConfigParameterLoader::load()
 template<typename K, typename V>
 bool load(const QVariant &nodeValue, QMap<K, V> *parameterValue, QString *error = nullptr);
 
@@ -471,6 +475,53 @@ bool load(const QVariant &nodeValue, std::vector<T> *parameterValue, QString *er
         }
 
         container.push_back(value);
+    }
+
+    *parameterValue = container;
+    return true;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+template<typename T>
+bool load(const QVariant &nodeValue, QSet<T> *parameterValue, QString *error)
+{
+    if (!nodeValue.canConvert<QVariantList>())
+    {
+        if (error != nullptr)
+        {
+            *error = QStringLiteral("Node value must be an Array!");
+        }
+        return false;
+    }
+
+    auto iterable = nodeValue.value<QSequentialIterable>();
+    QSet<T> container;
+
+    for (const QVariant &item : iterable)
+    {
+        T value;
+
+        if (!load(item, &value, error))
+        {
+            if (error != nullptr)
+            {
+                *error = QString("Failed to load the element at index [%1]! Inner error: [%2]")
+                         .arg(container.size()).arg(*error);
+            }
+            return false;
+        }
+
+        if (container.contains(value))
+        {
+            if (error != nullptr)
+            {
+                *error = QString("The element at index [%1] is a duplicate!").arg(container.size());
+            }
+            return false;
+        }
+
+        container.insert(value);
     }
 
     *parameterValue = container;

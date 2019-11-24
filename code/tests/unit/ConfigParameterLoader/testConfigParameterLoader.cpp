@@ -40,6 +40,7 @@ using TestList = QList<QDate>;
 using TestStdList = std::list<QTime>;
 using TestVector = QVector<float>;
 using TestStdVector = std::vector<double>;
+using TestSet = QSet<int>;
 using TestMap = QMap<QString, int>;
 using TestStdMap = std::map<QString, int>;
 using TestHash = QHash<QString, int>;
@@ -205,6 +206,9 @@ private slots:
 
     void testStdVector();
     void testStdVector_data();
+
+    void testSet();
+    void testSet_data();
 
     void testMap();
     void testMap_data();
@@ -4447,6 +4451,66 @@ void TestConfigParameterLoader::testStdVector_data()
 
     // Invalid type
     QTest::newRow("Invalid: type") << QVariant::fromValue(1) << TestStdVector() << false;
+}
+
+// Test: load set value ----------------------------------------------------------------------------
+
+void TestConfigParameterLoader::testSet()
+{
+    QFETCH(QVariant, nodeValue);
+    QFETCH(TestSet, expectedParameterValue);
+    QFETCH(bool, expectedResult);
+
+    TestSet parameterValue;
+    QString error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
+    qDebug() << "TestConfigParameterLoader::testSet: error string:" << error;
+    QCOMPARE(parameterValue, expectedParameterValue);
+}
+
+void TestConfigParameterLoader::testSet_data()
+{
+    QTest::addColumn<QVariant>("nodeValue");
+    QTest::addColumn<TestSet>("expectedParameterValue");
+    QTest::addColumn<bool>("expectedResult");
+
+    // string list
+    QTest::newRow("string list: valid") << QVariant(QStringList { "1", "3", "5" } )
+                                        << TestSet { 1, 3, 5 }
+                                        << true;
+    QTest::newRow("string list: empty") << QVariant(QStringList()) << TestSet() << true;
+    QTest::newRow("string list: invalid") << QVariant(QStringList { "asd", "3", "5" } )
+                                          << TestSet()
+                                          << false;
+    QTest::newRow("string list: duplicates") << QVariant(QStringList { "1", "3", "1", "5" } )
+                                             << TestSet()
+                                             << false;
+
+    // int set
+    QTest::newRow("int vector: valid") << QVariant::fromValue(TestSet { 1, 3, 5 } )
+                                       << TestSet { 1, 3, 5 }
+                                       << true;
+    QTest::newRow("int vector: empty") << QVariant::fromValue(TestSet())
+                                       << TestSet()
+                                       << true;
+
+    // variant list
+    QTest::newRow("variant list: valid") << QVariant(QVariantList { "1", 3, 5 } )
+                                         << TestSet { 1, 3, 5 }
+                                         << true;
+    QTest::newRow("variant list: empty") << QVariant(QVariantList()) << TestSet() << true;
+    QTest::newRow("variant list: invalid") << QVariant(QVariantList { "asd", "3", "5" } )
+                                           << TestSet()
+                                           << false;
+    QTest::newRow("variant list: duplicates") << QVariant(QVariantList { 1, 3, 5, 3 } )
+                                              << TestSet()
+                                              << false;
+
+    // null node
+    QTest::newRow("null node value") << QVariant() << TestSet() << false;
+
+    // Invalid type
+    QTest::newRow("Invalid: type") << QVariant::fromValue(1) << TestSet() << false;
 }
 
 // Test: load map value ----------------------------------------------------------------------------
