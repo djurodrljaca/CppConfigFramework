@@ -269,3 +269,85 @@ void ConfigObjectNode::apply(const ConfigObjectNode &other)
 }
 
 } // namespace CppConfigFramework
+
+// -------------------------------------------------------------------------------------------------
+
+bool operator==(const CppConfigFramework::ConfigObjectNode &left,
+                const CppConfigFramework::ConfigObjectNode &right)
+{
+    if ((left.nodePath() != right.nodePath()) ||
+        (left.count() != right.count()))
+    {
+        return false;
+    }
+
+    for (const QString &name : left.names())
+    {
+        const auto *leftMemberNode = left.member(name);
+        const auto *rightMemberNode = right.member(name);
+
+        if (rightMemberNode == nullptr)
+        {
+            return false;
+        }
+
+        if (leftMemberNode->type() != rightMemberNode->type())
+        {
+            return false;
+        }
+
+        switch (leftMemberNode->type())
+        {
+            case CppConfigFramework::ConfigNode::Type::Value:
+            {
+                if (leftMemberNode->toValue() != rightMemberNode->toValue())
+                {
+                    return false;
+                }
+                break;
+            }
+
+            case CppConfigFramework::ConfigNode::Type::Object:
+            {
+                if (leftMemberNode->toObject() == rightMemberNode->toObject())
+                {
+                    return false;
+                }
+                break;
+            }
+
+            case CppConfigFramework::ConfigNode::Type::NodeReference:
+            {
+                if (leftMemberNode->toNodeReference() == rightMemberNode->toNodeReference())
+                {
+                    return false;
+                }
+                break;
+            }
+
+            case CppConfigFramework::ConfigNode::Type::DerivedObject:
+            {
+                if (leftMemberNode->toDerivedObject() == rightMemberNode->toDerivedObject())
+                {
+                    return false;
+                }
+                break;
+            }
+
+            default:
+            {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+bool operator!=(const CppConfigFramework::ConfigObjectNode &left,
+                const CppConfigFramework::ConfigObjectNode &right)
+{
+    return !(left == right);
+}
