@@ -207,8 +207,8 @@ bool ConfigLoader::loadConfigFromNode(const ConfigNode &node, QString *error)
     if (!loadConfigParameters(node.toObject(), &loadingError))
     {
         const QString errorString = QString("Failed to load the configuration parameters [%1]! "
-                                            "Inner error: [%2]")
-                                    .arg(node.nodePath().path(), loadingError);
+                                            "Error: [%2]").arg(node.nodePath().path(),
+                                                               loadingError);
         handleError(errorString);
 
         if (error != nullptr)
@@ -223,7 +223,7 @@ bool ConfigLoader::loadConfigFromNode(const ConfigNode &node, QString *error)
 
     if (!validationError.isEmpty())
     {
-        const QString errorString = QString("Configuration [%1] is not valid! Inner error: [%2]")
+        const QString errorString = QString("Configuration [%1] is not valid! Error: [%2]")
                                     .arg(node.nodePath().path(), validationError);
         handleError(errorString);
 
