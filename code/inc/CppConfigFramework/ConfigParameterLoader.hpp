@@ -282,7 +282,7 @@ bool load(const QVariant &nodeValue, QPair<T1, T2> *parameterValue, QString *err
     {
         if (error != nullptr)
         {
-            *error = QString("The 'first' value is invalid! Inner error: [%1]").arg(*error);
+            *error = QString("The 'first' value is invalid! Error: [%1]").arg(*error);
         }
         return false;
     }
@@ -294,7 +294,7 @@ bool load(const QVariant &nodeValue, QPair<T1, T2> *parameterValue, QString *err
     {
         if (error != nullptr)
         {
-            *error = QString("The 'second' value is invalid! Inner error: [%1]").arg(*error);
+            *error = QString("The 'second' value is invalid! Error: [%1]").arg(*error);
         }
         return false;
     }
@@ -341,7 +341,7 @@ bool load(const QVariant &nodeValue, std::pair<T1, T2> *parameterValue, QString 
     {
         if (error != nullptr)
         {
-            *error = QString("The 'first' value is invalid! Inner error: [%1]").arg(*error);
+            *error = QString("The 'first' value is invalid! Error: [%1]").arg(*error);
         }
         return false;
     }
@@ -353,7 +353,7 @@ bool load(const QVariant &nodeValue, std::pair<T1, T2> *parameterValue, QString 
     {
         if (error != nullptr)
         {
-            *error = QString("The 'second' value is invalid! Inner error: [%1]").arg(*error);
+            *error = QString("The 'second' value is invalid! Error: [%1]").arg(*error);
         }
         return false;
     }
@@ -389,7 +389,7 @@ bool load(const QVariant &nodeValue, QList<T> *parameterValue, QString *error)
         {
             if (error != nullptr)
             {
-                *error = QString("Failed to load the element at index [%1]! Inner error: [%2]")
+                *error = QString("Failed to load the element at index [%1]! Error: [%2]")
                          .arg(container.size()).arg(*error);
             }
             return false;
@@ -427,7 +427,7 @@ bool load(const QVariant &nodeValue, std::list<T> *parameterValue, QString *erro
         {
             if (error != nullptr)
             {
-                *error = QString("Failed to load the element at index [%1]! Inner error: [%2]")
+                *error = QString("Failed to load the element at index [%1]! Error: [%2]")
                          .arg(container.size()).arg(*error);
             }
             return false;
@@ -466,7 +466,7 @@ bool load(const QVariant &nodeValue, QVector<T> *parameterValue, QString *error)
         {
             if (error != nullptr)
             {
-                *error = QString("Failed to load the element at index [%1]! Inner error: [%2]")
+                *error = QString("Failed to load the element at index [%1]! Error: [%2]")
                          .arg(container.size()).arg(*error);
             }
             return false;
@@ -505,7 +505,7 @@ bool load(const QVariant &nodeValue, std::vector<T> *parameterValue, QString *er
         {
             if (error != nullptr)
             {
-                *error = QString("Failed to load the element at index [%1]! Inner error: [%2]")
+                *error = QString("Failed to load the element at index [%1]! Error: [%2]")
                          .arg(container.size()).arg(*error);
             }
             return false;
@@ -543,7 +543,7 @@ bool load(const QVariant &nodeValue, QSet<T> *parameterValue, QString *error)
         {
             if (error != nullptr)
             {
-                *error = QString("Failed to load the element at index [%1]! Inner error: [%2]")
+                *error = QString("Failed to load the element at index [%1]! Error: [%2]")
                          .arg(container.size()).arg(*error);
             }
             return false;
@@ -591,7 +591,7 @@ bool load(const QVariant &nodeValue, QMap<K, V> *parameterValue, QString *error)
         {
             if (error != nullptr)
             {
-                *error = QString("Failed to load the member's key! Inner error: [%1]").arg(*error);
+                *error = QString("Failed to load the member's key! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -603,8 +603,7 @@ bool load(const QVariant &nodeValue, QMap<K, V> *parameterValue, QString *error)
         {
             if (error != nullptr)
             {
-                *error = QString("Failed to load the member's value! Inner error: [%1]")
-                         .arg(*error);
+                *error = QString("Failed to load the member's value! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -642,7 +641,7 @@ bool load(const QVariant &nodeValue, std::map<K, V> *parameterValue, QString *er
         {
             if (error != nullptr)
             {
-                *error = QString("Failed to load the member's key! Inner error: [%1]").arg(*error);
+                *error = QString("Failed to load the member's key! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -654,8 +653,7 @@ bool load(const QVariant &nodeValue, std::map<K, V> *parameterValue, QString *er
         {
             if (error != nullptr)
             {
-                *error = QString("Failed to load the member's value! Inner error: [%1]")
-                         .arg(*error);
+                *error = QString("Failed to load the member's value! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -693,7 +691,7 @@ bool load(const QVariant &nodeValue, QHash<K, V> *parameterValue, QString *error
         {
             if (error != nullptr)
             {
-                *error = QString("Failed to load the member's key! Inner error: [%1]").arg(*error);
+                *error = QString("Failed to load the member's key! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -705,8 +703,7 @@ bool load(const QVariant &nodeValue, QHash<K, V> *parameterValue, QString *error
         {
             if (error != nullptr)
             {
-                *error = QString("Failed to load the member's value! Inner error: [%1]")
-                         .arg(*error);
+                *error = QString("Failed to load the member's value! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -744,7 +741,7 @@ bool load(const QVariant &nodeValue, std::unordered_map<K, V> *parameterValue, Q
         {
             if (error != nullptr)
             {
-                *error = QString("Failed to load the member's key! Inner error: [%1]").arg(*error);
+                *error = QString("Failed to load the member's key! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -756,8 +753,7 @@ bool load(const QVariant &nodeValue, std::unordered_map<K, V> *parameterValue, Q
         {
             if (error != nullptr)
             {
-                *error = QString("Failed to load the member's value! Inner error: [%1]")
-                         .arg(*error);
+                *error = QString("Failed to load the member's value! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -795,7 +791,7 @@ bool load(const QVariant &nodeValue, QMultiMap<K, V> *parameterValue, QString *e
         {
             if (error != nullptr)
             {
-                *error = QString("Failed to load the member's key! Inner error: [%1]").arg(*error);
+                *error = QString("Failed to load the member's key! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -807,8 +803,7 @@ bool load(const QVariant &nodeValue, QMultiMap<K, V> *parameterValue, QString *e
         {
             if (error != nullptr)
             {
-                *error = QString("Failed to load the member's values! Inner error: [%1]")
-                         .arg(*error);
+                *error = QString("Failed to load the member's values! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -849,7 +844,7 @@ bool load(const QVariant &nodeValue, QMultiHash<K, V> *parameterValue, QString *
         {
             if (error != nullptr)
             {
-                *error = QString("Failed to load the member's key! Inner error: [%2]").arg(*error);
+                *error = QString("Failed to load the member's key! Error: [%2]").arg(*error);
             }
             return false;
         }
@@ -861,8 +856,7 @@ bool load(const QVariant &nodeValue, QMultiHash<K, V> *parameterValue, QString *
         {
             if (error != nullptr)
             {
-                *error = QString("Failed to load the member's values! Inner error: [%1]")
-                         .arg(*error);
+                *error = QString("Failed to load the member's values! Error: [%1]").arg(*error);
             }
             return false;
         }
