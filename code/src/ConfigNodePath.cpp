@@ -56,20 +56,6 @@ ConfigNodePath::ConfigNodePath(const QString &path)
 
 // -------------------------------------------------------------------------------------------------
 
-bool ConfigNodePath::operator==(const ConfigNodePath &other) const
-{
-    return (m_path == other.m_path);
-}
-
-// -------------------------------------------------------------------------------------------------
-
-bool ConfigNodePath::operator!=(const ConfigNodePath &other) const
-{
-    return (m_path != other.m_path);
-}
-
-// -------------------------------------------------------------------------------------------------
-
 bool ConfigNodePath::isRoot() const
 {
     return (m_path == ROOT_PATH_VALUE);
@@ -398,3 +384,19 @@ bool ConfigNodePath::validateNodeName(const QString &name)
 }
 
 } // namespace CppConfigFramework
+
+// -------------------------------------------------------------------------------------------------
+
+bool operator==(const CppConfigFramework::ConfigNodePath &left,
+                const CppConfigFramework::ConfigNodePath &right)
+{
+    return (left.path() == right.path());
+}
+
+// -------------------------------------------------------------------------------------------------
+
+bool operator!=(const CppConfigFramework::ConfigNodePath &left,
+                const CppConfigFramework::ConfigNodePath &right)
+{
+    return !(left == right);
+}

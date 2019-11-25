@@ -84,15 +84,17 @@ bool convertBooleanValue(const T_IN inputValue, bool *outputValue, QString *erro
 
 bool convertBooleanValue(const double inputValue, bool *outputValue, QString *error)
 {
+    constexpr double limit = 1e-3;
+
     // Check if value is very close to 0
-    if (std::abs(inputValue) < 1e-3)
+    if (std::abs(inputValue) < limit)
     {
         *outputValue = false;
         return true;
     }
 
     // Check if value is very close to 1
-    if (std::abs(inputValue - 1.0) < 1e-3)
+    if (std::abs(inputValue - 1.0) < limit)
     {
         *outputValue = true;
         return true;

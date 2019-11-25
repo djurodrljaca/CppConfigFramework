@@ -53,60 +53,20 @@ public:
      */
     ConfigNodePath(const QString &path);
 
-    /*!
-     * Copy constructor
-     *
-     * \param   other   Instance to copy
-     */
-    ConfigNodePath(const ConfigNodePath &other) = default;
+    //! Copy constructor
+    ConfigNodePath(const ConfigNodePath &) = default;
 
-    /*!
-     * Move constructor
-     *
-     * \param   other   Instance to move
-     */
-    ConfigNodePath(ConfigNodePath &&other) noexcept = default;
+    //! Move constructor
+    ConfigNodePath(ConfigNodePath &&) noexcept = default;
 
     //! Destructor
     ~ConfigNodePath() = default;
 
-    /*!
-     * Copy assignment operator
-     *
-     * \param   other   Instance to copy assign
-     *
-     * \return  Reference to this instance after the assignment is made
-     */
-    ConfigNodePath &operator=(const ConfigNodePath &other) = default;
+    //! Copy assignment operator
+    ConfigNodePath &operator=(const ConfigNodePath &) = default;
 
-    /*!
-     * Move assignment operator
-     *
-     * \param   other   Instance to move assign
-     *
-     * \return  Reference to this instance after the assignment is made
-     */
-    ConfigNodePath &operator=(ConfigNodePath &&other) noexcept = default;
-
-    /*!
-     * Operator "equal to"
-     *
-     * \param   other   Node path to compare
-     *
-     * \retval  true    This instance is equal to the other instance
-     * \retval  false   This instance is not equal to the other instance
-     */
-    bool operator==(const ConfigNodePath &other) const;
-
-    /*!
-     * Operator "not equal to"
-     *
-     * \param   other   Node path to compare
-     *
-     * \retval  true    This instance is not equal to the other instance
-     * \retval  false   This instance is equal to the other instance
-     */
-    bool operator!=(const ConfigNodePath &other) const;
+    //! Move assignment operator
+    ConfigNodePath &operator=(ConfigNodePath &&) noexcept = default;
 
     /*!
      * Checks if this is the root node path
@@ -261,5 +221,29 @@ private:
 };
 
 } // namespace CppConfigFramework
+
+/*!
+ * Global "equal to" operator for CppConfigFramework::ConfigNodePath
+ *
+ * \param   left    Node path
+ * \param   right   Node path
+ *
+ * \retval  true    Node paths are equal
+ * \retval  false   Node paths are not equal
+ */
+CPPCONFIGFRAMEWORK_EXPORT bool operator==(const CppConfigFramework::ConfigNodePath &left,
+                                          const CppConfigFramework::ConfigNodePath &right);
+
+/*!
+ * Global "not equal to" operator for CppConfigFramework::ConfigNodePath
+ *
+ * \param   left    Node path
+ * \param   right   Node path
+ *
+ * \retval  true    Node paths are not equal
+ * \retval  false   Node paths are equal
+ */
+CPPCONFIGFRAMEWORK_EXPORT bool operator!=(const CppConfigFramework::ConfigNodePath &left,
+                                          const CppConfigFramework::ConfigNodePath &right);
 
 #endif // CPPCONFIGFRAMEWORK_CONFIGNODEPATH_HPP

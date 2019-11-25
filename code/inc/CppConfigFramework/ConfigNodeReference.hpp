@@ -51,29 +51,19 @@ public:
                         ConfigObjectNode *parent = nullptr);
 
     //! Copy constructor is disabled
-    ConfigNodeReference(const ConfigNodeReference &other) = delete;
+    ConfigNodeReference(const ConfigNodeReference &) = delete;
 
-    /*!
-     * Move constructor
-     *
-     * \param   other   Instance to move
-     */
-    ConfigNodeReference(ConfigNodeReference &&other) noexcept = default;
+    //! Move constructor
+    ConfigNodeReference(ConfigNodeReference &&) noexcept = default;
 
     //! Destructor
     ~ConfigNodeReference() override = default;
 
     //! Copy assignment operator is disabled
-    ConfigNodeReference &operator=(const ConfigNodeReference &other) = delete;
+    ConfigNodeReference &operator=(const ConfigNodeReference &) = delete;
 
-    /*!
-     * Move assignment operator
-     *
-     * \param   other   Instance to move assign
-     *
-     * \return  Reference to this instance after the assignment is made
-     */
-    ConfigNodeReference &operator=(ConfigNodeReference &&other) noexcept = default;
+    //! Move assignment operator
+    ConfigNodeReference &operator=(ConfigNodeReference &&) noexcept = default;
 
     //! \copydoc    ConfigNode::clone()
     std::unique_ptr<ConfigNode> clone() const override;
@@ -103,10 +93,10 @@ private:
 } // namespace CppConfigFramework
 
 /*!
- * Global "equal to" operator for ConfigNodeReference
+ * Global "equal to" operator for CppConfigFramework::ConfigNodeReference
  *
- * \param   left    Node to compare
- * \param   right   Node to compare
+ * \param   left    Node
+ * \param   right   Node
  *
  * \retval  true    Nodes are equal
  * \retval  false   Nodes are not equal
@@ -115,13 +105,13 @@ CPPCONFIGFRAMEWORK_EXPORT bool operator==(const CppConfigFramework::ConfigNodeRe
                                           const CppConfigFramework::ConfigNodeReference &right);
 
 /*!
- * Global "not equal to" operator for ConfigNodeReference
+ * Global "not equal to" operator for CppConfigFramework::ConfigNodeReference
  *
- * \param   left    Node to compare
- * \param   right   Node to compare
+ * \param   left    Node
+ * \param   right   Node
  *
- * \retval  true    Nodes are not equal
- * \retval  false   Nodes are equal
+ * \retval  true    Nodes are equal
+ * \retval  false   Nodes are not equal
  */
 CPPCONFIGFRAMEWORK_EXPORT bool operator!=(const CppConfigFramework::ConfigNodeReference &left,
                                           const CppConfigFramework::ConfigNodeReference &right);

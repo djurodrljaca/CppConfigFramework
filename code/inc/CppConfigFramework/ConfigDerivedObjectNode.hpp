@@ -25,7 +25,6 @@
 #include <CppConfigFramework/ConfigObjectNode.hpp>
 
 // Qt includes
-#include <QtCore/QList>
 
 // System includes
 
@@ -54,29 +53,19 @@ public:
                             ConfigObjectNode *parent = nullptr);
 
     //! Copy constructor is disabled
-    ConfigDerivedObjectNode(const ConfigDerivedObjectNode &other) = delete;
+    ConfigDerivedObjectNode(const ConfigDerivedObjectNode &) = delete;
 
-    /*!
-     * Move constructor
-     *
-     * \param   other   Instance to move
-     */
-    ConfigDerivedObjectNode(ConfigDerivedObjectNode &&other) noexcept = default;
+    //! Move constructor
+    ConfigDerivedObjectNode(ConfigDerivedObjectNode &&) noexcept = default;
 
     //! Destructor
     ~ConfigDerivedObjectNode() override = default;
 
     //! Copy assignment operator is disabled
-    ConfigDerivedObjectNode &operator=(const ConfigDerivedObjectNode &other) = delete;
+    ConfigDerivedObjectNode &operator=(const ConfigDerivedObjectNode &) = delete;
 
-    /*!
-     * Move assignment operator
-     *
-     * \param   other   Instance to move assign
-     *
-     * \return  Reference to this instance after the assignment is made
-     */
-    ConfigDerivedObjectNode &operator=(ConfigDerivedObjectNode &&other) noexcept = default;
+    //! Move assignment operator
+    ConfigDerivedObjectNode &operator=(ConfigDerivedObjectNode &&) noexcept = default;
 
     //! \copydoc    ConfigNode::clone()
     std::unique_ptr<ConfigNode> clone() const override;
@@ -123,25 +112,25 @@ private:
 } // namespace CppConfigFramework
 
 /*!
- * Global "equal to" operator for ConfigDerivedObjectNode
+ * Global "equal to" operator for CppConfigFramework::ConfigDerivedObjectNode
  *
- * \param   left    Node to compare
- * \param   right   Node to compare
+ * \param   left    Node
+ * \param   right   Node
  *
  * \retval  true    Nodes are equal
- * \retval  false   Node are not equal
+ * \retval  false   Nodes are not equal
  */
 CPPCONFIGFRAMEWORK_EXPORT bool operator==(const CppConfigFramework::ConfigDerivedObjectNode &left,
                                           const CppConfigFramework::ConfigDerivedObjectNode &right);
 
 /*!
- * Global "not equal to" operator for ConfigDerivedObjectNode
+ * Global "not equal to" operator for CppConfigFramework::ConfigDerivedObjectNode
  *
- * \param   left    Node to compare
- * \param   right   Node to compare
+ * \param   left    Node
+ * \param   right   Node
  *
- * \retval  true    Node are not equal
- * \retval  false   Node are equal
+ * \retval  true    Nodes are not equal
+ * \retval  false   Nodes are equal
  */
 CPPCONFIGFRAMEWORK_EXPORT bool operator!=(const CppConfigFramework::ConfigDerivedObjectNode &left,
                                           const CppConfigFramework::ConfigDerivedObjectNode &right);

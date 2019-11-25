@@ -47,42 +47,22 @@ class CPPCONFIGFRAMEWORK_EXPORT ConfigReader
 {
 public:
     //! Constructor
-    ConfigReader();
+    ConfigReader() = default;
 
-    /*!
-     * Copy constructor
-     *
-     * \param   other   Instance to copy
-     */
-    ConfigReader(const ConfigReader &other) = default;
+    //! Copy constructor
+    ConfigReader(const ConfigReader &) = default;
 
-    /*!
-     * Move constructor
-     *
-     * \param   other   Instance to move
-     */
-    ConfigReader(ConfigReader &&other) noexcept = default;
+    //! Move constructor
+    ConfigReader(ConfigReader &&) noexcept = default;
 
     //! Destructor
     ~ConfigReader() = default;
 
-    /*!
-     * Copy assignment operator
-     *
-     * \param   other   Instance to copy assign
-     *
-     * \return  Reference to this instance after the assignment is made
-     */
-    ConfigReader &operator=(const ConfigReader &other) = default;
+    //! Copy assignment operator
+    ConfigReader &operator=(const ConfigReader &) = default;
 
-    /*!
-     * Move assignment operator
-     *
-     * \param   other   Instance to move assign
-     *
-     * \return  Reference to this instance after the assignment is made
-     */
-    ConfigReader &operator=(ConfigReader &&other) noexcept = default;;
+    //! Move assignment operator
+    ConfigReader &operator=(ConfigReader &&) noexcept = default;
 
     /*!
      * Gets the max number of cycles for reference resolution procedure
@@ -445,8 +425,11 @@ private:
             QString *error);
 
 private:
-    //! Holds the max number of cycles for reference resolution procedure (default: 100 cycles)
-    uint32_t m_referenceResolutionMaxCycles;
+    //! Holds the default value for max number of cycles for reference resolution procedure
+    static constexpr uint32_t m_defaultReferenceResolutionMaxCycles = 100U;
+
+    //! Holds the max number of cycles for reference resolution procedure
+    uint32_t m_referenceResolutionMaxCycles = m_defaultReferenceResolutionMaxCycles;
 };
 
 } // namespace CppConfigFramework
