@@ -48,13 +48,6 @@
 namespace CppConfigFramework
 {
 
-ConfigReader::ConfigReader()
-    : m_referenceResolutionMaxCycles(100u)
-{
-}
-
-// -------------------------------------------------------------------------------------------------
-
 uint32_t ConfigReader::referenceResolutionMaxCycles() const
 {
     return m_referenceResolutionMaxCycles;
@@ -356,7 +349,7 @@ bool ConfigReader::readEnvironmentVariablesMember(const QJsonObject &rootObject,
         {
             case QJsonValue::Bool:
             {
-                value = jsonValue.toBool() ? "1" : "0";
+                value = jsonValue.toBool() ? QStringLiteral("1") : QStringLiteral("0");
                 break;
             }
 
@@ -1643,7 +1636,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::transformConfig(
     for (int i = 0; i < nodeNames.size(); i++)
     {
         // Create the next node in the node path
-        const QString nodeName = nodeNames.at(i);
+        const QString &nodeName = nodeNames.at(i);
 
         if (i == (nodeNames.size() - 1))
         {

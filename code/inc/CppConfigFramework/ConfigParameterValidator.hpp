@@ -35,6 +35,8 @@
 
 // -------------------------------------------------------------------------------------------------
 
+// TODO: replace this with functor types? Replace default with nullptr?
+
 namespace CppConfigFramework
 {
 

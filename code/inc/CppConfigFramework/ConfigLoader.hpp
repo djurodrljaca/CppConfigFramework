@@ -45,8 +45,23 @@ namespace CppConfigFramework
 class CPPCONFIGFRAMEWORK_EXPORT ConfigLoader
 {
 public:
+    //! Constructor
+    ConfigLoader() = default;
+
+    //! Copy constructor
+    ConfigLoader(const ConfigLoader &) = default;
+
+    //! Move constructor
+    ConfigLoader(ConfigLoader &&) = default;
+
     //! Destructor
     virtual ~ConfigLoader() = default;
+
+    //! Copy assignment operator
+    ConfigLoader &operator=(const ConfigLoader &) = default;
+
+    //! Move assignment operator
+    ConfigLoader &operator=(ConfigLoader &&) = default;
 
     /*!
      * Loads configuration parameters for this configuration structure
