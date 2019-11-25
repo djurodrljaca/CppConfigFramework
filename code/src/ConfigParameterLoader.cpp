@@ -450,6 +450,7 @@ bool loadFloatingPointParameter(const QVariant &nodeValue, T *parameterValue, QS
 namespace ConfigParameterLoader
 {
 
+template<>
 bool load(const QVariant &nodeValue, bool *parameterValue, QString *error)
 {
     switch (nodeValue.userType())
@@ -506,6 +507,7 @@ bool load(const QVariant &nodeValue, bool *parameterValue, QString *error)
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, int8_t *parameterValue, QString *error)
 {
     return Internal::loadIntegerParameter(nodeValue, parameterValue, error);
@@ -513,6 +515,7 @@ bool load(const QVariant &nodeValue, int8_t *parameterValue, QString *error)
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, uint8_t *parameterValue, QString *error)
 {
     return Internal::loadIntegerParameter(nodeValue, parameterValue, error);
@@ -520,6 +523,7 @@ bool load(const QVariant &nodeValue, uint8_t *parameterValue, QString *error)
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, int16_t *parameterValue, QString *error)
 {
     return Internal::loadIntegerParameter(nodeValue, parameterValue, error);
@@ -527,6 +531,7 @@ bool load(const QVariant &nodeValue, int16_t *parameterValue, QString *error)
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, uint16_t *parameterValue, QString *error)
 {
     return Internal::loadIntegerParameter(nodeValue, parameterValue, error);
@@ -534,6 +539,7 @@ bool load(const QVariant &nodeValue, uint16_t *parameterValue, QString *error)
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, int32_t *parameterValue, QString *error)
 {
     return Internal::loadIntegerParameter(nodeValue, parameterValue, error);
@@ -541,6 +547,7 @@ bool load(const QVariant &nodeValue, int32_t *parameterValue, QString *error)
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, uint32_t *parameterValue, QString *error)
 {
     return Internal::loadIntegerParameter(nodeValue, parameterValue, error);
@@ -548,6 +555,7 @@ bool load(const QVariant &nodeValue, uint32_t *parameterValue, QString *error)
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, int64_t *parameterValue, QString *error)
 {
     return Internal::loadIntegerParameter(nodeValue, parameterValue, error);
@@ -555,6 +563,7 @@ bool load(const QVariant &nodeValue, int64_t *parameterValue, QString *error)
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, uint64_t *parameterValue, QString *error)
 {
     return Internal::loadIntegerParameter(nodeValue, parameterValue, error);
@@ -562,6 +571,7 @@ bool load(const QVariant &nodeValue, uint64_t *parameterValue, QString *error)
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, float *parameterValue, QString *error)
 {
     return Internal::loadFloatingPointParameter(nodeValue, parameterValue, error);
@@ -569,6 +579,7 @@ bool load(const QVariant &nodeValue, float *parameterValue, QString *error)
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, double *parameterValue, QString *error)
 {
     return Internal::loadFloatingPointParameter(nodeValue, parameterValue, error);
@@ -576,6 +587,7 @@ bool load(const QVariant &nodeValue, double *parameterValue, QString *error)
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, QChar *parameterValue, QString *error)
 {
     const auto nodeValueType = nodeValue.type();
@@ -632,6 +644,7 @@ bool load(const QVariant &nodeValue, QChar *parameterValue, QString *error)
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, QString *parameterValue, QString *error)
 {
     // Check for the same type
@@ -698,6 +711,7 @@ bool load(const QVariant &nodeValue, QString *parameterValue, QString *error)
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, QByteArray *parameterValue, QString *error)
 {
     // Check for the same type
@@ -710,7 +724,7 @@ bool load(const QVariant &nodeValue, QByteArray *parameterValue, QString *error)
     // Convert it to string first and then to UTF8 encoded byte array
     QString value;
 
-    if (!load(nodeValue, &value))
+    if (!load(nodeValue, &value, nullptr))
     {
         if (error != nullptr)
         {
@@ -725,6 +739,7 @@ bool load(const QVariant &nodeValue, QByteArray *parameterValue, QString *error)
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, std::string *parameterValue, QString *error)
 {
     // Convert it to string first and then to the std string
@@ -741,6 +756,7 @@ bool load(const QVariant &nodeValue, std::string *parameterValue, QString *error
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, std::wstring *parameterValue, QString *error)
 {
     // Convert it to string first and then to the std string
@@ -757,6 +773,7 @@ bool load(const QVariant &nodeValue, std::wstring *parameterValue, QString *erro
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, std::u16string *parameterValue, QString *error)
 {
     // Convert it to string first and then to the std string
@@ -773,6 +790,7 @@ bool load(const QVariant &nodeValue, std::u16string *parameterValue, QString *er
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, std::u32string *parameterValue, QString *error)
 {
     // Convert it to string first and then to the std string
@@ -789,6 +807,7 @@ bool load(const QVariant &nodeValue, std::u32string *parameterValue, QString *er
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, QDate *parameterValue, QString *error)
 {
     // Check for the same type
@@ -812,7 +831,7 @@ bool load(const QVariant &nodeValue, QDate *parameterValue, QString *error)
     // Convert it to string first and then to date
     QString stringValue;
 
-    if (load(nodeValue, &stringValue))
+    if (load(nodeValue, &stringValue, nullptr))
     {
         const auto value = QDate::fromString(stringValue, Qt::ISODate);
 
@@ -840,6 +859,7 @@ bool load(const QVariant &nodeValue, QDate *parameterValue, QString *error)
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, QTime *parameterValue, QString *error)
 {
     // Check for the same type
@@ -863,7 +883,7 @@ bool load(const QVariant &nodeValue, QTime *parameterValue, QString *error)
     // Convert it to string first and then to time
     QString stringValue;
 
-    if (load(nodeValue, &stringValue))
+    if (load(nodeValue, &stringValue, nullptr))
     {
         const auto value = QTime::fromString(stringValue, Qt::ISODateWithMs);
 
@@ -891,6 +911,7 @@ bool load(const QVariant &nodeValue, QTime *parameterValue, QString *error)
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, QDateTime *parameterValue, QString *error)
 {
     // Check for the same type
@@ -914,7 +935,7 @@ bool load(const QVariant &nodeValue, QDateTime *parameterValue, QString *error)
     // Convert it to string first and then to datetime
     QString stringValue;
 
-    if (load(nodeValue, &stringValue))
+    if (load(nodeValue, &stringValue, nullptr))
     {
         const auto value = QDateTime::fromString(stringValue, Qt::ISODateWithMs);
 
@@ -942,6 +963,7 @@ bool load(const QVariant &nodeValue, QDateTime *parameterValue, QString *error)
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, QVariant *parameterValue, QString *error)
 {
     Q_UNUSED(error)
@@ -951,6 +973,7 @@ bool load(const QVariant &nodeValue, QVariant *parameterValue, QString *error)
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, QUrl *parameterValue, QString *error)
 {
     const auto nodeValueType = static_cast<QMetaType::Type>(nodeValue.type());
@@ -1000,6 +1023,7 @@ bool load(const QVariant &nodeValue, QUrl *parameterValue, QString *error)
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, QUuid *parameterValue, QString *error)
 {
     const auto nodeValueType = static_cast<QMetaType::Type>(nodeValue.type());
@@ -1052,6 +1076,7 @@ bool load(const QVariant &nodeValue, QUuid *parameterValue, QString *error)
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, QSize *parameterValue, QString *error)
 {
     const auto nodeValueType = static_cast<QMetaType::Type>(nodeValue.type());
@@ -1146,6 +1171,7 @@ bool load(const QVariant &nodeValue, QSize *parameterValue, QString *error)
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, QSizeF *parameterValue, QString *error)
 {
     const auto nodeValueType = static_cast<QMetaType::Type>(nodeValue.type());
@@ -1240,6 +1266,7 @@ bool load(const QVariant &nodeValue, QSizeF *parameterValue, QString *error)
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, QPoint *parameterValue, QString *error)
 {
     const auto nodeValueType = static_cast<QMetaType::Type>(nodeValue.type());
@@ -1308,6 +1335,7 @@ bool load(const QVariant &nodeValue, QPoint *parameterValue, QString *error)
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, QPointF *parameterValue, QString *error)
 {
     const auto nodeValueType = static_cast<QMetaType::Type>(nodeValue.type());
@@ -1376,6 +1404,7 @@ bool load(const QVariant &nodeValue, QPointF *parameterValue, QString *error)
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, QLine *parameterValue, QString *error)
 {
     const auto nodeValueType = static_cast<QMetaType::Type>(nodeValue.type());
@@ -1470,6 +1499,7 @@ bool load(const QVariant &nodeValue, QLine *parameterValue, QString *error)
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, QLineF *parameterValue, QString *error)
 {
     const auto nodeValueType = static_cast<QMetaType::Type>(nodeValue.type());
@@ -1572,6 +1602,7 @@ bool load(const QVariant &nodeValue, QLineF *parameterValue, QString *error)
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, QRect *parameterValue, QString *error)
 {
     const auto nodeValueType = static_cast<QMetaType::Type>(nodeValue.type());
@@ -1692,6 +1723,7 @@ bool load(const QVariant &nodeValue, QRect *parameterValue, QString *error)
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, QRectF *parameterValue, QString *error)
 {
     const auto nodeValueType = static_cast<QMetaType::Type>(nodeValue.type());
@@ -1812,6 +1844,7 @@ bool load(const QVariant &nodeValue, QRectF *parameterValue, QString *error)
 
 // -------------------------------------------------------------------------------------------------
 
+template<>
 bool load(const QVariant &nodeValue, QStringList *parameterValue, QString *error)
 {
     // Check for the same type
