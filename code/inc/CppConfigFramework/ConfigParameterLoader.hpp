@@ -46,6 +46,8 @@ namespace ConfigParameterLoader
 /*!
  * Loads the configuration parameter's value
  *
+ * \tparam  T   Parameter value type
+ *
  * \param   nodeValue   Configuration parameter's node value
  *
  * \param[out]  parameterValue  Output for the configuration parameter value
@@ -54,157 +56,192 @@ namespace ConfigParameterLoader
  * \retval  true    Success
  * \retval  false   Failure
  */
-bool load(const QVariant &nodeValue, bool *parameterValue, QString *error = nullptr);
+template<typename T>
+bool load(const QVariant &nodeValue, T *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, int8_t *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, bool *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, uint8_t *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, int8_t *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, int16_t *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, uint8_t *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, uint16_t *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, int16_t *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, int32_t *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, uint16_t *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, uint32_t *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, int32_t *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, int64_t *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, uint32_t *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, uint64_t *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, int64_t *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, float *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, uint64_t *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, double *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, float *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, QChar *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, double *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, QString *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, QChar *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, QByteArray *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, QString *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, std::string *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, QByteArray *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, std::wstring *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, std::string *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, std::u16string *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, std::wstring *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, std::u32string *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, std::u16string *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, QDate *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, std::u32string *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, QTime *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, QDate *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, QDateTime *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, QTime *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, QVariant *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, QDateTime *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, QUrl *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, QVariant *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, QUuid *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, QUrl *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, QSize *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, QUuid *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, QSizeF *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, QSize *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, QPoint *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, QSizeF *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, QPointF *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, QPoint *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, QLine *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, QPointF *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, QLineF *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, QLine *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, QRect *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, QLineF *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, QRectF *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, QRect *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
-bool load(const QVariant &nodeValue, QStringList *parameterValue, QString *error = nullptr);
+template<>
+bool load(const QVariant &nodeValue, QRectF *parameterValue, QString *error);
+
+//! \copydoc    ConfigParameterLoader::load()
+template<>
+bool load(const QVariant &nodeValue, QStringList *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<typename T1, typename T2>
-bool load(const QVariant &nodeValue, QPair<T1, T2> *parameterValue, QString *error = nullptr);
+bool load(const QVariant &nodeValue, QPair<T1, T2> *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<typename T1, typename T2>
-bool load(const QVariant &nodeValue, std::pair<T1, T2> *parameterValue, QString *error = nullptr);
+bool load(const QVariant &nodeValue, std::pair<T1, T2> *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<typename T>
-bool load(const QVariant &nodeValue, QList<T> *parameterValue, QString *error = nullptr);
+bool load(const QVariant &nodeValue, QList<T> *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<typename T>
-bool load(const QVariant &nodeValue, std::list<T> *parameterValue, QString *error = nullptr);
+bool load(const QVariant &nodeValue, std::list<T> *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<typename T>
-bool load(const QVariant &nodeValue, QVector<T> *parameterValue, QString *error = nullptr);
+bool load(const QVariant &nodeValue, QVector<T> *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<typename T>
-bool load(const QVariant &nodeValue, std::vector<T> *parameterValue, QString *error = nullptr);
+bool load(const QVariant &nodeValue, std::vector<T> *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<typename T>
-bool load(const QVariant &nodeValue, QSet<T> *parameterValue, QString *error = nullptr);
+bool load(const QVariant &nodeValue, QSet<T> *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<typename K, typename V>
-bool load(const QVariant &nodeValue, QMap<K, V> *parameterValue, QString *error = nullptr);
+bool load(const QVariant &nodeValue, QMap<K, V> *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<typename K, typename V>
-bool load(const QVariant &nodeValue, std::map<K, V> *parameterValue, QString *error = nullptr);
+bool load(const QVariant &nodeValue, std::map<K, V> *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<typename K, typename V>
-bool load(const QVariant &nodeValue, QHash<K, V> *parameterValue, QString *error = nullptr);
+bool load(const QVariant &nodeValue, QHash<K, V> *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<typename K, typename V>
-bool load(const QVariant &nodeValue,
-          std::unordered_map<K, V> *parameterValue,
-          QString *error = nullptr);
+bool load(const QVariant &nodeValue, std::unordered_map<K, V> *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<typename K, typename V>
-bool load(const QVariant &nodeValue, QMultiMap<K, V> *parameterValue, QString *error = nullptr);
+bool load(const QVariant &nodeValue, QMultiMap<K, V> *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<typename K, typename V>
-bool load(const QVariant &nodeValue, QMultiHash<K, V> *parameterValue, QString *error = nullptr);
+bool load(const QVariant &nodeValue, QMultiHash<K, V> *parameterValue, QString *error);
 
 // -------------------------------------------------------------------------------------------------
 // Template definitions
