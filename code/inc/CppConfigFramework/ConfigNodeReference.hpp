@@ -109,7 +109,7 @@ private:
  * \param   right   Node to compare
  *
  * \retval  true    Nodes are equal
- * \retval  false   Node are not equal
+ * \retval  false   Nodes are not equal
  */
 CPPCONFIGFRAMEWORK_EXPORT bool operator==(const CppConfigFramework::ConfigNodeReference &left,
                                           const CppConfigFramework::ConfigNodeReference &right);
@@ -120,8 +120,8 @@ CPPCONFIGFRAMEWORK_EXPORT bool operator==(const CppConfigFramework::ConfigNodeRe
  * \param   left    Node to compare
  * \param   right   Node to compare
  *
- * \retval  true    Node are not equal
- * \retval  false   Node are equal
+ * \retval  true    Nodes are not equal
+ * \retval  false   Nodes are equal
  */
 CPPCONFIGFRAMEWORK_EXPORT bool operator!=(const CppConfigFramework::ConfigNodeReference &left,
                                           const CppConfigFramework::ConfigNodeReference &right);
