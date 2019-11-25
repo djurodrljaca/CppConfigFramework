@@ -35,25 +35,18 @@
 
 // -------------------------------------------------------------------------------------------------
 
-// TODO: replace this with functor types? Replace default with nullptr?
-
 namespace CppConfigFramework
 {
 
 /*!
- * This is a base class for a configuration parameter validatior
+ * This configuration parameter validatior does not do any valudation, but just returns "true"
  *
  * \tparam  T   Data type of the value to validate
- *
- * \note    The default implementation just declares all values as valid
  */
 template<typename T>
-class ConfigParameterValidator
+class ConfigParameterDefaultValidator
 {
 public:
-    //! Destructor
-    virtual ~ConfigParameterValidator() = default;
-
     /*!
      * Validates the value
      *
@@ -64,7 +57,7 @@ public:
      * \retval  true    Value is valid
      * \retval  false   Value is not valid
      */
-    virtual bool validate(const T &value, QString *error = nullptr) const
+    bool operator()(const T &value, QString *error) const
     {
         Q_UNUSED(value)
         Q_UNUSED(error)
@@ -81,7 +74,7 @@ public:
  * \tparam  T   Data type of the value to validate
  */
 template<typename T>
-class ConfigParameterRangeValidator : public ConfigParameterValidator<T>
+class ConfigParameterRangeValidator
 {
 public:
     /*!
@@ -96,11 +89,8 @@ public:
     {
     }
 
-    //! Destructor
-    virtual ~ConfigParameterRangeValidator() = default;
-
-    //! \copydoc    ConfigParameterValidator<T>::validate()
-    virtual bool validate(const T &value, QString *error = nullptr) const
+    //! \copydoc    ConfigParameterDefaultValidator::operator()()
+    bool operator()(const T &value, QString *error) const
     {
         if (value < m_minValue)
         {
@@ -142,7 +132,7 @@ private:
  * \tparam  T   Data type of the value to validate
  */
 template<typename T>
-class ConfigParameterListValidator : public ConfigParameterValidator<T>
+class ConfigParameterListValidator
 {
 public:
     /*!
@@ -155,11 +145,8 @@ public:
     {
     }
 
-    //! Destructor
-    virtual ~ConfigParameterListValidator() = default;
-
-    //! \copydoc    ConfigParameterValidator<T>::validate()
-    virtual bool validate(const T &value, QString *error = nullptr) const
+    //! \copydoc    ConfigParameterDefaultValidator::operator()()
+    bool operator()(const T &value, QString *error) const
     {
         if (!m_validValues.contains(value))
         {
@@ -184,46 +171,6 @@ public:
 private:
     //! Holds the list of valid values
     const QList<T> m_validValues;
-};
-
-// -------------------------------------------------------------------------------------------------
-
-/*!
- * This configuration parameter validatior executes the specified "functor" (function, lambda,
- * "functor" object etc.)
- *
- * \tparam  T   Data type of the value to validate
- */
-template<typename T>
-class ConfigParameterGenericValidator : public ConfigParameterValidator<T>
-{
-public:
-    //! Functor type
-    using Functor = std::function<bool(const T &, QString *)>;
-
-public:
-    /*!
-     * Constructor
-     *
-     * \param   functor     Functor to use for validation
-     */
-    ConfigParameterGenericValidator(Functor functor)
-        : m_functor(functor)
-    {
-    }
-
-    //! Destructor
-    virtual ~ConfigParameterGenericValidator() = default;
-
-    //! \copydoc    ConfigParameterValidator<T>::validate()
-    virtual bool validate(const T &value, QString *error = nullptr) const
-    {
-        return m_functor(value, error);
-    }
-
-private:
-    //! Holds the list of allowed values
-    Functor m_functor;
 };
 
 } // namespace CppConfigFramework
