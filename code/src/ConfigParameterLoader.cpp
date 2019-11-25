@@ -1129,7 +1129,7 @@ bool load(const QVariant &nodeValue, QSize *parameterValue, QString *error)
         {
             if (error != nullptr)
             {
-                *error = QString("The 'width' value is invalid! Inner error: [%1]").arg(*error);
+                *error = QString("The 'width' value is invalid! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -1143,7 +1143,7 @@ bool load(const QVariant &nodeValue, QSize *parameterValue, QString *error)
         {
             if (error != nullptr)
             {
-                *error = QString("The 'height' value is invalid! Inner error: [%1]").arg(*error);
+                *error = QString("The 'height' value is invalid! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -1224,7 +1224,7 @@ bool load(const QVariant &nodeValue, QSizeF *parameterValue, QString *error)
         {
             if (error != nullptr)
             {
-                *error = QString("The 'width' value is invalid! Inner error: [%1]").arg(*error);
+                *error = QString("The 'width' value is invalid! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -1238,7 +1238,7 @@ bool load(const QVariant &nodeValue, QSizeF *parameterValue, QString *error)
         {
             if (error != nullptr)
             {
-                *error = QString("The 'height' value is invalid! Inner error: [%1]").arg(*error);
+                *error = QString("The 'height' value is invalid! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -1306,7 +1306,7 @@ bool load(const QVariant &nodeValue, QPoint *parameterValue, QString *error)
         {
             if (error != nullptr)
             {
-                *error = QString("The 'x' value is invalid! Inner error: [%1]").arg(*error);
+                *error = QString("The 'x' value is invalid! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -1318,7 +1318,7 @@ bool load(const QVariant &nodeValue, QPoint *parameterValue, QString *error)
         {
             if (error != nullptr)
             {
-                *error = QString("The 'y' value is invalid! Inner error: [%1]").arg(*error);
+                *error = QString("The 'y' value is invalid! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -1375,7 +1375,7 @@ bool load(const QVariant &nodeValue, QPointF *parameterValue, QString *error)
         {
             if (error != nullptr)
             {
-                *error = QString("The 'x' value is invalid! Inner error: [%1]").arg(*error);
+                *error = QString("The 'x' value is invalid! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -1387,7 +1387,7 @@ bool load(const QVariant &nodeValue, QPointF *parameterValue, QString *error)
         {
             if (error != nullptr)
             {
-                *error = QString("The 'y' value is invalid! Inner error: [%1]").arg(*error);
+                *error = QString("The 'y' value is invalid! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -1446,7 +1446,7 @@ bool load(const QVariant &nodeValue, QLine *parameterValue, QString *error)
         {
             if (error != nullptr)
             {
-                *error = QString("The 'x1' value is invalid! Inner error: [%1]").arg(*error);
+                *error = QString("The 'x1' value is invalid! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -1458,7 +1458,7 @@ bool load(const QVariant &nodeValue, QLine *parameterValue, QString *error)
         {
             if (error != nullptr)
             {
-                *error = QString("The 'y1' value is invalid! Inner error: [%1]").arg(*error);
+                *error = QString("The 'y1' value is invalid! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -1470,7 +1470,7 @@ bool load(const QVariant &nodeValue, QLine *parameterValue, QString *error)
         {
             if (error != nullptr)
             {
-                *error = QString("The 'x2' value is invalid! Inner error: [%1]").arg(*error);
+                *error = QString("The 'x2' value is invalid! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -1482,7 +1482,7 @@ bool load(const QVariant &nodeValue, QLine *parameterValue, QString *error)
         {
             if (error != nullptr)
             {
-                *error = QString("The 'y2' value is invalid! Inner error: [%1]").arg(*error);
+                *error = QString("The 'y2' value is invalid! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -1543,7 +1543,7 @@ bool load(const QVariant &nodeValue, QLineF *parameterValue, QString *error)
         {
             if (error != nullptr)
             {
-                *error = QString("The 'x1' value is invalid! Inner error: [%1]").arg(*error);
+                *error = QString("The 'x1' value is invalid! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -1557,7 +1557,7 @@ bool load(const QVariant &nodeValue, QLineF *parameterValue, QString *error)
         {
             if (error != nullptr)
             {
-                *error = QString("The 'y1' value is invalid! Inner error: [%1]").arg(*error);
+                *error = QString("The 'y1' value is invalid! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -1571,7 +1571,7 @@ bool load(const QVariant &nodeValue, QLineF *parameterValue, QString *error)
         {
             if (error != nullptr)
             {
-                *error = QString("The 'x2' value is invalid! Inner error: [%1]").arg(*error);
+                *error = QString("The 'x2' value is invalid! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -1585,7 +1585,7 @@ bool load(const QVariant &nodeValue, QLineF *parameterValue, QString *error)
         {
             if (error != nullptr)
             {
-                *error = QString("The 'y2' value is invalid! Inner error: [%1]").arg(*error);
+                *error = QString("The 'y2' value is invalid! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -1655,7 +1655,7 @@ bool load(const QVariant &nodeValue, QRect *parameterValue, QString *error)
         {
             if (error != nullptr)
             {
-                *error = QString("The 'x' value is invalid! Inner error: [%1]").arg(*error);
+                *error = QString("The 'x' value is invalid! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -1667,7 +1667,7 @@ bool load(const QVariant &nodeValue, QRect *parameterValue, QString *error)
         {
             if (error != nullptr)
             {
-                *error = QString("The 'y' value is invalid! Inner error: [%1]").arg(*error);
+                *error = QString("The 'y' value is invalid! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -1681,7 +1681,7 @@ bool load(const QVariant &nodeValue, QRect *parameterValue, QString *error)
         {
             if (error != nullptr)
             {
-                *error = QString("The 'width' value is invalid! Inner error: [%1]").arg(*error);
+                *error = QString("The 'width' value is invalid! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -1695,7 +1695,7 @@ bool load(const QVariant &nodeValue, QRect *parameterValue, QString *error)
         {
             if (error != nullptr)
             {
-                *error = QString("The 'height' value is invalid! Inner error: [%1]").arg(*error);
+                *error = QString("The 'height' value is invalid! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -1776,7 +1776,7 @@ bool load(const QVariant &nodeValue, QRectF *parameterValue, QString *error)
         {
             if (error != nullptr)
             {
-                *error = QString("The 'x' value is invalid! Inner error: [%1]").arg(*error);
+                *error = QString("The 'x' value is invalid! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -1788,7 +1788,7 @@ bool load(const QVariant &nodeValue, QRectF *parameterValue, QString *error)
         {
             if (error != nullptr)
             {
-                *error = QString("The 'y' value is invalid! Inner error: [%1]").arg(*error);
+                *error = QString("The 'y' value is invalid! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -1802,7 +1802,7 @@ bool load(const QVariant &nodeValue, QRectF *parameterValue, QString *error)
         {
             if (error != nullptr)
             {
-                *error = QString("The 'width' value is invalid! Inner error: [%1]").arg(*error);
+                *error = QString("The 'width' value is invalid! Error: [%1]").arg(*error);
             }
             return false;
         }
@@ -1816,7 +1816,7 @@ bool load(const QVariant &nodeValue, QRectF *parameterValue, QString *error)
         {
             if (error != nullptr)
             {
-                *error = QString("The 'height' value is invalid! Inner error: [%1]").arg(*error);
+                *error = QString("The 'height' value is invalid! Error: [%1]").arg(*error);
             }
             return false;
         }
