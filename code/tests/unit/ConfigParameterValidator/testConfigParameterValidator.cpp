@@ -49,17 +49,14 @@ private slots:
     void cleanup();
 
     // Test functions
-    void testConfigParameterValidator();
-    void testConfigParameterValidator_data();
+    void testConfigParameterDefaultValidator();
+    void testConfigParameterDefaultValidator_data();
 
     void testConfigParameterRangeValidator();
     void testConfigParameterRangeValidator_data();
 
     void testConfigParameterListValidator();
     void testConfigParameterListValidator_data();
-
-    void testConfigParameterGenericValidator();
-    void testConfigParameterGenericValidator_data();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -84,18 +81,18 @@ void TestConfigParameterValidator::cleanup()
 
 // Test: ConfigParameterValidator ------------------------------------------------------------------
 
-void TestConfigParameterValidator::testConfigParameterValidator()
+void TestConfigParameterValidator::testConfigParameterDefaultValidator()
 {
     QFETCH(int, parameterValue);
 
     // Validates everything as true
-    ConfigParameterValidator<int> validator;
+    ConfigParameterDefaultValidator<int> validator;
 
     QString error;
-    QVERIFY(validator.validate(parameterValue, &error));
+    QVERIFY(validator(parameterValue, &error));
 }
 
-void TestConfigParameterValidator::testConfigParameterValidator_data()
+void TestConfigParameterValidator::testConfigParameterDefaultValidator_data()
 {
     QTest::addColumn<int>("parameterValue");
 
@@ -115,7 +112,7 @@ void TestConfigParameterValidator::testConfigParameterRangeValidator()
     ConfigParameterRangeValidator<int> validator(-1000, 1000);
 
     QString error;
-    QCOMPARE(validator.validate(parameterValue, &error), expectedResult);
+    QCOMPARE(validator(parameterValue, &error), expectedResult);
 }
 
 void TestConfigParameterValidator::testConfigParameterRangeValidator_data()
@@ -146,7 +143,7 @@ void TestConfigParameterValidator::testConfigParameterListValidator()
     ConfigParameterListValidator<QString> validator({ "a", "b", "c" });
 
     QString error;
-    QCOMPARE(validator.validate(parameterValue, &error), expectedResult);
+    QCOMPARE(validator(parameterValue, &error), expectedResult);
 }
 
 void TestConfigParameterValidator::testConfigParameterListValidator_data()
@@ -157,38 +154,6 @@ void TestConfigParameterValidator::testConfigParameterListValidator_data()
     QTest::newRow("a") << "a" << true;
     QTest::newRow("b") << "b" << true;
     QTest::newRow("c") << "c" << true;
-
-    QTest::newRow("A") << "A" << false;
-    QTest::newRow("d") << "d" << false;
-    QTest::newRow("empty") << "" << false;
-    QTest::newRow("default") << QString() << false;
-}
-
-// Test: ConfigParameterGenericValidator -----------------------------------------------------------
-
-void TestConfigParameterValidator::testConfigParameterGenericValidator()
-{
-    QFETCH(QString, parameterValue);
-    QFETCH(bool, expectedResult);
-
-    // Validates using a functor
-    ConfigParameterGenericValidator<QString> validator([](const auto &value, QString *)
-    {
-        return value.startsWith("a");
-    });
-
-    QString error;
-    QCOMPARE(validator.validate(parameterValue, &error), expectedResult);
-}
-
-void TestConfigParameterValidator::testConfigParameterGenericValidator_data()
-{
-    QTest::addColumn<QString>("parameterValue");
-    QTest::addColumn<bool>("expectedResult");
-
-    QTest::newRow("aaa") << "aaa" << true;
-    QTest::newRow("abc") << "abc" << true;
-    QTest::newRow("aAA") << "aAA" << true;
 
     QTest::newRow("A") << "A" << false;
     QTest::newRow("d") << "d" << false;
