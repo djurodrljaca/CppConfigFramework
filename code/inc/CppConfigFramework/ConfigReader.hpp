@@ -96,7 +96,7 @@ public:
      * \return  Configuration node instance or in case of failure a null pointer
      *
      * The externalConfigs items are used to provide an additional source for reference resolution.
-     * This is mostly useful for includes so that they can declare references to externaly defined
+     * This is mostly useful for includes so that they can declare references to externally defined
      * nodes in its own config file or its includes.
      */
     std::unique_ptr<ConfigObjectNode> read(
@@ -115,7 +115,7 @@ private:
         Resolved,           //!< There were either no references or they were all resolved
         PartiallyResolved,  //!< At least one of the references was resolved, but not all of them
         Unchanged,          //!< None of the references were resolved
-        Error               //!< An error occured
+        Error               //!< An error occurred
     };
 
 private:
@@ -222,7 +222,7 @@ private:
             QString *error);
 
     /*!
-     * Reads a DeriverObject node from the JSON Object
+     * Reads a DerivedObject node from the JSON Object
      *
      * \param   jsonObject              JSON Object
      * \param   currentNodePath         Current node path

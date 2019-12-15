@@ -191,7 +191,7 @@ bool ConfigObjectNode::setMember(const QString &name, std::unique_ptr<ConfigNode
     }
     else
     {
-        // Replace the exising item
+        // Replace the existing item
         it->second = std::move(node);
     }
 

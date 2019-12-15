@@ -100,7 +100,7 @@ void TestConfigNode::cleanup()
 {
 }
 
-// Test: ConfigNodetypeToString() method -----------------------------------------------------------
+// Test: typeToString() method ---------------------------------------------------------------------
 
 void TestConfigNode::testTypeToString()
 {
@@ -256,7 +256,7 @@ void TestConfigNode::testMoveValue()
         QCOMPARE(movedNode.value(), 123);
     }
 
-    // Move assignement operator
+    // Move assignment operator
     {
         ConfigValueNode node(456, &parentNode2);
 
@@ -297,7 +297,7 @@ void TestConfigNode::testMoveObject()
         QCOMPARE(movedNode.member("item2")->parent(), &movedNode);
     }
 
-    // Move assignement operator
+    // Move assignment operator
     {
         ConfigObjectNode node(&parentNode1);
         node.setMember("item1", ConfigValueNode(1));
@@ -344,7 +344,7 @@ void TestConfigNode::testMoveNodeReference()
         QCOMPARE(movedNode.reference(), ConfigNodePath("ref"));
     }
 
-    // Move assignement operator
+    // Move assignment operator
     {
         ConfigNodeReference node(ConfigNodePath("ref"), &parentNode2);
 
@@ -385,7 +385,7 @@ void TestConfigNode::testMoveDerivedObject()
         QVERIFY(movedNode.config().member("null")->isValue());
     }
 
-    // Move assignement operator
+    // Move assignment operator
     {
         ConfigDerivedObjectNode node(expectedBases, config, &parentNode2);
 

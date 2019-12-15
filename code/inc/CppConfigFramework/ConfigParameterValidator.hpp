@@ -39,7 +39,7 @@ namespace CppConfigFramework
 {
 
 /*!
- * This configuration parameter validatior does not do any valudation, but just returns "true"
+ * This configuration parameter validator does not do any validation, but just returns "true"
  *
  * \tparam  T   Data type of the value to validate
  */
@@ -68,7 +68,7 @@ public:
 // -------------------------------------------------------------------------------------------------
 
 /*!
- * This configuration parameter validatior checks if the value is in the defined range using the
+ * This configuration parameter validator checks if the value is in the defined range using the
  * algorithm: minValue ≤ value ≤ maxValue
  *
  * \tparam  T   Data type of the value to validate
@@ -126,7 +126,7 @@ private:
 // -------------------------------------------------------------------------------------------------
 
 /*!
- * This configuration parameter validatior checks if the value matches any one from the
+ * This configuration parameter validator checks if the value matches any one from the
  * "valid values" list
  *
  * \tparam  T   Data type of the value to validate

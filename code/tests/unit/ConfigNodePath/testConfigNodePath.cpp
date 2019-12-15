@@ -133,7 +133,7 @@ void TestConfigNodePath::testCopy()
     ConfigNodePath movedNodePath((ConfigNodePath(nodePath1)));
     QCOMPARE(movedNodePath.path(), nodePath1.path());
 
-    // Copy assignement operator
+    // Copy assignment operator
     const ConfigNodePath nodePath2("/node/path2");
     movedNodePath = ConfigNodePath(nodePath2);
     QCOMPARE(movedNodePath.path(), nodePath2.path());
@@ -149,7 +149,7 @@ void TestConfigNodePath::testMove()
     ConfigNodePath movedNodePath((ConfigNodePath(nodePath1)));
     QCOMPARE(movedNodePath.path(), nodePath1);
 
-    // Move assignement operator
+    // Move assignment operator
     const QString nodePath2("/node/path2");
     movedNodePath = ConfigNodePath(nodePath2);
     QCOMPARE(movedNodePath.path(), nodePath2);

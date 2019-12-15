@@ -474,7 +474,7 @@ private:
      *
      * This method shall be called when an error occurs during loading of the configuration
      * structure or a configuration parameter. The configuration class can then react on the error,
-     * for example the error could be writen in a log or the application could be stopped.
+     * for example the error could be written in a log or the application could be stopped.
      *
      * \note    Default implementation does not do anything!
      */
