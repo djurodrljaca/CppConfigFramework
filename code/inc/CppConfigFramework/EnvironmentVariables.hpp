@@ -46,7 +46,7 @@ namespace CppConfigFramework
  * as the initial environment variables.
  *
  * \note    If a system environment variable is updated after that then that change will not be
- *          applied to an already conbstructed instance of this class!
+ *          applied to an already constructed instance of this class!
  *
  * If an attempt is made to set an environment variable that does not exist then a new variable is
  * created.

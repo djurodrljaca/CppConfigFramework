@@ -490,7 +490,7 @@ void TestConfigLoader::testLoadConfigParameter()
         QCOMPARE(required.param, 0);
         QCOMPARE(optional.param, 0);
 
-        // Make sure that the values stay unchaged
+        // Make sure that the values stay unchanged
         required.param = 11;
         optional.param = 11;
 

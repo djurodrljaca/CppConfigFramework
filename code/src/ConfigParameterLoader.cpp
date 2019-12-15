@@ -702,7 +702,7 @@ bool load(const QVariant &nodeValue, QString *parameterValue, QString *error)
     {
         if (error != nullptr)
         {
-            *error = QStringLiteral("Node value must be convertable to a string!");
+            *error = QStringLiteral("Node value must be convertible to a string!");
         }
         return false;
     }
@@ -730,7 +730,7 @@ bool load(const QVariant &nodeValue, QByteArray *parameterValue, QString *error)
     {
         if (error != nullptr)
         {
-            *error = QStringLiteral("Node value must be convertable to a byte array!");
+            *error = QStringLiteral("Node value must be convertible to a byte array!");
         }
         return false;
     }
