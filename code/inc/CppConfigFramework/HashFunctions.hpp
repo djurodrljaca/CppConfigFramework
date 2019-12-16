@@ -33,6 +33,9 @@
 
 // Macros
 
+// std::hash overloads were only added in Qt 5.14
+#if (QT_VERSION < QT_VERSION_CHECK(5, 14, 0))
+
 // -------------------------------------------------------------------------------------------------
 
 template<> struct std::hash<QChar>
@@ -102,5 +105,7 @@ template<> struct std::hash<QDateTime>
         return static_cast<size_t>(qHash(value));
     }
 };
+
+#endif // (QT_VERSION < QT_VERSION_CHECK(5, 14, 0))
 
 #endif // CPPCONFIGFRAMEWORK_HASHFUNCTIONS_HPP
