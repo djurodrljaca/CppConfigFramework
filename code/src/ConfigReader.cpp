@@ -699,7 +699,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readObjectNode(
         {
             case '#':
             {
-                // Explicit Value node (even if it is an Array or an Object JSON type)
+                // Explicit Value node (even if it is a JSON Object type)
                 memberNode = readValueNode(it.value(), memberNodePath);
                 Q_ASSERT(memberNode);
                 break;
@@ -707,8 +707,8 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readObjectNode(
 
             case '$':
             {
-                // Explicit Value node (even if it is an Array or an Object JSON type) where
-                // references to environment variables in the value are resolved
+                // Explicit Value node (even if it is a JSON Object type) where references to
+                // environment variables in the value are resolved
                 const QJsonValue resolvedValue =
                         resolveJsonValue(it.value(), environmentVariables, error);
 
