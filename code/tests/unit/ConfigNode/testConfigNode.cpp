@@ -644,7 +644,9 @@ void TestConfigNode::testObjectNode()
     QVERIFY(!object.setMember("0item", ConfigValueNode()));
 
     QCOMPARE(object.count(), 3);
-    QCOMPARE(object.names().toSet(), QSet<QString>({"item1", "item2", "item3"}));
+    auto objectNames = object.names();
+    QCOMPARE(QSet<QString>(objectNames.begin(), objectNames.end()),
+             QSet<QString>({"item1", "item2", "item3"}));
     QVERIFY(object.member("item1")->isValue());
     QCOMPARE(object.member("item1")->toValue().value(), true);
     QVERIFY(object.member("item2")->isValue());
@@ -663,7 +665,9 @@ void TestConfigNode::testObjectNode()
     QVERIFY(!object.remove("item9"));
 
     QCOMPARE(object.count(), 2);
-    QCOMPARE(object.names().toSet(), QSet<QString>({"item1", "item3"}));
+    objectNames = object.names();
+    QCOMPARE(QSet<QString>(objectNames.begin(), objectNames.end()),
+             QSet<QString>({"item1", "item3"}));
     QVERIFY(object.member("item1")->isValue());
     QVERIFY(object.member("item3")->isObject());
 

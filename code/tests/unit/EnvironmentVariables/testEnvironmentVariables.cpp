@@ -92,12 +92,11 @@ void TestEnvironmentVariables::testLoadFromProcess()
     auto environmentVariables = EnvironmentVariables::loadFromProcess();
 
     // Check if all variables from the process were loaded
-    auto actual = environmentVariables.names().toSet();
-    auto expected = systemEnvironment.keys().toSet();
+    auto environmentVariablesNames = environmentVariables.names();
+    auto systemEnvironmentKeys = systemEnvironment.keys();
 
-    auto diff = expected - actual;
-
-    QCOMPARE(environmentVariables.names().toSet(), systemEnvironment.keys().toSet());
+    QCOMPARE(QSet<QString>(environmentVariablesNames.begin(), environmentVariablesNames.end()),
+             QSet<QString>(systemEnvironmentKeys.begin(), systemEnvironmentKeys.end()));
 
     for (const QString &name : environmentVariables.names())
     {
