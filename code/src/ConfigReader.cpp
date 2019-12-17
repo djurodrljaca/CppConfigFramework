@@ -25,6 +25,7 @@
 #include <CppConfigFramework/ConfigDerivedObjectNode.hpp>
 #include <CppConfigFramework/ConfigNodeReference.hpp>
 #include <CppConfigFramework/ConfigObjectNode.hpp>
+#include <CppConfigFramework/ConfigReaderFactory.hpp>
 #include <CppConfigFramework/ConfigValueNode.hpp>
 
 // Qt includes
@@ -33,7 +34,6 @@
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
 #include <QtCore/QJsonValue>
-#include <QtCore/QList>
 #include <QtCore/QRegularExpression>
 #include <QtCore/QStringBuilder>
 
@@ -47,20 +47,6 @@
 
 namespace CppConfigFramework
 {
-
-uint32_t ConfigReader::referenceResolutionMaxCycles() const
-{
-    return m_referenceResolutionMaxCycles;
-}
-
-// -------------------------------------------------------------------------------------------------
-
-void ConfigReader::setReferenceResolutionMaxCycles(const uint32_t referenceResolutionMaxCycles)
-{
-    m_referenceResolutionMaxCycles = referenceResolutionMaxCycles;
-}
-
-// -------------------------------------------------------------------------------------------------
 
 std::unique_ptr<ConfigObjectNode> ConfigReader::read(
         const QString &filePath,
@@ -298,6 +284,54 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
 
 // -------------------------------------------------------------------------------------------------
 
+std::unique_ptr<ConfigObjectNode> ConfigReader::read(
+        const QDir &workingDir,
+        const ConfigNodePath &destinationNodePath,
+        const QVariantMap &otherParameters,
+        const std::vector<const ConfigObjectNode *> &externalConfigs,
+        EnvironmentVariables *environmentVariables,
+        QString *error) const
+{
+    // Extract file path
+    if (!otherParameters.contains(QStringLiteral("file_path")))
+    {
+        if (error != nullptr)
+        {
+            *error = QStringLiteral("The 'file_path' parameter is missing");
+        }
+        return {};
+    }
+
+    const QString filePath = otherParameters.value(QStringLiteral("file_path")).toString();
+
+    if (filePath.isEmpty())
+    {
+        if (error != nullptr)
+        {
+            *error = QStringLiteral("The 'file_path' parameter is not valid");
+        }
+        return {};
+    }
+
+    // Extract source node
+    auto sourceNodePath = ConfigNodePath::ROOT_PATH;
+
+    if (otherParameters.contains(QStringLiteral("source_node")))
+    {
+        sourceNodePath.setPath(otherParameters.value(QStringLiteral("source_node")).toString());
+    }
+
+    // Read the configuration file
+    return read(filePath,
+                workingDir,
+                sourceNodePath,
+                destinationNodePath,
+                externalConfigs,
+                environmentVariables, error);
+}
+
+// -------------------------------------------------------------------------------------------------
+
 bool ConfigReader::readEnvironmentVariablesMember(const QJsonObject &rootObject,
                                                   EnvironmentVariables *environmentVariables,
                                                   QString *error) const
@@ -453,70 +487,6 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readIncludesMember(
             type = typeValue.toString();
         }
 
-        if (type != QStringLiteral("CppConfigFramework"))
-        {
-            if (error != nullptr)
-            {
-                *error = QString("Unsupported type [%1] for include at index [%2]")
-                         .arg(type).arg(i);
-            }
-            return {};
-        }
-
-        // Extract file path
-        const auto filePathValue = includeObject.value(QStringLiteral("file_path"));
-
-        if (filePathValue.isUndefined())
-        {
-            if (error != nullptr)
-            {
-                *error = QString("The 'file_path' member is missing for include at index [%1]")
-                         .arg(i);
-            }
-            return {};
-        }
-
-        if (!filePathValue.isString())
-        {
-            if (error != nullptr)
-            {
-                *error = QString("The 'file_path' member must be a string for include at index "
-                                 "[%1]").arg(i);
-            }
-            return {};
-        }
-
-        const QString filePath = filePathValue.toString();
-
-        // Extract source node
-        auto sourceNodePath = ConfigNodePath::ROOT_PATH;
-        const auto sourceNodeValue = includeObject.value(QStringLiteral("source_node"));
-
-        if ((!sourceNodeValue.isNull()) && (!sourceNodeValue.isUndefined()))
-        {
-            if (!sourceNodeValue.isString())
-            {
-                if (error != nullptr)
-                {
-                    *error = QString("The 'source_node' member must be a string for include at "
-                                     "index [%1]").arg(i);
-                }
-                return {};
-            }
-
-            sourceNodePath.setPath(sourceNodeValue.toString());
-
-            if (sourceNodePath.isRelative() || (!sourceNodePath.isValid()))
-            {
-                if (error != nullptr)
-                {
-                    *error = QString("The 'source_node' member [%1] is not valid for include at "
-                                     "index [%2]").arg(sourceNodePath.path()).arg(i);
-                }
-                return {};
-            }
-        }
-
         // Extract destination node
         auto destinationNodePath = ConfigNodePath::ROOT_PATH;
         const auto destinationNodeValue = includeObject.value(QStringLiteral("destination_node"));
@@ -556,13 +526,14 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readIncludesMember(
 
         // Read config file
         // TODO: limit the includes depth to prevent an endless include loop?
-        auto config = read(filePath,
-                           workingDir,
-                           sourceNodePath,
-                           destinationNodePath,
-                           extendedExternalConfigs,
-                           environmentVariables,
-                           error);
+        auto config = ConfigReaderFactory::instance()->readConfig(
+                          type,
+                          workingDir,
+                          destinationNodePath,
+                          includeObject.toVariantMap(),
+                          extendedExternalConfigs,
+                          environmentVariables,
+                          error);
 
         if (!config)
         {
@@ -1123,540 +1094,6 @@ bool ConfigReader::hasDecorator(const QString &memberName)
     static QRegularExpression regex("^[&#$]");
 
     return regex.match(memberName).hasMatch();
-}
-
-// -------------------------------------------------------------------------------------------------
-
-bool ConfigReader::isFullyResolved(const ConfigNode &node)
-{
-    switch (node.type())
-    {
-        case ConfigNode::Type::Value:
-        {
-            return true;
-        }
-
-        case ConfigNode::Type::Object:
-        {
-            const auto &objectNode = node.toObject();
-
-            for (const auto &name : objectNode.names())
-            {
-                if (!isFullyResolved(*objectNode.member(name)))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        default:
-        {
-            break;
-        }
-    }
-
-    return false;
-}
-
-// -------------------------------------------------------------------------------------------------
-
-QStringList ConfigReader::unresolvedReferences(const ConfigObjectNode &node)
-{
-    QStringList references;
-
-    // Iterate over all members and add all nodes of a reference type to the list
-    for (const QString &name : node.names())
-    {
-        const auto *member = node.member(name);
-
-        if (member->isNodeReference() || member->isDerivedObject())
-        {
-            references.append(member->nodePath().path());
-        }
-        else if (member->isObject())
-        {
-            references.append(unresolvedReferences(member->toObject()));
-        }
-        else
-        {
-            // No unresolved references
-        }
-    }
-
-    return references;
-}
-
-// -------------------------------------------------------------------------------------------------
-
-bool ConfigReader::resolveReferences(const std::vector<const ConfigObjectNode *> &externalConfigs,
-                                     ConfigObjectNode *config,
-                                     QString *error) const
-{
-    auto result = ReferenceResolutionResult::Unchanged;
-    uint32_t resolutionCycle;
-
-    for (resolutionCycle = 0;
-         (resolutionCycle < m_referenceResolutionMaxCycles) &&
-         (result != ReferenceResolutionResult::Resolved);
-         resolutionCycle++)
-    {
-        // Try to resolve references without external configuration nodes
-        auto newResult = resolveObjectReferences({}, config, error);
-
-        switch (newResult)
-        {
-            case ReferenceResolutionResult::Resolved:
-            case ReferenceResolutionResult::PartiallyResolved:
-            {
-                result = newResult;
-                break;
-            }
-
-            case ReferenceResolutionResult::Unchanged:
-            {
-                // Check if external configuration nodes are provided
-                if (externalConfigs.empty())
-                {
-                    result = ReferenceResolutionResult::Unchanged;
-                    break;
-                }
-
-                // External configuration nodes are provided, try to resolve references with them
-                newResult = resolveObjectReferences(externalConfigs, config, error);
-
-                switch (newResult)
-                {
-                    case ReferenceResolutionResult::Resolved:
-                    case ReferenceResolutionResult::PartiallyResolved:
-                    {
-                        result = newResult;
-                        break;
-                    }
-
-                    case ReferenceResolutionResult::Unchanged:
-                    {
-                        // Still unchanged
-                        if (error != nullptr)
-                        {
-                            *error = QString("No references were resolved in the last cycle even "
-                                             "after using the external configuration nodes:"
-                                             "\n    cycle no.: %1"
-                                             "\n    unresolved references: [%2]")
-                                     .arg(resolutionCycle)
-                                     .arg(unresolvedReferences(*config).join("; "));
-                        }
-                        return false;
-                    }
-
-                    case ReferenceResolutionResult::Error:
-                    {
-                        if (error != nullptr)
-                        {
-                            *error = QString("Failed to resolve references when using the external "
-                                             "configuration nodes:"
-                                             "\n    error: [%1]"
-                                             "\n    unresolved references: [%2]")
-                                     .arg(*error, unresolvedReferences(*config).join("; "));
-                        }
-                        return false;
-                    }
-                }
-                break;
-            }
-
-            case ReferenceResolutionResult::Error:
-            {
-                if (error != nullptr)
-                {
-                    *error = QString("Failed to resolve references:"
-                                     "\n    error: [%1]"
-                                     "\n    unresolved references: [%2]")
-                             .arg(*error, unresolvedReferences(*config).join("; "));
-                }
-                return false;
-            }
-        }
-    }
-
-    if (result != ReferenceResolutionResult::Resolved)
-    {
-        if (error != nullptr)
-        {
-            *error = QString("Failed to fully resolve references:"
-                             "\n    cycle no.: %1"
-                             "\n    unresolved references: [%2]")
-                     .arg(resolutionCycle)
-                     .arg(unresolvedReferences(*config).join("; "));
-        }
-        return false;
-    }
-
-    return true;
-}
-
-// -------------------------------------------------------------------------------------------------
-
-ConfigReader::ReferenceResolutionResult ConfigReader::resolveObjectReferences(
-        const std::vector<const ConfigObjectNode *> &externalConfigs,
-        ConfigObjectNode *node,
-        QString *error)
-{
-    // Iterate over all members and try to resolve their references
-    auto result = ReferenceResolutionResult::Unchanged;
-
-    for (const QString &name : node->names())
-    {
-        // Try to resolve the member's references
-        auto *member = node->member(name);
-
-        switch (member->type())
-        {
-            case ConfigNode::Type::Value:
-            {
-                // Not a reference type, leave the result as is
-                break;
-            }
-
-            case ConfigNode::Type::Object:
-            {
-                // Try to resolve the member's (Object node) references
-                auto newResult = resolveObjectReferences(externalConfigs,
-                                                         &member->toObject(),
-                                                         error);
-
-                result = updateObjectResolutionResult(result, newResult);
-                break;
-            }
-
-            case ConfigNode::Type::NodeReference:
-            {
-                // Try to resolve the member's (NodeReference node) reference
-                auto newResult = resolveNodeReference(externalConfigs,
-                                                      &member->toNodeReference(),
-                                                      error);
-
-                result = updateObjectResolutionResult(result, newResult);
-                break;
-            }
-
-            case ConfigNode::Type::DerivedObject:
-            {
-                // Try to resolve the member's (DerivedObject node) references
-                auto newResult = resolveDerivedObjectReferences(externalConfigs,
-                                                                &member->toDerivedObject(),
-                                                                error);
-
-                result = updateObjectResolutionResult(result, newResult);
-                break;
-            }
-        }
-
-        // Stop on error
-        if (result == ReferenceResolutionResult::Error)
-        {
-            return ReferenceResolutionResult::Error;
-        }
-    }
-
-    // Check if the object is fully resolved
-    if (isFullyResolved(*node))
-    {
-        return ReferenceResolutionResult::Resolved;
-    }
-
-    return result;
-}
-
-// -------------------------------------------------------------------------------------------------
-
-ConfigReader::ReferenceResolutionResult ConfigReader::updateObjectResolutionResult(
-        const ConfigReader::ReferenceResolutionResult currentResult,
-        const ConfigReader::ReferenceResolutionResult newResult)
-{
-    auto result = currentResult;
-
-    switch (newResult)
-    {
-        case ReferenceResolutionResult::Resolved:
-        {
-            if (result == ReferenceResolutionResult::Unchanged)
-            {
-                result = ReferenceResolutionResult::PartiallyResolved;
-            }
-            break;
-        }
-
-        case ReferenceResolutionResult::Unchanged:
-        {
-            if (result == ReferenceResolutionResult::Resolved)
-            {
-                result = ReferenceResolutionResult::PartiallyResolved;
-            }
-            break;
-        }
-
-        case ReferenceResolutionResult::PartiallyResolved:
-        {
-            if ((result == ReferenceResolutionResult::Resolved) ||
-                (result == ReferenceResolutionResult::Unchanged))
-            {
-                result = ReferenceResolutionResult::PartiallyResolved;
-            }
-            break;
-        }
-
-        case ReferenceResolutionResult::Error:
-        {
-            result = ReferenceResolutionResult::Error;
-        }
-    }
-
-    return result;
-}
-
-// -------------------------------------------------------------------------------------------------
-
-ConfigReader::ReferenceResolutionResult ConfigReader::resolveNodeReference(
-        const std::vector<const ConfigObjectNode *> &externalConfigs,
-        ConfigNodeReference *node,
-        QString *error)
-{
-    // Try to get the referenced node
-    auto *parentNode = node->parent();
-    const auto *referencedNode = findReferencedConfigNode(node->reference(),
-                                                          *parentNode,
-                                                          externalConfigs);
-
-    if (referencedNode == nullptr)
-    {
-        return ReferenceResolutionResult::Unchanged;
-    }
-
-    auto result = (isFullyResolved(*referencedNode) ? ReferenceResolutionResult::Resolved
-                                                    : ReferenceResolutionResult::PartiallyResolved);
-
-    // Replace the current node with the referenced node
-    if (!parentNode->setMember(parentNode->name(*node), *referencedNode))
-    {
-        if (error != nullptr)
-        {
-            *error = QString("Failed to store the resolved NodeReference node [%1] to the parent "
-                             "object at node path [%2]")
-                     .arg(node->reference().path(), parentNode->nodePath().path());
-        }
-        return ReferenceResolutionResult::Error;
-    }
-
-    return result;
-}
-
-// -------------------------------------------------------------------------------------------------
-
-ConfigReader::ReferenceResolutionResult ConfigReader::resolveDerivedObjectReferences(
-        const std::vector<const ConfigObjectNode *> &externalConfigs,
-        ConfigDerivedObjectNode *node,
-        QString *error)
-{
-    // Derive the config node from the all of the base nodes
-    auto *parentNode = node->parent();
-    ConfigObjectNode derivedObjectNode(parentNode);
-
-    for (const auto &baseNodePath : node->bases())
-    {
-        // Try to find the base node
-        const auto *baseNode = findReferencedConfigNode(baseNodePath, *parentNode, externalConfigs);
-
-        if (baseNode == nullptr)
-        {
-            return ReferenceResolutionResult::Unchanged;
-        }
-
-        // Check if the base node is fully resolved
-        if (!isFullyResolved(*baseNode))
-        {
-            // Base node is not resolved (yet)
-            return ReferenceResolutionResult::Unchanged;
-        }
-
-        // Apply the base to the derived object node
-        if (!baseNode->isObject())
-        {
-            if (error != nullptr)
-            {
-                *error = QString("Base node [%1] in a DerivedObject node [%2] is referencing a "
-                                 "node that is not an Object node!")
-                         .arg(baseNodePath.path(), node->nodePath().path());
-            }
-            return ReferenceResolutionResult::Error;
-        }
-
-        derivedObjectNode.apply(baseNode->toObject());
-    }
-
-    // Apply overrides to the derived object
-    if (node->config().count() > 0)
-    {
-        derivedObjectNode.apply(node->config());
-    }
-
-    auto result = (isFullyResolved(derivedObjectNode)
-                   ? ReferenceResolutionResult::Resolved
-                   : ReferenceResolutionResult::PartiallyResolved);
-
-
-    // Replace the current node with the referenced node
-    if (!parentNode->setMember(parentNode->name(*node), derivedObjectNode))
-    {
-        if (error != nullptr)
-        {
-            *error = QString("Failed to store the resolved DerivedObject node [%1] to the parent "
-                             "object at node path [%2]")
-                     .arg(node->nodePath().path(), parentNode->nodePath().path());
-        }
-        return ReferenceResolutionResult::Error;
-    }
-
-    return result;
-}
-
-// -------------------------------------------------------------------------------------------------
-
-const ConfigNode *ConfigReader::findReferencedConfigNode(
-        const ConfigNodePath &referenceNodePath,
-        const ConfigObjectNode &parentNode,
-        const std::vector<const ConfigObjectNode *> &externalConfigs)
-{
-    const auto *referencedNode = parentNode.nodeAtPath(referenceNodePath);
-
-    if (referencedNode == nullptr)
-    {
-        // Unable to find the node reference, try to find it in one of the external configuration
-        // nodes (use last found node)
-        for (const auto *externalConfig : externalConfigs)
-        {
-            if (referenceNodePath.isAbsolute())
-            {
-                const auto *foundNode = externalConfig->nodeAtPath(referenceNodePath);
-
-                if (foundNode != nullptr)
-                {
-                    referencedNode = foundNode;
-                }
-            }
-            else
-            {
-                // First try to find the equivalent parent node from the external config and then
-                // try to get the node using the relative path
-                const auto *externalConfigParent =
-                        externalConfig->nodeAtPath(parentNode.nodePath());
-
-                if (externalConfigParent != nullptr)
-                {
-                    const auto *foundNode = externalConfigParent->nodeAtPath(referenceNodePath);
-
-                    if (foundNode != nullptr)
-                    {
-                        referencedNode = foundNode;
-                    }
-                }
-            }
-        }
-    }
-
-    return referencedNode;
-}
-
-// -------------------------------------------------------------------------------------------------
-
-std::unique_ptr<ConfigObjectNode> ConfigReader::transformConfig(
-        std::unique_ptr<ConfigObjectNode> &&config,
-        const ConfigNodePath &sourceNodePath,
-        const ConfigNodePath &destinationNodePath,
-        QString *error)
-{
-    Q_ASSERT(config);
-    Q_ASSERT(sourceNodePath.isAbsolute());
-    Q_ASSERT(destinationNodePath.isAbsolute());
-
-    // Check if transformation is needed
-    if (sourceNodePath.isRoot() && destinationNodePath.isRoot())
-    {
-        // Transformation is not needed, just return the original configuration node
-        return std::move(config);
-    }
-
-    // Take the source node
-    std::unique_ptr<ConfigNode> sourceConfig;
-
-    if (sourceNodePath.isRoot())
-    {
-        sourceConfig = std::move(config);
-    }
-    else
-    {
-        const auto *node = config->nodeAtPath(sourceNodePath);
-
-        if (node == nullptr)
-        {
-            if (error != nullptr)
-            {
-                *error = QStringLiteral("Failed to get the source config node at node path: ") %
-                         sourceNodePath.path();
-            }
-            return {};
-        }
-
-        sourceConfig = node->clone();
-    }
-
-    // For "root" destination just return the source node
-    if (destinationNodePath.isRoot())
-    {
-        if (!sourceConfig->isObject())
-        {
-            if (error != nullptr)
-            {
-                *error = QStringLiteral("Source config node at node path is not an Object: ") %
-                         sourceNodePath.path();
-            }
-            return {};
-        }
-
-        return std::make_unique<ConfigObjectNode>(std::move(sourceConfig->toObject()));
-    }
-
-    // Create a new config node from the destination node path and set the source config node to it
-    auto transformedConfig = std::make_unique<ConfigObjectNode>();
-
-    const QStringList nodeNames = destinationNodePath.nodeNames();
-    ConfigObjectNode *currentNode = transformedConfig.get();
-
-    for (int i = 0; i < nodeNames.size(); i++)
-    {
-        // Create the next node in the node path
-        const QString &nodeName = nodeNames.at(i);
-
-        if (i == (nodeNames.size() - 1))
-        {
-            // For the last element just store the source config node
-            currentNode->setMember(nodeName, std::move(sourceConfig));
-        }
-        else
-        {
-            // For all intermediate node create an empty Object config node
-            currentNode->setMember(nodeName, std::make_unique<ConfigObjectNode>());
-
-            auto *member = currentNode->member(nodeName);
-            Q_ASSERT(member != nullptr);
-            Q_ASSERT(member->isObject());
-
-            currentNode = &(member->toObject());
-        }
-    }
-
-    return transformedConfig;
 }
 
 } // namespace CppConfigFramework
