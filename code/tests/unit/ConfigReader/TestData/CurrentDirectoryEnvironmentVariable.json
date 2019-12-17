@@ -1,0 +1,13 @@
+{
+    "includes":
+    [
+        {
+            "file_path": "includes/IncludeWithCurrentDir.json",
+            "destination_node": "/include"
+        }
+    ],
+    "config":
+    {
+        "$current_dir": "${CPPCONFIGFRAMEWORK_CURRENT_DIR}"
+    }
+}

@@ -54,5 +54,7 @@
         <file>TestData/ConfigInvalidEnvVar2.json</file>
         <file>TestData/ConfigInvalidEnvVar3.json</file>
         <file>TestData/ConfigInvalidEnvVar4.json</file>
+        <file>TestData/CurrentDirectoryEnvironmentVariable.json</file>
+        <file>TestData/includes/IncludeWithCurrentDir.json</file>
     </qresource>
 </RCC>
