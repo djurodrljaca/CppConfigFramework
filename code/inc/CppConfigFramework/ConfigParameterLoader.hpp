@@ -15,7 +15,7 @@
 /*!
  * \file
  *
- * Contains classes used for loading of configuration parameter values
+ * Contains methods used for loading of configuration parameter values
  */
 
 #ifndef CPPCONFIGFRAMEWORK_CONFIGPARAMETERLOADER_HPP
@@ -61,135 +61,201 @@ bool load(const QVariant &nodeValue, T *parameterValue, QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, bool *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    bool *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, int8_t *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    int8_t *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, uint8_t *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    uint8_t *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, int16_t *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    int16_t *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, uint16_t *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    uint16_t *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, int32_t *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    int32_t *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, uint32_t *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    uint32_t *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, int64_t *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    int64_t *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, uint64_t *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    uint64_t *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, float *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    float *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, double *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    double *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, QChar *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    QChar *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, QString *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    QString *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, QByteArray *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    QByteArray *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, std::string *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    std::string *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, std::wstring *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    std::wstring *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, std::u16string *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    std::u16string *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, std::u32string *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    std::u32string *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, QDate *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    QDate *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, QTime *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    QTime *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, QDateTime *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    QDateTime *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, QVariant *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    QVariant *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, QUrl *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    QUrl *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, QUuid *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    QUuid *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, QSize *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    QSize *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, QSizeF *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    QSizeF *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, QPoint *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    QPoint *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, QPointF *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    QPointF *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, QLine *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    QLine *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, QLineF *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    QLineF *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, QRect *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    QRect *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, QRectF *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    QRectF *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-bool load(const QVariant &nodeValue, QStringList *parameterValue, QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
+                                    QStringList *parameterValue,
+                                    QString *error);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<typename T1, typename T2>
