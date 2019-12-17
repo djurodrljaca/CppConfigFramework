@@ -273,6 +273,16 @@ private:
      * - '&': Represents one of the reference types (NodeReference, DerivedObject)
      */
     static bool hasDecorator(const QString &memberName);
+
+    /*!
+     * Sets the current directory environment variable (CPPCONFIGFRAMEWORK_CURRENT_DIR)
+     *
+     * \param   currentDir  Current directory
+     *
+     * \param[in,out]   environmentVariables    Environment variables
+     */
+    static void setCurrentDirectory(const QDir &currentDir,
+                                    EnvironmentVariables *environmentVariables);
 };
 
 } // namespace CppConfigFramework

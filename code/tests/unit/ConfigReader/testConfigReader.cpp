@@ -63,6 +63,7 @@ private slots:
     void testReadInvalidExternalConfigsParameter();
     void testReadInvalidConfigFile();
     void testReadInvalidConfigFile_data();
+    void testCurrentDirectoryEnvironmentVariable();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -725,6 +726,47 @@ void TestConfigReader::testReadInvalidConfigFile_data()
     QTest::newRow("ConfigInvalidEnvVar2") << ":/TestData/ConfigInvalidEnvVar2.json";
     QTest::newRow("ConfigInvalidEnvVar3") << ":/TestData/ConfigInvalidEnvVar3.json";
     QTest::newRow("ConfigInvalidEnvVar4") << ":/TestData/ConfigInvalidEnvVar4.json";
+}
+
+// Test: using the current directory environment variable ------------------------------------------
+
+void TestConfigReader::testCurrentDirectoryEnvironmentVariable()
+{
+    // Read config file
+    const QString configFilePath(
+                QStringLiteral(":/TestData/CurrentDirectoryEnvironmentVariable.json"));
+    auto environmentVariables = EnvironmentVariables::loadFromProcess();
+    ConfigReader configReader;
+    QString error;
+
+    auto config = configReader.read(configFilePath,
+                                    QDir::current(),
+                                    ConfigNodePath::ROOT_PATH,
+                                    ConfigNodePath::ROOT_PATH,
+                                    std::vector<const ConfigObjectNode *>(),
+                                    &environmentVariables,
+                                    &error);
+    QVERIFY(config);
+
+    // Check config configs
+    QVERIFY(config->isRoot());
+    QCOMPARE(config->count(), 2);
+
+    // Check "/current_dir"
+    {
+        QVERIFY(config->contains("current_dir"));
+        const auto *currentDir = config->member("current_dir");
+        QVERIFY(currentDir->isValue());
+        QCOMPARE(currentDir->toValue().value(), QStringLiteral(":/TestData"));
+    }
+
+    // Check "/include/current_dir"
+    {
+        const auto *currentDir = config->nodeAtPath("/include/current_dir");
+        QVERIFY(currentDir != nullptr);
+        QVERIFY(currentDir->isValue());
+        QCOMPARE(currentDir->toValue().value(), QStringLiteral(":/TestData/includes"));
+    }
 }
 
 // Main function -----------------------------------------------------------------------------------

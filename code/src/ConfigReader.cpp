@@ -229,6 +229,9 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
         return {};
     }
 
+    // Update current directory environment variable
+    setCurrentDirectory(QFileInfo(absoluteFilePath).absoluteDir(), environmentVariables);
+
     // Read 'config' member
     auto configMember = readConfigMember(rootObject,
                                          externalConfigs,
@@ -523,6 +526,9 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readIncludesMember(
         {
             extendedExternalConfigs.push_back(includesConfig.get());
         }
+
+        // Update current directory environment variable
+        setCurrentDirectory(workingDir, environmentVariables);
 
         // Read config file
         // TODO: limit the includes depth to prevent an endless include loop?
@@ -1094,6 +1100,15 @@ bool ConfigReader::hasDecorator(const QString &memberName)
     static QRegularExpression regex("^[&#$]");
 
     return regex.match(memberName).hasMatch();
+}
+
+// -------------------------------------------------------------------------------------------------
+
+void ConfigReader::setCurrentDirectory(const QDir &currentDir,
+                                       EnvironmentVariables *environmentVariables)
+{
+    environmentVariables->setValue(QStringLiteral("CPPCONFIGFRAMEWORK_CURRENT_DIR"),
+                                   currentDir.absolutePath());
 }
 
 } // namespace CppConfigFramework

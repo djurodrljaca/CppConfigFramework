@@ -1,0 +1,6 @@
+{
+    "config":
+    {
+        "$current_dir": "${CPPCONFIGFRAMEWORK_CURRENT_DIR}"
+    }
+}
