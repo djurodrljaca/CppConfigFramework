@@ -25,6 +25,7 @@
 #include <CppConfigFramework/ConfigNodePath.hpp>
 
 // Qt includes
+#include <QtCore/QVariant>
 
 // System includes
 
@@ -103,6 +104,26 @@ public:
      * \return  Configuration node's type
      */
     virtual Type type() const = 0;
+
+    /*!
+     * Converts the configuration node to simplified QVariant representation
+     *
+     * \return  Simplified QVariant representation of the configuration node
+     *
+     * The simplified QVariant representation of the configuration node allows only the data types
+     * supported by JSON format. This means that the configuration node data will be converted to
+     * one of the following types:
+     * - Default constructed QVariant (equivalent to "Null" and "Undefined")
+     * - bool
+     * - double
+     * - QString
+     * - QVariantList
+     * - QVariantMap
+     *
+     * Integers will be converted to a double if it can be represented without loss of precision
+     * (range: -2^53 ≤ integer_value ≤ 2^53) otherwise it will be converted to a string.
+     */
+    virtual QVariant toSimplifiedVariant() const = 0;
 
     /*!
      * Checks if the configuration node is of Value type

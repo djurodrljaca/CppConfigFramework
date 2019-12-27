@@ -27,6 +27,7 @@
 #include <CppConfigFramework/ConfigValueNode.hpp>
 
 // Qt includes
+#include <QtCore/QStringBuilder>
 
 // System includes
 
@@ -42,6 +43,17 @@ namespace CppConfigFramework
 ConfigObjectNode::ConfigObjectNode(ConfigObjectNode *parent)
     : ConfigNode(parent)
 {
+}
+
+// -------------------------------------------------------------------------------------------------
+
+ConfigObjectNode::ConfigObjectNode(std::initializer_list<std::pair<QString, ConfigNode &&> > args)
+    : ConfigNode(nullptr)
+{
+    for (auto it = args.begin(); it != args.end(); it++)
+    {
+        setMember(it->first, it->second);
+    }
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -95,6 +107,45 @@ std::unique_ptr<ConfigNode> ConfigObjectNode::clone() const
 ConfigNode::Type ConfigObjectNode::type() const
 {
     return ConfigNode::Type::Object;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+QVariant ConfigObjectNode::toSimplifiedVariant() const
+{
+    QVariantMap data;
+
+    for (const auto &member : m_members)
+    {
+        switch (member.second->type())
+        {
+            case ConfigNode::Type::Value:
+            {
+                data.insert(QChar('#') % member.first, member.second->toSimplifiedVariant());
+                break;
+            }
+
+            case ConfigNode::Type::Object:
+            {
+                data.insert(member.first, member.second->toSimplifiedVariant());
+                break;
+            }
+
+            case ConfigNode::Type::NodeReference:
+            case ConfigNode::Type::DerivedObject:
+            {
+                data.insert(QChar('&') % member.first, member.second->toSimplifiedVariant());
+                break;
+            }
+
+            default:
+            {
+                return {};
+            }
+        }
+    }
+
+    return data;
 }
 
 // -------------------------------------------------------------------------------------------------

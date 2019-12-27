@@ -25,7 +25,6 @@
 #include <CppConfigFramework/ConfigNode.hpp>
 
 // Qt includes
-#include <QtCore/QVariant>
 
 // System includes
 
@@ -71,6 +70,9 @@ public:
     //! \copydoc    ConfigNode::type()
     Type type() const override;
 
+    //! \copydoc    ConfigNode::toSimplifiedVariant()
+    QVariant toSimplifiedVariant() const override;
+
     /*!
      * Gets the value of the configuration node
      *
@@ -84,6 +86,64 @@ public:
      * \param   value   New value
      */
     void setValue(const QVariant &value);
+
+private:
+    //! \copydoc    ConfigNode::toSimplifiedVariant()
+    static QVariant toSimplifiedVariant(const bool value);
+
+    //! \copydoc    ConfigNode::toSimplifiedVariant()
+    static QVariant toSimplifiedVariant(const int64_t value);
+
+    //! \copydoc    ConfigNode::toSimplifiedVariant()
+    static QVariant toSimplifiedVariant(const uint64_t value);
+
+    //! \copydoc    ConfigNode::toSimplifiedVariant()
+    static QVariant toSimplifiedVariant(const double value);
+
+    //! \copydoc    ConfigNode::toSimplifiedVariant()
+    static QVariant toSimplifiedVariant(const QString value);
+
+    //! \copydoc    ConfigNode::toSimplifiedVariant()
+    static QVariant toSimplifiedVariant(const QTime &value);
+
+    //! \copydoc    ConfigNode::toSimplifiedVariant()
+    static QVariant toSimplifiedVariant(const QDate &value);
+
+    //! \copydoc    ConfigNode::toSimplifiedVariant()
+    static QVariant toSimplifiedVariant(const QDateTime &value);
+
+    //! \copydoc    ConfigNode::toSimplifiedVariant()
+    static QVariant toSimplifiedVariant(const QSize &value);
+
+    //! \copydoc    ConfigNode::toSimplifiedVariant()
+    static QVariant toSimplifiedVariant(const QSizeF &value);
+
+    //! \copydoc    ConfigNode::toSimplifiedVariant()
+    static QVariant toSimplifiedVariant(const QPoint &value);
+
+    //! \copydoc    ConfigNode::toSimplifiedVariant()
+    static QVariant toSimplifiedVariant(const QPointF &value);
+
+    //! \copydoc    ConfigNode::toSimplifiedVariant()
+    static QVariant toSimplifiedVariant(const QLine &value);
+
+    //! \copydoc    ConfigNode::toSimplifiedVariant()
+    static QVariant toSimplifiedVariant(const QLineF &value);
+
+    //! \copydoc    ConfigNode::toSimplifiedVariant()
+    static QVariant toSimplifiedVariant(const QRect &value);
+
+    //! \copydoc    ConfigNode::toSimplifiedVariant()
+    static QVariant toSimplifiedVariant(const QRectF &value);
+
+    //! \copydoc    ConfigNode::toSimplifiedVariant()
+    static QVariant toSimplifiedVariant(const QVariant &value);
+
+    //! \copydoc    ConfigNode::toSimplifiedVariant()
+    static QVariant toSimplifiedVariant(const QSequentialIterable &iterable);
+
+    //! \copydoc    ConfigNode::toSimplifiedVariant()
+    static QVariant toSimplifiedVariant(const QAssociativeIterable &iterable);
 
 private:
     //! Configuration node's value

@@ -71,6 +71,9 @@ public:
     //! \copydoc    ConfigNode::type()
     Type type() const override;
 
+    //! \copydoc    ConfigNode::toSimplifiedVariant()
+    QVariant toSimplifiedVariant() const override;
+
     /*!
      * Gets the reference to a configuration node
      *
