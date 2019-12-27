@@ -26,6 +26,10 @@
 
 // Qt includes
 #include <QtCore/QDebug>
+#include <QtCore/QLine>
+#include <QtCore/QLineF>
+#include <QtCore/QRect>
+#include <QtCore/QRectF>
 #include <QtTest/QTest>
 
 // System includes
@@ -36,9 +40,11 @@
 
 // Test class declaration --------------------------------------------------------------------------
 
-Q_DECLARE_METATYPE(CppConfigFramework::ConfigNode::Type);
-
 using namespace CppConfigFramework;
+using ConfigNodePtr = std::shared_ptr<ConfigNode>;
+
+Q_DECLARE_METATYPE(ConfigNode::Type);
+Q_DECLARE_METATYPE(ConfigNodePtr);
 
 class TestConfigNode : public QObject
 {
@@ -72,6 +78,18 @@ private slots:
     void testCloneNodeReference();
     void testCloneDerivedObject();
 
+    void testValueNodeToSimplifiedVariant();
+    void testValueNodeToSimplifiedVariant_data();
+
+    void testObjectNodeToSimplifiedVariant();
+    void testObjectNodeToSimplifiedVariant_data();
+
+    void testNodeReferenceToSimplifiedVariant();
+    void testNodeReferenceToSimplifiedVariant_data();
+
+    void testDerivedObjectNodeToSimplifiedVariant();
+    void testDerivedObjectNodeToSimplifiedVariant_data();
+
     void testNodePath();
 
     void testObjectNode();
@@ -104,7 +122,7 @@ void TestConfigNode::cleanup()
 
 void TestConfigNode::testTypeToString()
 {
-    QFETCH(CppConfigFramework::ConfigNode::Type, type);
+    QFETCH(ConfigNode::Type, type);
     QFETCH(QString, expectedResult);
 
     QCOMPARE(ConfigNode::typeToString(type), expectedResult);
@@ -112,7 +130,7 @@ void TestConfigNode::testTypeToString()
 
 void TestConfigNode::testTypeToString_data()
 {
-    QTest::addColumn<CppConfigFramework::ConfigNode::Type>("type");
+    QTest::addColumn<ConfigNode::Type>("type");
     QTest::addColumn<QString>("expectedResult");
 
     QTest::newRow("Value") << ConfigNode::Type::Value << "Value";
@@ -527,6 +545,744 @@ void TestConfigNode::testCloneDerivedObject()
     QCOMPARE(clonedNode->toDerivedObject().config().count(), 1);
     QVERIFY(clonedNode->toDerivedObject().config().contains("null"));
     QVERIFY(clonedNode->toDerivedObject().config().member("null")->isValue());
+}
+
+// Test: ConfigValueNode::toSimplifiedVariant() method ---------------------------------------------
+
+void TestConfigNode::testValueNodeToSimplifiedVariant()
+{
+    QFETCH(ConfigNodePtr, node);
+    QFETCH(QVariant, expectedResult);
+
+    auto actualValue = node->toSimplifiedVariant();
+    QCOMPARE(actualValue, expectedResult);
+}
+
+void TestConfigNode::testValueNodeToSimplifiedVariant_data()
+{
+    QTest::addColumn<ConfigNodePtr>("node");
+    QTest::addColumn<QVariant>("expectedResult");
+
+    {
+        ConfigValueNode node(true);
+        const QVariant expectedResult(true);
+
+        QTest::newRow("ConfigValueNode: bool: true")
+                << ConfigNodePtr(node.clone())
+                << expectedResult;
+    }
+
+    {
+        ConfigValueNode node(false);
+        const QVariant expectedResult(false);
+
+        QTest::newRow("ConfigValueNode: bool: false")
+                << ConfigNodePtr(node.clone())
+                << expectedResult;
+    }
+
+    {
+        ConfigValueNode node(QVariant::fromValue(std::numeric_limits<int64_t>::min()));
+        const QVariant expectedResult(QString("-9223372036854775808"));
+
+        QTest::newRow("ConfigValueNode: int: min")
+                << ConfigNodePtr(node.clone())
+                << expectedResult;
+    }
+
+    {
+        ConfigValueNode node(-9007199254740993LL);
+        const QVariant expectedResult(QString("-9007199254740993"));
+
+        QTest::newRow("ConfigValueNode: int: min string")
+                << ConfigNodePtr(node.clone())
+                << expectedResult;
+    }
+
+    {
+        ConfigValueNode node(-9007199254740992LL);
+        const QVariant expectedResult(-9007199254740992.0);
+
+        QTest::newRow("ConfigValueNode: int: min double")
+                << ConfigNodePtr(node.clone())
+                << expectedResult;
+    }
+
+    {
+        ConfigValueNode node(0);
+        const QVariant expectedResult(0.0);
+
+        QTest::newRow("ConfigValueNode: int: zero")
+                << ConfigNodePtr(node.clone())
+                << expectedResult;
+    }
+
+    {
+        ConfigValueNode node(9007199254740992LL);
+        const QVariant expectedResult(9007199254740992.0);
+
+        QTest::newRow("ConfigValueNode: int: max double")
+                << ConfigNodePtr(node.clone())
+                << expectedResult;
+    }
+
+    {
+        ConfigValueNode node(9007199254740993LL);
+        const QVariant expectedResult(QString("9007199254740993"));
+
+        QTest::newRow("ConfigValueNode: int: max string")
+                << ConfigNodePtr(node.clone())
+                << expectedResult;
+    }
+
+    {
+        ConfigValueNode node(QVariant::fromValue(std::numeric_limits<int64_t>::max()));
+        const QVariant expectedResult(QString("9223372036854775807"));
+
+        QTest::newRow("ConfigValueNode: int: max")
+                << ConfigNodePtr(node.clone())
+                << expectedResult;
+    }
+
+    {
+        ConfigValueNode node(0U);
+        const QVariant expectedResult(0.0);
+
+        QTest::newRow("ConfigValueNode: uint: zero")
+                << ConfigNodePtr(node.clone())
+                << expectedResult;
+    }
+
+    {
+        ConfigValueNode node(9007199254740992ULL);
+        const QVariant expectedResult(9007199254740992.0);
+
+        QTest::newRow("ConfigValueNode: uint: max double")
+                << ConfigNodePtr(node.clone())
+                << expectedResult;
+    }
+
+    {
+        ConfigValueNode node(9007199254740993ULL);
+        const QVariant expectedResult(QString("9007199254740993"));
+
+        QTest::newRow("ConfigValueNode: uint: max string")
+                << ConfigNodePtr(node.clone())
+                << expectedResult;
+    }
+
+    {
+        ConfigValueNode node(QVariant::fromValue(std::numeric_limits<uint64_t>::max()));
+        const QVariant expectedResult(QString("18446744073709551615"));
+
+        QTest::newRow("ConfigValueNode: uint: max")
+                << ConfigNodePtr(node.clone())
+                << expectedResult;
+    }
+
+    {
+        const double value = -std::numeric_limits<double>::max();
+        ConfigValueNode node(value);
+        const QVariant expectedResult(value);
+
+        QTest::newRow("ConfigValueNode: double: min")
+                << ConfigNodePtr(node.clone())
+                << expectedResult;
+    }
+
+    {
+        const double value = 0.0;
+        ConfigValueNode node(value);
+        const QVariant expectedResult(value);
+
+        QTest::newRow("ConfigValueNode: double: zero")
+                << ConfigNodePtr(node.clone())
+                << expectedResult;
+    }
+
+    {
+        const double value = std::numeric_limits<double>::max();
+        ConfigValueNode node(value);
+        const QVariant expectedResult(value);
+
+        QTest::newRow("ConfigValueNode: double: max")
+                << ConfigNodePtr(node.clone())
+                << expectedResult;
+    }
+
+    {
+        const QTime value(1, 2, 3, 456);
+        ConfigValueNode node(value);
+        const QVariant expectedResult("01:02:03.456");
+
+        QTest::newRow("ConfigValueNode: QTime: 1")
+                << ConfigNodePtr(node.clone())
+                << expectedResult;
+    }
+
+    {
+        const QTime value(12, 0);
+        ConfigValueNode node(value);
+        const QVariant expectedResult("12:00:00.000");
+
+        QTest::newRow("ConfigValueNode: QTime: 2")
+                << ConfigNodePtr(node.clone())
+                << expectedResult;
+    }
+
+    {
+        const QTime value(23, 45, 6, 789);
+        ConfigValueNode node(value);
+        const QVariant expectedResult("23:45:06.789");
+
+        QTest::newRow("ConfigValueNode: QTime: 3")
+                << ConfigNodePtr(node.clone())
+                << expectedResult;
+    }
+
+    {
+        const QDate value(2019, 12, 24);
+        ConfigValueNode node(value);
+        const QVariant expectedResult("2019-12-24");
+
+        QTest::newRow("ConfigValueNode: QDate")
+                << ConfigNodePtr(node.clone())
+                << expectedResult;
+    }
+
+    {
+        const QDateTime value(QDate(2019, 12, 24), QTime(12, 0), Qt::OffsetFromUTC, -3600 * 2);
+        ConfigValueNode node(value);
+        const QVariant expectedResult("2019-12-24T12:00:00.000-02:00");
+
+        QTest::newRow("ConfigValueNode: QDateTime: negative UTC offset")
+                << ConfigNodePtr(node.clone())
+                << expectedResult;
+    }
+
+    {
+        const QDateTime value(QDate(2019, 12, 24), QTime(12, 0), Qt::UTC);
+        ConfigValueNode node(value);
+        const QVariant expectedResult("2019-12-24T12:00:00.000Z");
+
+        QTest::newRow("ConfigValueNode: QDateTime: UTC")
+                << ConfigNodePtr(node.clone())
+                << expectedResult;
+    }
+
+    {
+        const QDateTime value(QDate(2019, 12, 24), QTime(12, 0), Qt::OffsetFromUTC, 3600 * 3);
+        ConfigValueNode node(value);
+        const QVariant expectedResult("2019-12-24T12:00:00.000+03:00");
+
+        QTest::newRow("ConfigValueNode: QDateTime: positive UTC offset")
+                << ConfigNodePtr(node.clone())
+                << expectedResult;
+    }
+
+    {
+        const QSize value(100, 200);
+        ConfigValueNode node(value);
+        const QVariantMap expectedResult
+        {
+            { "width",  100 },
+            { "height", 200 }
+        };
+
+        QTest::newRow("ConfigValueNode: QSize: 1")
+                << ConfigNodePtr(node.clone())
+                << QVariant(expectedResult);
+    }
+
+    {
+        const QSize value(-100, 0);
+        ConfigValueNode node(value);
+        const QVariantMap expectedResult
+        {
+            { "width",  -100 },
+            { "height",    0 }
+        };
+
+        QTest::newRow("ConfigValueNode: QSize: 2")
+                << ConfigNodePtr(node.clone())
+                << QVariant(expectedResult);
+    }
+
+    {
+        const QSizeF value(100.0, 200.5);
+        ConfigValueNode node(value);
+        const QVariantMap expectedResult
+        {
+            { "width",  100.0 },
+            { "height", 200.5 }
+        };
+
+        QTest::newRow("ConfigValueNode: QSizeF: 1")
+                << ConfigNodePtr(node.clone())
+                << QVariant(expectedResult);
+    }
+
+    {
+        const QSizeF value(-100.5, 0.0);
+        ConfigValueNode node(value);
+        const QVariantMap expectedResult
+        {
+            { "width",  -100.5 },
+            { "height",    0.0 }
+        };
+
+        QTest::newRow("ConfigValueNode: QSizeF: 2")
+                << ConfigNodePtr(node.clone())
+                << QVariant(expectedResult);
+    }
+
+    {
+        const QPoint value(100, 200);
+        ConfigValueNode node(value);
+        const QVariantMap expectedResult
+        {
+            { "x", 100 },
+            { "y", 200 }
+        };
+
+        QTest::newRow("ConfigValueNode: QPoint: 1")
+                << ConfigNodePtr(node.clone())
+                << QVariant(expectedResult);
+    }
+
+    {
+        const QPoint value(-100, 0);
+        ConfigValueNode node(value);
+        const QVariantMap expectedResult
+        {
+            { "x", -100 },
+            { "y",    0 }
+        };
+
+        QTest::newRow("ConfigValueNode: QPoint: 2")
+                << ConfigNodePtr(node.clone())
+                << QVariant(expectedResult);
+    }
+
+    {
+        const QPointF value(100.0, 200.5);
+        ConfigValueNode node(value);
+        const QVariantMap expectedResult
+        {
+            { "x", 100.0 },
+            { "y", 200.5 }
+        };
+
+        QTest::newRow("ConfigValueNode: QPointF: 1")
+                << ConfigNodePtr(node.clone())
+                << QVariant(expectedResult);
+    }
+
+    {
+        const QPointF value(-100.5, 0.0);
+        ConfigValueNode node(value);
+        const QVariantMap expectedResult
+        {
+            { "x", -100.5 },
+            { "y",    0.0 }
+        };
+
+        QTest::newRow("ConfigValueNode: QPointF: 2")
+                << ConfigNodePtr(node.clone())
+                << QVariant(expectedResult);
+    }
+
+    {
+        const QLine value(100, 200, -100, 0);
+        ConfigValueNode node(value);
+        const QVariantMap expectedResult
+        {
+            { "x1",  100 },
+            { "y1",  200 },
+            { "x2", -100 },
+            { "y2",    0 }
+        };
+
+        QTest::newRow("ConfigValueNode: QLine")
+                << ConfigNodePtr(node.clone())
+                << QVariant(expectedResult);
+    }
+
+    {
+        const QLineF value(100.0, 200.5, -100.5, 0.0);
+        ConfigValueNode node(value);
+        const QVariantMap expectedResult
+        {
+            { "x1",  100.0 },
+            { "y1",  200.5 },
+            { "x2", -100.5 },
+            { "y2",    0.0 }
+        };
+
+        QTest::newRow("ConfigValueNode: QLineF")
+                << ConfigNodePtr(node.clone())
+                << QVariant(expectedResult);
+    }
+
+    {
+        const QRect value(100, 200, 300, 400);
+        ConfigValueNode node(value);
+        const QVariantMap expectedResult
+        {
+            { "x",      100 },
+            { "y",      200 },
+            { "width",  300 },
+            { "height", 400 }
+        };
+
+        QTest::newRow("ConfigValueNode: QRect: 1")
+                << ConfigNodePtr(node.clone())
+                << QVariant(expectedResult);
+    }
+
+    {
+        const QRect value(-100, 0, 300, 400);
+        ConfigValueNode node(value);
+        const QVariantMap expectedResult
+        {
+            { "x",      -100 },
+            { "y",         0 },
+            { "width",   300 },
+            { "height",  400 }
+        };
+
+        QTest::newRow("ConfigValueNode: QRect: 2")
+                << ConfigNodePtr(node.clone())
+                << QVariant(expectedResult);
+    }
+
+    {
+        const QRectF value(100.0, 200.5, 300.0, 400.5);
+        ConfigValueNode node(value);
+        const QVariantMap expectedResult
+        {
+            { "x",      100.0 },
+            { "y",      200.5 },
+            { "width",  300.0 },
+            { "height", 400.5 }
+        };
+
+        QTest::newRow("ConfigValueNode: QRectF: 1")
+                << ConfigNodePtr(node.clone())
+                << QVariant(expectedResult);
+    }
+
+    {
+        const QRectF value(-100.5, 0.0, 300.5, 400.0);
+        ConfigValueNode node(value);
+        const QVariantMap expectedResult
+        {
+            { "x",      -100.5 },
+            { "y",         0.0 },
+            { "width",   300.5 },
+            { "height",  400.0 }
+        };
+
+        QTest::newRow("ConfigValueNode: QRectF: 2")
+                << ConfigNodePtr(node.clone())
+                << QVariant(expectedResult);
+    }
+
+    {
+        const QList<int> listValue { -100, 0, 300, 400 };
+        const QMap<QDate, int> mapValue
+        {
+            { QDate(2019, 12, 1), 1 },
+            { QDate(2019, 12, 2), 2 },
+            { QDate(2019, 12, 3), 3 }
+        };
+        const QVariantList value =
+        {
+            QVariant::fromValue(listValue),
+            QVariant::fromValue(mapValue),
+            QChar('X'),
+            QString("asd"),
+            QByteArray("fgh"),
+            QUrl("http://www.example.com"),
+            QUuid("{12345678-1234-1234-1234-123456789012}")
+        };
+        ConfigValueNode node(value);
+        const QVariantList expectedResult =
+        {
+            QVariantList { -100, 0, 300, 400 },
+            QVariantMap
+            {
+                { QString("2019-12-01"), 1 },
+                { QString("2019-12-02"), 2 },
+                { QString("2019-12-03"), 3 }
+            },
+            QString("X"),
+            QString("asd"),
+            QString("fgh"),
+            QString("http://www.example.com"),
+            QString("{12345678-1234-1234-1234-123456789012}")
+        };
+
+        QTest::newRow("ConfigValueNode: QVariant")
+                << ConfigNodePtr(node.clone())
+                << QVariant(expectedResult);
+    }
+
+    {
+        const QList<int> value { -100, 0, 300, 400 };
+        ConfigValueNode node(QVariant::fromValue(value));
+        const QVariantList expectedResult { -100, 0, 300, 400 };
+
+        QTest::newRow("ConfigValueNode: list")
+                << ConfigNodePtr(node.clone())
+                << QVariant(expectedResult);
+    }
+
+    {
+        const QMap<QVariant, int> value
+        {
+            { 1, 1 },
+            { QVariant(false), 2 },
+            { 1234.5, 3 },
+            { QDate(2019, 12, 4), 4 },
+            { QVariant(), 5 }
+        };
+        ConfigValueNode node(QVariant::fromValue(value));
+        const QVariantMap expectedResult
+        {
+            { QString("1"), 1 },
+            { QString("false"), 2 },
+            { QString("1234.5"), 3 },
+            { QString("2019-12-04"), 4 },
+            { QString(""), 5 }
+        };
+
+        QTest::newRow("ConfigValueNode: map")
+                << ConfigNodePtr(node.clone())
+                << QVariant(expectedResult);
+    }
+}
+
+// Test: ConfigObjectNode::toSimplifiedVariant() method --------------------------------------------
+
+void TestConfigNode::testObjectNodeToSimplifiedVariant()
+{
+    QFETCH(ConfigNodePtr, node);
+    QFETCH(QVariant, expectedResult);
+
+    auto actualValue = node->toSimplifiedVariant();
+    QCOMPARE(actualValue, expectedResult);
+}
+
+void TestConfigNode::testObjectNodeToSimplifiedVariant_data()
+{
+    QTest::addColumn<ConfigNodePtr>("node");
+    QTest::addColumn<QVariant>("expectedResult");
+
+    {
+        ConfigObjectNode node;
+        const QVariantMap expectedResult;
+
+        QTest::newRow("ConfigObjectNode: empty")
+                << ConfigNodePtr(node.clone())
+                << QVariant(expectedResult);
+    }
+
+    {
+        ConfigObjectNode node;
+        node.setMember("param", ConfigValueNode(123));
+        const QVariantMap expectedResult { { "#param", 123 } };
+
+        QTest::newRow("ConfigObjectNode: value node param")
+                << ConfigNodePtr(node.clone())
+                << QVariant(expectedResult);
+    }
+
+    {
+        ConfigObjectNode param;
+        param.setMember("value", ConfigValueNode(123));
+
+        ConfigObjectNode node;
+        node.setMember("param", param);
+
+        const QVariantMap expectedResult
+        {
+            {
+                "param", QVariantMap
+                {
+                    { "#value", 123 }
+                }
+            }
+        };
+
+        QTest::newRow("ConfigObjectNode: object node param")
+                << ConfigNodePtr(node.clone())
+                << QVariant(expectedResult);
+    }
+
+    {
+        const ConfigNodePath reference("node/path");
+        ConfigObjectNode node;
+        node.setMember("param", ConfigNodeReference(reference));
+        const QVariantMap expectedResult { { "&param", reference.path() } };
+
+        QTest::newRow("ConfigObjectNode: node ref param")
+                << ConfigNodePtr(node.clone())
+                << QVariant(expectedResult);
+    }
+
+    {
+        const QList<ConfigNodePath> bases = { ConfigNodePath("node/path") };
+
+        ConfigObjectNode config;
+        config.setMember("value", ConfigValueNode(123));
+
+        const ConfigDerivedObjectNode param(bases, config);
+
+        ConfigObjectNode node;
+        node.setMember("param", param);
+        const QVariantMap expectedResult
+        {
+            {
+                "&param", QVariantMap
+                {
+                    { "base", QString("node/path") },
+                    {
+                        "config", QVariantMap
+                        {
+                            { "#value", 123 }
+                        }
+                    }
+                }
+            }
+        };
+
+        QTest::newRow("ConfigObjectNode: derived object node param")
+                << ConfigNodePtr(node.clone())
+                << QVariant(expectedResult);
+    }
+}
+
+// Test: ConfigNodeReference::toSimplifiedVariant() method -----------------------------------------
+
+void TestConfigNode::testNodeReferenceToSimplifiedVariant()
+{
+    QFETCH(ConfigNodePtr, node);
+    QFETCH(QVariant, expectedResult);
+
+    auto actualValue = node->toSimplifiedVariant();
+    QCOMPARE(actualValue, expectedResult);
+}
+
+void TestConfigNode::testNodeReferenceToSimplifiedVariant_data()
+{
+    QTest::addColumn<ConfigNodePtr>("node");
+    QTest::addColumn<QVariant>("expectedResult");
+
+    {
+        const ConfigNodePath reference("node/path");
+        const ConfigNodeReference node(reference);
+        const QVariant expectedResult(reference.path());
+
+        QTest::newRow("ConfigNodeReference") << ConfigNodePtr(node.clone()) << expectedResult;
+    }
+}
+
+// Test: ConfigDerivedObjectNode::toSimplifiedVariant() method -------------------------------------
+
+void TestConfigNode::testDerivedObjectNodeToSimplifiedVariant()
+{
+    QFETCH(ConfigNodePtr, node);
+    QFETCH(QVariant, expectedResult);
+
+    auto actualValue = node->toSimplifiedVariant();
+    QCOMPARE(actualValue, expectedResult);
+}
+
+void TestConfigNode::testDerivedObjectNodeToSimplifiedVariant_data()
+{
+    QTest::addColumn<ConfigNodePtr>("node");
+    QTest::addColumn<QVariant>("expectedResult");
+
+    {
+        const ConfigDerivedObjectNode node;
+        const QVariant expectedResult = QVariantMap { { "config", QVariantMap() } };
+
+        QTest::newRow("ConfigDerivedObjectNode: no base, empty config")
+                << ConfigNodePtr(node.clone())
+                << expectedResult;
+    }
+
+    {
+        ConfigObjectNode config;
+        config.setMember("param", ConfigValueNode(123));
+
+        const ConfigDerivedObjectNode node({}, config);
+        const QVariantMap expectedResult
+        {
+            {
+                "config",
+                QVariantMap
+                {
+                    { "#param", 123 }
+                }
+            }
+        };
+
+        QTest::newRow("ConfigDerivedObjectNode: no base, non-empty config")
+                << ConfigNodePtr(node.clone())
+                << QVariant(expectedResult);
+    }
+
+    {
+        const QList<ConfigNodePath> bases = { ConfigNodePath("node/path") };
+
+        ConfigObjectNode config;
+        config.setMember("param", ConfigValueNode(123));
+
+        const ConfigDerivedObjectNode node(bases, config);
+        const QVariantMap expectedResult
+        {
+            { "base", QString("node/path") },
+            {
+                "config", QVariantMap
+                {
+                    { "#param", 123 }
+                }
+            }
+        };
+
+        QTest::newRow("ConfigDerivedObjectNode: single base, non-empty config")
+                << ConfigNodePtr(node.clone())
+                << QVariant(expectedResult);
+    }
+
+    {
+        const QList<ConfigNodePath> bases =
+        {
+            ConfigNodePath("node1"),
+            ConfigNodePath("node2")
+        };
+
+        ConfigObjectNode config;
+        config.setMember("param", ConfigValueNode(123));
+
+        const ConfigDerivedObjectNode node(bases, config);
+        const QVariantMap expectedResult
+        {
+            { "base", QStringList { "node1", "node2" } },
+            {
+                "config", QVariantMap
+                {
+                    { "#param", 123 }
+                }
+            }
+        };
+
+        QTest::newRow("ConfigDerivedObjectNode: multiple bases, non-empty config")
+                << ConfigNodePtr(node.clone())
+                << QVariant(expectedResult);
+    }
 }
 
 // Test: nodePath() method -------------------------------------------------------------------------

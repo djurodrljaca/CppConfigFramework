@@ -51,6 +51,13 @@ public:
      */
     ConfigObjectNode(ConfigObjectNode *parent = nullptr);
 
+    /*!
+     * Constructor
+     *
+     * \param   args    Initializer list
+     */
+    ConfigObjectNode(std::initializer_list<std::pair<QString, ConfigNode &&>> args);
+
     //! Copy constructor is disabled
     ConfigObjectNode(const ConfigObjectNode &) = delete;
 
@@ -71,6 +78,9 @@ public:
 
     //! \copydoc    ConfigNode::type()
     Type type() const override;
+
+    //! \copydoc    ConfigNode::toSimplifiedVariant()
+    QVariant toSimplifiedVariant() const override;
 
     /*!
      * Gets the number of members in this node

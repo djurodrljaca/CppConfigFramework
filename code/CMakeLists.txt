@@ -36,6 +36,7 @@ add_library(CppConfigFramework SHARED
     inc/CppConfigFramework/ConfigReaderBase.hpp
     inc/CppConfigFramework/ConfigReaderFactory.hpp
     inc/CppConfigFramework/ConfigValueNode.hpp
+    inc/CppConfigFramework/ConfigWriter.hpp
     inc/CppConfigFramework/EnvironmentVariables.hpp
     inc/CppConfigFramework/HashFunctions.hpp
 
@@ -50,6 +51,7 @@ add_library(CppConfigFramework SHARED
     src/ConfigReaderBase.cpp
     src/ConfigReaderFactory.cpp
     src/ConfigValueNode.cpp
+    src/ConfigWriter.cpp
     src/EnvironmentVariables.cpp
     )
 
