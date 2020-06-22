@@ -788,12 +788,6 @@ void TestConfigLoader::testLoadConfigContainer()
 
         QCOMPARE(requiredAssociative.loadConfig("configWithInvalidItem", *config), false);
         QCOMPARE(optionalAssociative.loadConfig("configWithInvalidItem", *config), false);
-
-        QCOMPARE(requiredSequential.container.size(), 0);
-        QCOMPARE(optionalSequential.container.size(), 0);
-
-        QCOMPARE(requiredAssociative.container.size(), 0);
-        QCOMPARE(optionalAssociative.container.size(), 0);
     }
 }
 
