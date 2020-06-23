@@ -142,11 +142,17 @@ if (CppConfigFramework_CodeCoverage MATCHES ON)
     include(cmake/CodeCoverage.cmake)
     APPEND_COVERAGE_COMPILER_FLAGS()
 
+    set(excludes_cmake_prefix_path)
+    foreach(item ${CMAKE_PREFIX_PATH})
+        list(APPEND excludes_cmake_prefix_path "'${item}/*'")
+    endforeach()
+
     set(CppConfigFramework_CodeCoverage_EXCLUDES
-            "'/usr/include/*'"
-            "'${CMAKE_PREFIX_PATH}/*'"
-            "'${CMAKE_CURRENT_SOURCE_DIR}/tests/*'"
-            "'${CMAKE_CURRENT_BINARY_DIR}/*'"
+            "'/opt/*'"
+            "'/usr/*'"
+            ${excludes_cmake_prefix_path}
+            "'${CMAKE_SOURCE_DIR}/tests/*'"
+            "'${CMAKE_BINARY_DIR}/*'"
         )
 endif()
 
