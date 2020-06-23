@@ -144,6 +144,7 @@ if (CppConfigFramework_CodeCoverage MATCHES ON)
 
     set(excludes_cmake_prefix_path)
     foreach(item ${CMAKE_PREFIX_PATH})
+        get_filename_component(item ${item} ABSOLUTE)
         list(APPEND excludes_cmake_prefix_path "'${item}/*'")
     endforeach()
 
