@@ -26,36 +26,40 @@ add_custom_target(all_tests)
 # --------------------------------------------------------------------------------------------------
 function(CppConfigFramework_AddTest)
     # Function parameters
-    set(options)                        # Boolean parameters
-    set(oneValueParams      TEST_NAME)  # Parameters with one value
-    set(multiValueParams                # Parameters with multiple values
-        ADDITIONAL_SOURCES
-        ADDITIONAL_HEADERS
-        ADDITIONAL_LIBS
-        LABELS
+    set(options)                # Boolean parameters
+    set(oneValueParams          # Parameters with one value
+            TEST_NAME
+        )
+    set(multiValueParams        # Parameters with multiple values
+            ADDITIONAL_SOURCES
+            ADDITIONAL_HEADERS
+            ADDITIONAL_LIBS
+            LABELS
         )
 
     cmake_parse_arguments(PARAM "${options}" "${oneValueParams}" "${multiValueParams}" ${ARGN})
 
     # Create test executable
     add_executable(${PARAM_TEST_NAME}
-        ${PARAM_TEST_NAME}.cpp ${PARAM_ADDITIONAL_SOURCES} ${PARAM_ADDITIONAL_HEADERS}
+            ${PARAM_TEST_NAME}.cpp
+            ${PARAM_ADDITIONAL_SOURCES}
+            ${PARAM_ADDITIONAL_HEADERS}
         )
 
     target_include_directories(${PARAM_TEST_NAME} PUBLIC
-        ${CMAKE_CURRENT_BINARY_DIR}
+            ${CMAKE_CURRENT_BINARY_DIR}
         )
 
     target_link_libraries(${PARAM_TEST_NAME}
-        PUBLIC CppConfigFramework
-        PUBLIC Qt5::Test
-        PUBLIC ${PARAM_ADDITIONAL_LIBS}
+            PUBLIC CppConfigFramework
+            PUBLIC Qt5::Test
+            PUBLIC ${PARAM_ADDITIONAL_LIBS}
         )
 
     set_target_properties(${PARAM_TEST_NAME} PROPERTIES
-        CXX_STANDARD 14
-        CXX_STANDARD_REQUIRED YES
-        CXX_EXTENSIONS NO
+            CXX_STANDARD 14
+            CXX_STANDARD_REQUIRED YES
+            CXX_EXTENSIONS NO
         )
 
     add_test(${PARAM_TEST_NAME} ${PARAM_TEST_NAME})
@@ -66,7 +70,7 @@ function(CppConfigFramework_AddTest)
     # Set test labels
     if (PARAM_LABELS)
         set_tests_properties(${PARAM_TEST_NAME} PROPERTIES
-            LABELS "CPPCONFIGFRAMEWORK;${PARAM_LABELS}"
+                LABELS "CPPCONFIGFRAMEWORK;${PARAM_LABELS}"
             )
     endif()
 endfunction()
@@ -82,10 +86,10 @@ add_subdirectory(unit)
 if (CppConfigFramework_CodeCoverage MATCHES ON)
     # Prepare targets for code coverage
     SETUP_TARGET_FOR_COVERAGE(
-        NAME ctest_coverage_all_tests
-        EXECUTABLE ctest -j ${PROCESSOR_COUNT}
-        DEPENDENCIES all_tests
-        PROJECT_PATH ${PROJECT_SOURCE_DIR}
-        EXCLUDES ${CppConfigFramework_CodeCoverage_EXCLUDES}
+            NAME         ctest_coverage_all_tests
+            EXECUTABLE   ctest
+            DEPENDENCIES all_tests
+            PROJECT_PATH ${PROJECT_SOURCE_DIR}
+            EXCLUDES     ${CppConfigFramework_CodeCoverage_EXCLUDES}
         )
 endif()
