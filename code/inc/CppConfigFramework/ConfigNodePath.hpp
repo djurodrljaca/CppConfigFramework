@@ -197,8 +197,7 @@ public:
      * \return  true    Valid node name
      * \return  false   Invalid node name
      *
-     * The node name must match the regular expression "^[a-zA-Z][a-zA-Z0-9_]*$" or it must be a
-     * decimal integer.
+     * The node name must match the regular expression "^[a-zA-Z][a-zA-Z0-9_]*$".
      */
     static bool validateNodeName(const QString &name);
 
