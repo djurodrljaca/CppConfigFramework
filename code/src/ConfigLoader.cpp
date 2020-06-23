@@ -36,6 +36,101 @@
 namespace CppConfigFramework
 {
 
+bool ConfigLoader::loadConfig(const ConfigNode &node, QString *error)
+{
+    if (!node.isObject())
+    {
+        const QString errorString = QString("Configuration node [%1] is not an Object node!")
+                                    .arg(node.nodePath().path());
+        handleError(errorString);
+
+        if (error != nullptr)
+        {
+            *error = errorString;
+        }
+        return false;
+    }
+
+    QString loadingError;
+
+    if (!loadConfigParameters(node.toObject(), &loadingError))
+    {
+        const QString errorString = QString("Failed to load the configuration parameters [%1]! "
+                                            "Error: [%2]").arg(node.nodePath().path(),
+                                                               loadingError);
+        handleError(errorString);
+
+        if (error != nullptr)
+        {
+            *error = errorString;
+        }
+        return false;
+    }
+
+    // Validate the configuration structure
+    const QString validationError = validateConfig();
+
+    if (!validationError.isEmpty())
+    {
+        const QString errorString = QString("Configuration [%1] is not valid! Error: [%2]")
+                                    .arg(node.nodePath().path(), validationError);
+        handleError(errorString);
+
+        if (error != nullptr)
+        {
+            *error = errorString;
+        }
+        return false;
+    }
+
+    return true;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+bool ConfigLoader::loadConfig(const QString &parameterName,
+                              const ConfigObjectNode &config,
+                              QString *error)
+{
+    if (!ConfigNodePath::validateNodeName(parameterName))
+    {
+        const QString errorString = QString("Parameter name [%1] is not valid!").arg(parameterName);
+        handleError(errorString);
+
+        if (error != nullptr)
+        {
+            *error = errorString;
+        }
+        return false;
+    }
+
+    return loadConfigAtPath(ConfigNodePath(parameterName), config, error);
+}
+
+// -------------------------------------------------------------------------------------------------
+
+bool ConfigLoader::loadOptionalConfig(const QString &parameterName,
+                                      const ConfigObjectNode &config,
+                                      bool *loaded,
+                                      QString *error)
+{
+    if (!ConfigNodePath::validateNodeName(parameterName))
+    {
+        const QString errorString = QString("Parameter name [%1] is not valid!").arg(parameterName);
+        handleError(errorString);
+
+        if (error != nullptr)
+        {
+            *error = errorString;
+        }
+        return false;
+    }
+
+    return loadOptionalConfigAtPath(ConfigNodePath(parameterName), config, loaded, error);
+}
+
+// -------------------------------------------------------------------------------------------------
+
 bool ConfigLoader::loadConfigAtPath(const ConfigNodePath &path,
                                     const ConfigObjectNode &config,
                                     QString *error)
@@ -71,7 +166,7 @@ bool ConfigLoader::loadConfigAtPath(const ConfigNodePath &path,
     }
 
     // Load the configuration structure from the configuration node
-    return loadConfigFromNode(*node, error);
+    return loadConfig(*node, error);
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -123,7 +218,7 @@ bool ConfigLoader::loadOptionalConfigAtPath(const ConfigNodePath &path,
     }
 
     // Load the configuration structure from the configuration node
-    const bool result = loadConfigFromNode(*node, error);
+    const bool result = loadConfig(*node, error);
 
     if (loaded != nullptr)
     {
@@ -140,101 +235,6 @@ bool ConfigLoader::loadOptionalConfigAtPath(const QString &path,
                                             QString *error)
 {
     return loadOptionalConfigAtPath(ConfigNodePath(path), config, loaded, error);
-}
-
-// -------------------------------------------------------------------------------------------------
-
-bool ConfigLoader::loadConfig(const QString &parameterName,
-                              const ConfigObjectNode &config,
-                              QString *error)
-{
-    if (!ConfigNodePath::validateNodeName(parameterName))
-    {
-        const QString errorString = QString("Parameter name [%1] is not valid!").arg(parameterName);
-        handleError(errorString);
-
-        if (error != nullptr)
-        {
-            *error = errorString;
-        }
-        return false;
-    }
-
-    return loadConfigAtPath(ConfigNodePath(parameterName), config, error);
-}
-
-// -------------------------------------------------------------------------------------------------
-
-bool ConfigLoader::loadOptionalConfig(const QString &parameterName,
-                                      const ConfigObjectNode &config,
-                                      bool *loaded,
-                                      QString *error)
-{
-    if (!ConfigNodePath::validateNodeName(parameterName))
-    {
-        const QString errorString = QString("Parameter name [%1] is not valid!").arg(parameterName);
-        handleError(errorString);
-
-        if (error != nullptr)
-        {
-            *error = errorString;
-        }
-        return false;
-    }
-
-    return loadOptionalConfigAtPath(ConfigNodePath(parameterName), config, loaded, error);
-}
-
-// -------------------------------------------------------------------------------------------------
-
-bool ConfigLoader::loadConfigFromNode(const ConfigNode &node, QString *error)
-{
-    if (!node.isObject())
-    {
-        const QString errorString = QString("Configuration node [%1] is not an Object node!")
-                                    .arg(node.nodePath().path());
-        handleError(errorString);
-
-        if (error != nullptr)
-        {
-            *error = errorString;
-        }
-        return false;
-    }
-
-    QString loadingError;
-
-    if (!loadConfigParameters(node.toObject(), &loadingError))
-    {
-        const QString errorString = QString("Failed to load the configuration parameters [%1]! "
-                                            "Error: [%2]").arg(node.nodePath().path(),
-                                                               loadingError);
-        handleError(errorString);
-
-        if (error != nullptr)
-        {
-            *error = errorString;
-        }
-        return false;
-    }
-
-    // Validate the configuration structure
-    const QString validationError = validateConfig();
-
-    if (!validationError.isEmpty())
-    {
-        const QString errorString = QString("Configuration [%1] is not valid! Error: [%2]")
-                                    .arg(node.nodePath().path(), validationError);
-        handleError(errorString);
-
-        if (error != nullptr)
-        {
-            *error = errorString;
-        }
-        return false;
-    }
-
-    return true;
 }
 
 // -------------------------------------------------------------------------------------------------
