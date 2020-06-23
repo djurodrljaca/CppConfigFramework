@@ -14,7 +14,7 @@
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt5Test REQUIRED)
+find_package(Qt5 COMPONENTS Test REQUIRED)
 
 # --------------------------------------------------------------------------------------------------
 # Custom (meta) targets
@@ -54,12 +54,6 @@ function(CppConfigFramework_AddTest)
             PUBLIC CppConfigFramework
             PUBLIC Qt5::Test
             PUBLIC ${PARAM_ADDITIONAL_LIBS}
-        )
-
-    set_target_properties(${PARAM_TEST_NAME} PROPERTIES
-            CXX_STANDARD 14
-            CXX_STANDARD_REQUIRED YES
-            CXX_EXTENSIONS NO
         )
 
     add_test(${PARAM_TEST_NAME} ${PARAM_TEST_NAME})
