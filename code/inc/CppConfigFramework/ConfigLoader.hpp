@@ -66,6 +66,54 @@ public:
     /*!
      * Loads configuration parameters for this configuration structure
      *
+     * \param   node    Configuration node from which this configuration structure should be loaded
+     *
+     * \param[out]  error   Optional output for the error string
+     *
+     * \retval  true    Success
+     * \retval  false   Failure
+     */
+    bool loadConfig(const ConfigNode &node, QString *error = nullptr);
+
+    /*!
+     * Loads configuration parameters for this configuration structure
+     *
+     * \param   parameterName   Name of the parameter (member in 'config') for this configuration
+     *                          structure
+     * \param   config          Configuration node from which this configuration structure should be
+     *                          loaded
+     *
+     * \param[out]  error   Optional output for the error string
+     *
+     * \retval  true    Success
+     * \retval  false   Failure
+     */
+    bool loadConfig(const QString &parameterName,
+                    const ConfigObjectNode &config,
+                    QString *error = nullptr);
+
+    /*!
+     * Loads configuration parameters for this optional configuration structure
+     *
+     * \param   parameterName   Name of the parameter (member in 'config') for this configuration
+     *                          structure
+     * \param   config          Configuration node from which this configuration structure should be
+     *                          loaded
+     *
+     * \param[out]  loaded  Optional output for the loading result
+     * \param[out]  error   Optional output for the error string
+     *
+     * \retval  true    Success
+     * \retval  false   Failure
+     */
+    bool loadOptionalConfig(const QString &parameterName,
+                            const ConfigObjectNode &config,
+                            bool *loaded = nullptr,
+                            QString *error = nullptr);
+
+    /*!
+     * Loads configuration parameters for this configuration structure
+     *
      * \param   path    Node path to the configuration node for this configuration structure
      * \param   config  Configuration node from which this configuration structure should be loaded
      *
@@ -105,42 +153,6 @@ public:
                                   const ConfigObjectNode &config,
                                   bool *loaded = nullptr,
                                   QString *error = nullptr);
-
-    /*!
-     * Loads configuration parameters for this configuration structure
-     *
-     * \param   parameterName   Name of the parameter (member in 'config') for this configuration
-     *                          structure
-     * \param   config          Configuration node from which this configuration structure should be
-     *                          loaded
-     *
-     * \param[out]  error   Optional output for the error string
-     *
-     * \retval  true    Success
-     * \retval  false   Failure
-     */
-    bool loadConfig(const QString &parameterName,
-                    const ConfigObjectNode &config,
-                    QString *error = nullptr);
-
-    /*!
-     * Loads configuration parameters for this optional configuration structure
-     *
-     * \param   parameterName   Name of the parameter (member in 'config') for this configuration
-     *                          structure
-     * \param   config          Configuration node from which this configuration structure should be
-     *                          loaded
-     *
-     * \param[out]  loaded  Optional output for the loading result
-     * \param[out]  error   Optional output for the error string
-     *
-     * \retval  true    Success
-     * \retval  false   Failure
-     */
-    bool loadOptionalConfig(const QString &parameterName,
-                            const ConfigObjectNode &config,
-                            bool *loaded = nullptr,
-                            QString *error = nullptr);
 
 protected:
     /*!
@@ -348,18 +360,6 @@ protected:
                                      QString *error = nullptr);
 
 private:
-    /*!
-     * Loads configuration parameters for this configuration structure
-     *
-     * \param   node    Configuration node from which this configuration structure should be loaded
-     *
-     * \param[out]  error   Optional output for the error string
-     *
-     * \retval  true    Success
-     * \retval  false   Failure
-     */
-    bool loadConfigFromNode(const ConfigNode &node, QString *error = nullptr);
-
     /*!
      * Loads the configuration parameter from the configuration node with validation
      *
@@ -842,7 +842,7 @@ bool ConfigLoader::loadConfigContainerFromNode(T *container,
         const auto *itemNode = nodeObject.member(itemName);
         Q_ASSERT(itemNode != nullptr);
 
-        if (!item.loadConfigFromNode(*itemNode, error))
+        if (!item.loadConfig(*itemNode, error))
         {
             return false;
         }
