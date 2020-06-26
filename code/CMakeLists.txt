@@ -38,7 +38,7 @@ add_library(CppConfigFramework SHARED
         inc/CppConfigFramework/ConfigValueNode.hpp
         inc/CppConfigFramework/ConfigWriter.hpp
         inc/CppConfigFramework/EnvironmentVariables.hpp
-        inc/CppConfigFramework/HashFunctions.hpp
+        inc/CppConfigFramework/LoggingCategories.hpp
 
         src/ConfigDerivedObjectNode.cpp
         src/ConfigLoader.cpp
@@ -53,6 +53,7 @@ add_library(CppConfigFramework SHARED
         src/ConfigValueNode.cpp
         src/ConfigWriter.cpp
         src/EnvironmentVariables.cpp
+        src/LoggingCategories.cpp
     )
 
 include(GenerateExportHeader)

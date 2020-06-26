@@ -49,8 +49,8 @@ private slots:
     void cleanup();
 
     // Test functions
-    void testConfigParameterDefaultValidator();
-    void testConfigParameterDefaultValidator_data();
+    void testDefaultConfigParameterValidator();
+    void testDefaultConfigParameterValidator_data();
 
     void testConfigParameterRangeValidator();
     void testConfigParameterRangeValidator_data();
@@ -79,20 +79,17 @@ void TestConfigParameterValidator::cleanup()
 {
 }
 
-// Test: ConfigParameterValidator ------------------------------------------------------------------
+// Test: defaultConfigParameterValidator -----------------------------------------------------------
 
-void TestConfigParameterValidator::testConfigParameterDefaultValidator()
+void TestConfigParameterValidator::testDefaultConfigParameterValidator()
 {
     QFETCH(int, parameterValue);
 
     // Validates everything as true
-    ConfigParameterDefaultValidator<int> validator;
-
-    QString error;
-    QVERIFY(validator(parameterValue, &error));
+    QVERIFY(defaultConfigParameterValidator(parameterValue));
 }
 
-void TestConfigParameterValidator::testConfigParameterDefaultValidator_data()
+void TestConfigParameterValidator::testDefaultConfigParameterValidator_data()
 {
     QTest::addColumn<int>("parameterValue");
 
@@ -111,8 +108,7 @@ void TestConfigParameterValidator::testConfigParameterRangeValidator()
     // Validates values in range
     ConfigParameterRangeValidator<int> validator(-1000, 1000);
 
-    QString error;
-    QCOMPARE(validator(parameterValue, &error), expectedResult);
+    QCOMPARE(validator(parameterValue), expectedResult);
 }
 
 void TestConfigParameterValidator::testConfigParameterRangeValidator_data()
@@ -142,8 +138,7 @@ void TestConfigParameterValidator::testConfigParameterListValidator()
     // Validates all from the list
     ConfigParameterListValidator<QString> validator({ "a", "b", "c" });
 
-    QString error;
-    QCOMPARE(validator(parameterValue, &error), expectedResult);
+    QCOMPARE(validator(parameterValue), expectedResult);
 }
 
 void TestConfigParameterValidator::testConfigParameterListValidator_data()

@@ -43,13 +43,12 @@ public:
     int param = 0;
 
 private:
-    bool loadConfigParameters(const ConfigObjectNode &config, QString *error) override
+    bool loadConfigParameters(const ConfigObjectNode &config) override
     {
         return loadRequiredConfigParameter(&param,
                                            "param",
                                            config,
-                                           ConfigParameterRangeValidator<int>(-50, 50),
-                                           error);
+                                           makeConfigParameterRangeValidator(-50, 50));
     }
 
     QString validateConfig() const override
@@ -69,9 +68,9 @@ public:
     int param = 0;
 
 private:
-    bool loadConfigParameters(const ConfigObjectNode &config, QString *error) override
+    bool loadConfigParameters(const ConfigObjectNode &config) override
     {
-        return loadRequiredConfigParameter(&param, "0param", config, error);
+        return loadRequiredConfigParameter(&param, "0param", config);
     }
 };
 
@@ -81,15 +80,14 @@ public:
     int param = 0;
 
 private:
-    bool loadConfigParameters(const ConfigObjectNode &config, QString *error) override
+    bool loadConfigParameters(const ConfigObjectNode &config) override
     {
         bool loaded = false;
         return loadOptionalConfigParameter(&param,
                                            "param",
                                            config,
-                                           ConfigParameterRangeValidator<int>(-50, 50),
-                                           &loaded,
-                                           error);
+                                           makeConfigParameterRangeValidator(-50, 50),
+                                           &loaded);
     }
 };
 
@@ -99,10 +97,10 @@ public:
     int param = 0;
 
 private:
-    bool loadConfigParameters(const ConfigObjectNode &config, QString *error) override
+    bool loadConfigParameters(const ConfigObjectNode &config) override
     {
         bool loaded = false;
-        return loadOptionalConfigParameter(&param, "0param", config, &loaded, error);
+        return loadOptionalConfigParameter(&param, "0param", config, &loaded);
     }
 };
 
@@ -119,13 +117,12 @@ public:
     int param = 0;
 
 private:
-    bool loadConfigParameters(const ConfigObjectNode &config, QString *error) override
+    bool loadConfigParameters(const ConfigObjectNode &config) override
     {
         return loadRequiredConfigParameter(&param,
                                            "param",
                                            config,
-                                           ConfigParameterRangeValidator<int>(-50, 50),
-                                           error);
+                                           makeConfigParameterRangeValidator(-50, 50));
     }
 };
 
@@ -141,9 +138,12 @@ private:
         return TestConfigContainerItem(name);
     }
 
-    bool loadConfigParameters(const ConfigObjectNode &config, QString *error) override
+    bool loadConfigParameters(const ConfigObjectNode &config) override
     {
-        return loadRequiredConfigContainer(&container, "container", config, createItem, error);
+        return loadRequiredConfigContainer(&container,
+                                           "container",
+                                           config,
+                                           createItem);
     }
 };
 
@@ -159,15 +159,10 @@ private:
         return TestConfigContainerItem(name);
     }
 
-    bool loadConfigParameters(const ConfigObjectNode &config, QString *error) override
+    bool loadConfigParameters(const ConfigObjectNode &config) override
     {
         bool loaded = false;
-        return loadOptionalConfigContainer(&container,
-                                           "container",
-                                           config,
-                                           createItem,
-                                           &loaded,
-                                           error);
+        return loadOptionalConfigContainer(&container, "container", config, createItem, &loaded);
     }
 };
 
@@ -177,9 +172,9 @@ public:
     QList<TestConfigContainerItem> container;
 
 private:
-    bool loadConfigParameters(const ConfigObjectNode &config, QString *error) override
+    bool loadConfigParameters(const ConfigObjectNode &config) override
     {
-        return loadRequiredConfigContainer(&container, "0container", config, error);
+        return loadRequiredConfigContainer(&container, "0container", config);
     }
 };
 
@@ -189,14 +184,10 @@ public:
     QList<TestConfigContainerItem> container;
 
 private:
-    bool loadConfigParameters(const ConfigObjectNode &config, QString *error) override
+    bool loadConfigParameters(const ConfigObjectNode &config) override
     {
         bool loaded = false;
-        return loadOptionalConfigContainer(&container,
-                                           "0container",
-                                           config,
-                                           &loaded,
-                                           error);
+        return loadOptionalConfigContainer(&container, "0container", config, &loaded);
     }
 };
 
@@ -275,10 +266,7 @@ void TestConfigLoader::testLoadConfigAtPath()
     QVERIFY(config);
 
     TestRequiredConfigParameter configStructure;
-    QString error;
-    QCOMPARE(configStructure.loadConfigAtPath(path, *config, &error), expectedResult);
-    qDebug() << "TestConfigLoader::testLoadConfigAtPath: error string:" << error;
-
+    QCOMPARE(configStructure.loadConfigAtPath(path, *config), expectedResult);
     QCOMPARE(configStructure.param, expectedResultValue);
 }
 
@@ -326,11 +314,7 @@ void TestConfigLoader::testLoadOptionalConfigAtPath()
 
     TestRequiredConfigParameter configStructure;
     bool loaded = false;
-    QString error;
-    QCOMPARE(configStructure.loadOptionalConfigAtPath(path, *config, &loaded, &error),
-             expectedResult);
-    qDebug() << "TestConfigLoader::testLoadOptionalConfigAtPath: error string:" << error;
-
+    QCOMPARE(configStructure.loadOptionalConfigAtPath(path, *config, &loaded), expectedResult);
     QCOMPARE(loaded, expectedResultLoaded);
     QCOMPARE(configStructure.param, expectedResultValue);
 }
@@ -379,9 +363,7 @@ void TestConfigLoader::testLoadConfig()
     QVERIFY(config);
 
     TestRequiredConfigParameter configStructure;
-    QString error;
-    QCOMPARE(configStructure.loadConfig(parameterName, *config, &error), expectedResult);
-    qDebug() << "TestConfigLoader::testLoadConfig: error string:" << error;
+    QCOMPARE(configStructure.loadConfig(parameterName, *config), expectedResult);
 
     QCOMPARE(configStructure.param, expectedResultValue);
 }
@@ -426,11 +408,7 @@ void TestConfigLoader::testLoadOptionalConfig()
 
     TestRequiredConfigParameter configStructure;
     bool loaded = false;
-    QString error;
-    QCOMPARE(configStructure.loadOptionalConfig(parameterName, *config, &loaded, &error),
-             expectedResult);
-    qDebug() << "TestConfigLoader::testLoadOptionalConfig: error string:" << error;
-
+    QCOMPARE(configStructure.loadOptionalConfig(parameterName, *config, &loaded), expectedResult);
     QCOMPARE(loaded, expectedResultLoaded);
     QCOMPARE(configStructure.param, expectedResultValue);
 }

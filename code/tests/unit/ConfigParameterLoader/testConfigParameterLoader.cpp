@@ -258,10 +258,7 @@ void TestConfigParameterLoader::testBool()
     QFETCH(bool, expectedParameterValue);
 
     bool parameterValue = false;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testBool: error string:" << error;
-
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 
@@ -340,10 +337,7 @@ void TestConfigParameterLoader::testInt8()
     QFETCH(bool, expectedResult);
 
     int8_t parameterValue = 0;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testInt8: error string:" << error;
-
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 
@@ -634,9 +628,7 @@ void TestConfigParameterLoader::testUInt8()
     QFETCH(bool, expectedResult);
 
     uint8_t parameterValue = 0U;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testUInt8: error string:" << error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
 
     QCOMPARE(parameterValue, expectedParameterValue);
 }
@@ -895,10 +887,7 @@ void TestConfigParameterLoader::testInt16()
     QFETCH(bool, expectedResult);
 
     int16_t parameterValue = 0;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testInt16: error string:" << error;
-
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 
@@ -1168,10 +1157,7 @@ void TestConfigParameterLoader::testUInt16()
     QFETCH(bool, expectedResult);
 
     uint16_t parameterValue = 0U;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testUInt16: error string:" << error;
-
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 
@@ -1415,10 +1401,7 @@ void TestConfigParameterLoader::testInt32()
     QFETCH(bool, expectedResult);
 
     int32_t parameterValue = 0;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testInt32: error string:" << error;
-
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 
@@ -1667,10 +1650,7 @@ void TestConfigParameterLoader::testUInt32()
     QFETCH(bool, expectedResult);
 
     uint32_t parameterValue = 0U;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testUInt32: error string:" << error;
-
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 
@@ -1902,10 +1882,7 @@ void TestConfigParameterLoader::testInt64()
     QFETCH(bool, expectedResult);
 
     int64_t parameterValue = 0;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testInt64: error string:" << error;
-
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 
@@ -2142,10 +2119,7 @@ void TestConfigParameterLoader::testUInt64()
     QFETCH(bool, expectedResult);
 
     uint64_t parameterValue = 0U;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testUInt64: error string:" << error;
-
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 
@@ -2364,10 +2338,7 @@ void TestConfigParameterLoader::testFloat()
     QFETCH(bool, expectedResult);
 
     float parameterValue = 0;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testFloat: error string:" << error;
-
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 
@@ -2572,10 +2543,7 @@ void TestConfigParameterLoader::testDouble()
     QFETCH(bool, expectedResult);
 
     double parameterValue = 0;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testDouble: error string:" << error;
-
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 
@@ -2741,10 +2709,7 @@ void TestConfigParameterLoader::testChar()
     QFETCH(bool, expectedResult);
 
     QChar parameterValue;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testChar: error string:" << error;
-
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 
@@ -2878,10 +2843,7 @@ void TestConfigParameterLoader::testString()
     QFETCH(bool, expectedResult);
 
     QString parameterValue;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testString: error string:" << error;
-
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 
@@ -3025,10 +2987,7 @@ void TestConfigParameterLoader::testByteArray()
     QFETCH(bool, expectedResult);
 
     QByteArray parameterValue;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testByteArray: error string:" << error;
-
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 
@@ -3179,34 +3138,22 @@ void TestConfigParameterLoader::testStdString()
 
     // std::string
     std::string parameterValue1;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue1, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testString: error string:" << error;
-
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue1), expectedResult);
     QCOMPARE(parameterValue1, expectedParameterValue.toStdString());
 
     // std::wstring
     std::wstring parameterValue2;
-    error.clear();
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue2, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testString: error string:" << error;
-
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue2), expectedResult);
     QCOMPARE(parameterValue2, expectedParameterValue.toStdWString());
 
     // std::u16string
     std::u16string parameterValue3;
-    error.clear();
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue3, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testString: error string:" << error;
-
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue3), expectedResult);
     QCOMPARE(parameterValue3, expectedParameterValue.toStdU16String());
 
     // std::u32string
     std::u32string parameterValue4;
-    error.clear();
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue4, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testString: error string:" << error;
-
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue4), expectedResult);
     QCOMPARE(parameterValue4, expectedParameterValue.toStdU32String());
 }
 
@@ -3259,10 +3206,7 @@ void TestConfigParameterLoader::testDate()
     QFETCH(bool, expectedResult);
 
     QDate parameterValue;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testDate: error string:" << error;
-
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 
@@ -3312,10 +3256,7 @@ void TestConfigParameterLoader::testTime()
     QFETCH(bool, expectedResult);
 
     QTime parameterValue;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testTime: error string:" << error;
-
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 
@@ -3365,10 +3306,7 @@ void TestConfigParameterLoader::testDateTime()
     QFETCH(bool, expectedResult);
 
     QDateTime parameterValue;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testDateTime: error string:" << error;
-
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 
@@ -3428,10 +3366,7 @@ void TestConfigParameterLoader::testVariant()
     QFETCH(bool, expectedResult);
 
     QVariant parameterValue;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testVariant: error string:" << error;
-
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, nodeValue);
 }
 
@@ -3457,10 +3392,7 @@ void TestConfigParameterLoader::testUrl()
     QFETCH(bool, expectedResult);
 
     QUrl parameterValue;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testUrl: error string:" << error;
-
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 
@@ -3510,10 +3442,7 @@ void TestConfigParameterLoader::testUuid()
     QFETCH(bool, expectedResult);
 
     QUuid parameterValue;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testUuid: error string:" << error;
-
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 
@@ -3568,15 +3497,11 @@ void TestConfigParameterLoader::testSize()
     QFETCH(bool, expectedResult);
 
     QSize parameterValue1;
-    QString error1;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue1, &error1), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testSize: error string:" << error1;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue1), expectedResult);
     QCOMPARE(parameterValue1, expectedParameterValue1);
 
     QSizeF parameterValue2;
-    QString error2;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue2, &error2), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testSize: error string:" << error2;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue2), expectedResult);
     QCOMPARE(parameterValue2, expectedParameterValue2);
 }
 
@@ -3690,15 +3615,11 @@ void TestConfigParameterLoader::testPoint()
     QFETCH(bool, expectedResult);
 
     QPoint parameterValue1;
-    QString error1;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue1, &error1), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testPoint: error string:" << error1;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue1), expectedResult);
     QCOMPARE(parameterValue1, expectedParameterValue1);
 
     QPointF parameterValue2;
-    QString error2;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue2, &error2), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testPoint: error string:" << error2;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue2), expectedResult);
     QCOMPARE(parameterValue2, expectedParameterValue2);
 }
 
@@ -3807,15 +3728,11 @@ void TestConfigParameterLoader::testLine()
     QFETCH(bool, expectedResult);
 
     QLine parameterValue1;
-    QString error1;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue1, &error1), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testLine: error string:" << error1;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue1), expectedResult);
     QCOMPARE(parameterValue1, expectedParameterValue1);
 
     QLineF parameterValue2;
-    QString error2;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue2, &error2), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testLine: error string:" << error2;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue2), expectedResult);
     QCOMPARE(parameterValue2, expectedParameterValue2);
 }
 
@@ -3943,15 +3860,11 @@ void TestConfigParameterLoader::testRect()
     QFETCH(bool, expectedResult);
 
     QRect parameterValue1;
-    QString error1;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue1, &error1), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testRect: error string:" << error1;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue1), expectedResult);
     QCOMPARE(parameterValue1, expectedParameterValue1);
 
     QRectF parameterValue2;
-    QString error2;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue2, &error2), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testRect: error string:" << error2;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue2), expectedResult);
     QCOMPARE(parameterValue2, expectedParameterValue2);
 }
 
@@ -4113,9 +4026,7 @@ void TestConfigParameterLoader::testStringList()
     QFETCH(bool, expectedResult);
 
     QStringList parameterValue;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testStringList: error string:" << error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 
@@ -4170,15 +4081,11 @@ void TestConfigParameterLoader::testPair()
     QFETCH(bool, expectedResult);
 
     TestPair parameterValue1;
-    QString error1;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue1, &error1), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testPair: error string:" << error1;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue1), expectedResult);
     QCOMPARE(parameterValue1, expectedParameterValue1);
 
     TestStdPair parameterValue2;
-    QString error2;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue2, &error2), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testPair: error string:" << error2;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue2), expectedResult);
     QCOMPARE(parameterValue2, expectedParameterValue2);
 }
 
@@ -4225,9 +4132,7 @@ void TestConfigParameterLoader::testList()
     QFETCH(bool, expectedResult);
 
     TestList parameterValue;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testList: error string:" << error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 
@@ -4289,9 +4194,7 @@ void TestConfigParameterLoader::testStdList()
     QFETCH(bool, expectedResult);
 
     TestStdList parameterValue;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testStdList: error string:" << error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 
@@ -4354,9 +4257,7 @@ void TestConfigParameterLoader::testVector()
     QFETCH(bool, expectedResult);
 
     TestVector parameterValue;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testVector: error string:" << error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 
@@ -4408,9 +4309,7 @@ void TestConfigParameterLoader::testStdVector()
     QFETCH(bool, expectedResult);
 
     TestStdVector parameterValue;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testStdVector: error string:" << error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 
@@ -4462,9 +4361,7 @@ void TestConfigParameterLoader::testSet()
     QFETCH(bool, expectedResult);
 
     TestSet parameterValue;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testSet: error string:" << error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 
@@ -4522,9 +4419,7 @@ void TestConfigParameterLoader::testMap()
     QFETCH(bool, expectedResult);
 
     TestMap parameterValue;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testMap: error string:" << error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 
@@ -4572,9 +4467,7 @@ void TestConfigParameterLoader::testStdMap()
     QFETCH(bool, expectedResult);
 
     TestStdMap parameterValue;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::TestStdMap: error string:" << error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 
@@ -4622,9 +4515,7 @@ void TestConfigParameterLoader::testHash()
     QFETCH(bool, expectedResult);
 
     TestHash parameterValue;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testHash: error string:" << error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 
@@ -4672,9 +4563,7 @@ void TestConfigParameterLoader::testStdHash()
     QFETCH(bool, expectedResult);
 
     TestStdHash parameterValue;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::TestStdHash: error string:" << error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 
@@ -4715,9 +4604,7 @@ void TestConfigParameterLoader::testMultiMap()
     QFETCH(bool, expectedResult);
 
     TestMultiMap parameterValue;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testMultiMap: error string:" << error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 
@@ -4764,9 +4651,7 @@ void TestConfigParameterLoader::testMultiHash()
     QFETCH(bool, expectedResult);
 
     TestMultiHash parameterValue;
-    QString error;
-    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue, &error), expectedResult);
-    qDebug() << "TestConfigParameterLoader::testMultiHash: error string:" << error;
+    QCOMPARE(ConfigParameterLoader::load(nodeValue, &parameterValue), expectedResult);
     QCOMPARE(parameterValue, expectedParameterValue);
 }
 

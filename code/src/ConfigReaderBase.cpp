@@ -26,6 +26,7 @@
 #include <CppConfigFramework/ConfigNodeReference.hpp>
 #include <CppConfigFramework/ConfigObjectNode.hpp>
 #include <CppConfigFramework/ConfigValueNode.hpp>
+#include <CppConfigFramework/LoggingCategories.hpp>
 
 // Qt includes
 #include <QtCore/QStringBuilder>
@@ -120,8 +121,7 @@ QStringList ConfigReaderBase::unresolvedReferences(const ConfigObjectNode &node)
 
 bool ConfigReaderBase::resolveReferences(
         const std::vector<const ConfigObjectNode *> &externalConfigs,
-        ConfigObjectNode *config,
-        QString *error) const
+        ConfigObjectNode *config) const
 {
     auto result = ReferenceResolutionResult::Unchanged;
     uint32_t resolutionCycle;
@@ -132,7 +132,7 @@ bool ConfigReaderBase::resolveReferences(
          resolutionCycle++)
     {
         // Try to resolve references without external configuration nodes
-        auto newResult = resolveObjectReferences({}, config, error);
+        auto newResult = resolveObjectReferences({}, config);
 
         switch (newResult)
         {
@@ -153,7 +153,7 @@ bool ConfigReaderBase::resolveReferences(
                 }
 
                 // External configuration nodes are provided, try to resolve references with them
-                newResult = resolveObjectReferences(externalConfigs, config, error);
+                newResult = resolveObjectReferences(externalConfigs, config);
 
                 switch (newResult)
                 {
@@ -167,28 +167,25 @@ bool ConfigReaderBase::resolveReferences(
                     case ReferenceResolutionResult::Unchanged:
                     {
                         // Still unchanged
-                        if (error != nullptr)
-                        {
-                            *error = QString("No references were resolved in the last cycle even "
-                                             "after using the external configuration nodes:"
-                                             "\n    cycle no.: %1"
-                                             "\n    unresolved references: [%2]")
-                                     .arg(resolutionCycle)
-                                     .arg(unresolvedReferences(*config).join("; "));
-                        }
+                        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                                << QString("No references were resolved in the last cycle even "
+                                           "after using the external configuration nodes:"
+                                           "\n    cycle no.: %1"
+                                           "\n    unresolved references: [%2]")
+                                   .arg(resolutionCycle)
+                                   .arg(unresolvedReferences(*config).join("; "));
                         return false;
                     }
 
                     case ReferenceResolutionResult::Error:
                     {
-                        if (error != nullptr)
-                        {
-                            *error = QString("Failed to resolve references when using the external "
-                                             "configuration nodes:"
-                                             "\n    error: [%1]"
-                                             "\n    unresolved references: [%2]")
-                                     .arg(*error, unresolvedReferences(*config).join("; "));
-                        }
+                        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                                << QString("Failed to resolve references when using the external "
+                                           "configuration nodes:"
+                                           "\n    cycle no.: %1"
+                                           "\n    unresolved references: [%2]")
+                                   .arg(resolutionCycle)
+                                   .arg(unresolvedReferences(*config).join("; "));
                         return false;
                     }
                 }
@@ -197,13 +194,12 @@ bool ConfigReaderBase::resolveReferences(
 
             case ReferenceResolutionResult::Error:
             {
-                if (error != nullptr)
-                {
-                    *error = QString("Failed to resolve references:"
-                                     "\n    error: [%1]"
-                                     "\n    unresolved references: [%2]")
-                             .arg(*error, unresolvedReferences(*config).join("; "));
-                }
+                qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                        << QString("Failed to resolve references:"
+                                   "\n    cycle no.: %1"
+                                   "\n    unresolved references: [%2]")
+                           .arg(resolutionCycle)
+                           .arg(unresolvedReferences(*config).join("; "));
                 return false;
             }
         }
@@ -211,14 +207,12 @@ bool ConfigReaderBase::resolveReferences(
 
     if (result != ReferenceResolutionResult::Resolved)
     {
-        if (error != nullptr)
-        {
-            *error = QString("Failed to fully resolve references:"
-                             "\n    cycle no.: %1"
-                             "\n    unresolved references: [%2]")
-                     .arg(resolutionCycle)
-                     .arg(unresolvedReferences(*config).join("; "));
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << QString("Failed to fully resolve references:"
+                           "\n    cycle no.: %1"
+                           "\n    unresolved references: [%2]")
+                   .arg(resolutionCycle)
+                   .arg(unresolvedReferences(*config).join("; "));
         return false;
     }
 
@@ -228,9 +222,7 @@ bool ConfigReaderBase::resolveReferences(
 // -------------------------------------------------------------------------------------------------
 
 ConfigReaderBase::ReferenceResolutionResult ConfigReaderBase::resolveObjectReferences(
-        const std::vector<const ConfigObjectNode *> &externalConfigs,
-        ConfigObjectNode *node,
-        QString *error)
+        const std::vector<const ConfigObjectNode *> &externalConfigs, ConfigObjectNode *node)
 {
     // Iterate over all members and try to resolve their references
     auto result = ReferenceResolutionResult::Unchanged;
@@ -251,9 +243,7 @@ ConfigReaderBase::ReferenceResolutionResult ConfigReaderBase::resolveObjectRefer
             case ConfigNode::Type::Object:
             {
                 // Try to resolve the member's (Object node) references
-                auto newResult = resolveObjectReferences(externalConfigs,
-                                                         &member->toObject(),
-                                                         error);
+                auto newResult = resolveObjectReferences(externalConfigs, &member->toObject());
 
                 result = updateObjectResolutionResult(result, newResult);
                 break;
@@ -262,9 +252,7 @@ ConfigReaderBase::ReferenceResolutionResult ConfigReaderBase::resolveObjectRefer
             case ConfigNode::Type::NodeReference:
             {
                 // Try to resolve the member's (NodeReference node) reference
-                auto newResult = resolveNodeReference(externalConfigs,
-                                                      &member->toNodeReference(),
-                                                      error);
+                auto newResult = resolveNodeReference(externalConfigs, &member->toNodeReference());
 
                 result = updateObjectResolutionResult(result, newResult);
                 break;
@@ -274,8 +262,7 @@ ConfigReaderBase::ReferenceResolutionResult ConfigReaderBase::resolveObjectRefer
             {
                 // Try to resolve the member's (DerivedObject node) references
                 auto newResult = resolveDerivedObjectReferences(externalConfigs,
-                                                                &member->toDerivedObject(),
-                                                                error);
+                                                                &member->toDerivedObject());
 
                 result = updateObjectResolutionResult(result, newResult);
                 break;
@@ -348,9 +335,7 @@ ConfigReaderBase::ReferenceResolutionResult ConfigReaderBase::updateObjectResolu
 // -------------------------------------------------------------------------------------------------
 
 ConfigReaderBase::ReferenceResolutionResult ConfigReaderBase::resolveNodeReference(
-        const std::vector<const ConfigObjectNode *> &externalConfigs,
-        ConfigNodeReference *node,
-        QString *error)
+        const std::vector<const ConfigObjectNode *> &externalConfigs, ConfigNodeReference *node)
 {
     // Try to get the referenced node
     auto *parentNode = node->parent();
@@ -369,12 +354,10 @@ ConfigReaderBase::ReferenceResolutionResult ConfigReaderBase::resolveNodeReferen
     // Replace the current node with the referenced node
     if (!parentNode->setMember(parentNode->name(*node), *referencedNode))
     {
-        if (error != nullptr)
-        {
-            *error = QString("Failed to store the resolved NodeReference node [%1] to the parent "
-                             "object at node path [%2]")
-                     .arg(node->reference().path(), parentNode->nodePath().path());
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << QString("Failed to store the resolved NodeReference node [%1] to the parent "
+                           "object at node path [%2]")
+                   .arg(node->reference().path(), parentNode->nodePath().path());
         return ReferenceResolutionResult::Error;
     }
 
@@ -384,9 +367,7 @@ ConfigReaderBase::ReferenceResolutionResult ConfigReaderBase::resolveNodeReferen
 // -------------------------------------------------------------------------------------------------
 
 ConfigReaderBase::ReferenceResolutionResult ConfigReaderBase::resolveDerivedObjectReferences(
-        const std::vector<const ConfigObjectNode *> &externalConfigs,
-        ConfigDerivedObjectNode *node,
-        QString *error)
+        const std::vector<const ConfigObjectNode *> &externalConfigs, ConfigDerivedObjectNode *node)
 {
     // Derive the config node from the all of the base nodes
     auto *parentNode = node->parent();
@@ -412,12 +393,10 @@ ConfigReaderBase::ReferenceResolutionResult ConfigReaderBase::resolveDerivedObje
         // Apply the base to the derived object node
         if (!baseNode->isObject())
         {
-            if (error != nullptr)
-            {
-                *error = QString("Base node [%1] in a DerivedObject node [%2] is referencing a "
-                                 "node that is not an Object node!")
-                         .arg(baseNodePath.path(), node->nodePath().path());
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                    << QString("Base node [%1] in a DerivedObject node [%2] is referencing a "
+                               "node that is not an Object node!")
+                       .arg(baseNodePath.path(), node->nodePath().path());
             return ReferenceResolutionResult::Error;
         }
 
@@ -438,12 +417,10 @@ ConfigReaderBase::ReferenceResolutionResult ConfigReaderBase::resolveDerivedObje
     // Replace the current node with the referenced node
     if (!parentNode->setMember(parentNode->name(*node), derivedObjectNode))
     {
-        if (error != nullptr)
-        {
-            *error = QString("Failed to store the resolved DerivedObject node [%1] to the parent "
-                             "object at node path [%2]")
-                     .arg(node->nodePath().path(), parentNode->nodePath().path());
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << QString("Failed to store the resolved DerivedObject node [%1] to the parent "
+                           "object at node path [%2]")
+                   .arg(node->nodePath().path(), parentNode->nodePath().path());
         return ReferenceResolutionResult::Error;
     }
 
@@ -502,8 +479,7 @@ const ConfigNode *ConfigReaderBase::findReferencedConfigNode(
 std::unique_ptr<ConfigObjectNode> ConfigReaderBase::transformConfig(
         std::unique_ptr<ConfigObjectNode> &&config,
         const ConfigNodePath &sourceNodePath,
-        const ConfigNodePath &destinationNodePath,
-        QString *error)
+        const ConfigNodePath &destinationNodePath)
 {
     Q_ASSERT(config);
     Q_ASSERT(sourceNodePath.isAbsolute());
@@ -529,11 +505,9 @@ std::unique_ptr<ConfigObjectNode> ConfigReaderBase::transformConfig(
 
         if (node == nullptr)
         {
-            if (error != nullptr)
-            {
-                *error = QStringLiteral("Failed to get the source config node at node path: ") %
-                         sourceNodePath.path();
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                    << "Failed to get the source config node at node path:"
+                    << sourceNodePath.path();
             return {};
         }
 
@@ -545,11 +519,8 @@ std::unique_ptr<ConfigObjectNode> ConfigReaderBase::transformConfig(
     {
         if (!sourceConfig->isObject())
         {
-            if (error != nullptr)
-            {
-                *error = QStringLiteral("Source config node at node path is not an Object: ") %
-                         sourceNodePath.path();
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                    << "Source config node at node path is not an Object:" << sourceNodePath.path();
             return {};
         }
 

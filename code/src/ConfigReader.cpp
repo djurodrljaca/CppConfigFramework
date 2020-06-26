@@ -27,6 +27,7 @@
 #include <CppConfigFramework/ConfigObjectNode.hpp>
 #include <CppConfigFramework/ConfigReaderFactory.hpp>
 #include <CppConfigFramework/ConfigValueNode.hpp>
+#include <CppConfigFramework/LoggingCategories.hpp>
 
 // Qt includes
 #include <QtCore/QFile>
@@ -54,16 +55,12 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
         const ConfigNodePath &sourceNodePath,
         const ConfigNodePath &destinationNodePath,
         const std::vector<const ConfigObjectNode *> &externalConfigs,
-        EnvironmentVariables *environmentVariables,
-        QString *error) const
+        EnvironmentVariables *environmentVariables) const
 {
     // Make sure that file path is not empty
     if (filePath.isEmpty())
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("File path is empty!");
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader) << "File path is empty!";
         return {};
     }
 
@@ -71,10 +68,8 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
     if ((!sourceNodePath.isAbsolute()) ||
         (!sourceNodePath.isValid()))
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("Invalid source node path: ") % sourceNodePath.path();
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << "Invalid source node path:" << sourceNodePath.path();
         return {};
     }
 
@@ -82,20 +77,16 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
     if ((!destinationNodePath.isAbsolute()) ||
         (!destinationNodePath.isValid()))
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("Invalid destination node path: ") % destinationNodePath.path();
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << "Invalid destination node path:" << destinationNodePath.path();
         return {};
     }
 
     // Check if environment variables were provided
     if (environmentVariables == nullptr)
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("Environment variables are not provided!");
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << "Environment variables are not provided!";
         return {};
     }
 
@@ -104,10 +95,8 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
 
     if (expandedFilePath.isEmpty())
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("Failed to expand file path: ") % filePath;
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << "Failed to expand file path:" << filePath;
         return {};
     }
 
@@ -128,8 +117,8 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
     {
         if (externalConfig == nullptr)
         {
-            *error = QStringLiteral("Invalid external configs for file at path: ") %
-                     absoluteFilePath;
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                    << "Invalid external configs for file at path:" << absoluteFilePath;
             return {};
         }
     }
@@ -137,11 +126,8 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
     // Open file
     if (!QFile::exists(absoluteFilePath))
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("File at path was not found: ") %
-                     absoluteFilePath;
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << "File at path was not found:" << absoluteFilePath;
         return {};
     }
 
@@ -149,10 +135,8 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
 
     if (!file.open(QIODevice::ReadOnly))
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("Failed to open file at path: ") % absoluteFilePath;
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << "Failed to open file at path:" << absoluteFilePath;
         return {};
     }
 
@@ -167,47 +151,38 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
         const int contextBeforeIndex = std::max(0, jsonParseError.offset - contextMaxLength);
         const int contextBeforeLength = std::min(jsonParseError.offset, contextMaxLength);
 
-        if (error != nullptr)
-        {
-            *error = QString(
-                         "Failed to parse the file contents:"
-                         "\n    file path: %1"
-                         "\n    offset: %2"
-                         "\n    error: [%3]"
-                         "\n    context before error: [%4]"
-                         "\n    context at error: [%5]")
-                     .arg(absoluteFilePath,
-                          QString::number(jsonParseError.offset),
-                          jsonParseError.errorString(),
-                          QString::fromUtf8(fileContents.mid(contextBeforeIndex,
-                                                             contextBeforeLength)),
-                          QString::fromUtf8(fileContents.mid(jsonParseError.offset,
-                                                             contextMaxLength)));
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << QString("Failed to parse the file contents:"
+                           "\n    file path: %1"
+                           "\n    offset: %2"
+                           "\n    error: [%3]"
+                           "\n    context before error: [%4]"
+                           "\n    context at error: [%5]")
+                   .arg(absoluteFilePath,
+                        QString::number(jsonParseError.offset),
+                        jsonParseError.errorString(),
+                        QString::fromUtf8(fileContents.mid(contextBeforeIndex,
+                                                           contextBeforeLength)),
+                        QString::fromUtf8(fileContents.mid(jsonParseError.offset,
+                                                           contextMaxLength)));
         return {};
     }
 
     if (!doc.isObject())
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("Config file does not contain a JSON object: ") %
-                     absoluteFilePath;
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << "Config file does not contain a JSON object:" << absoluteFilePath;
         return {};
     }
 
     const auto rootObject = doc.object();
 
     // Read 'environment_variables' member
-    if (!readEnvironmentVariablesMember(rootObject, environmentVariables, error))
+    if (!readEnvironmentVariablesMember(rootObject, environmentVariables))
     {
-        if (error != nullptr)
-        {
-            *error = QString("Failed to read the 'environment_variables' member:"
-                             "\n    file path: %1"
-                             "\n    error: [%2]").arg(absoluteFilePath, *error);
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << "Failed to read the 'environment_variables' member:"
+                   "\n    file path:" << absoluteFilePath;
         return {};
     }
 
@@ -215,17 +190,13 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
     auto completeConfig = readIncludesMember(rootObject,
                                              QFileInfo(absoluteFilePath).absoluteDir(),
                                              externalConfigs,
-                                             environmentVariables,
-                                             error);
+                                             environmentVariables);
 
     if (!completeConfig)
     {
-        if (error != nullptr)
-        {
-            *error = QString("Failed to read the 'includes' member:"
-                             "\n    file path: %1"
-                             "\n    error: [%2]").arg(absoluteFilePath, *error);
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << "Failed to read the 'includes' member:"
+                   "\n    file path:" << absoluteFilePath;
         return {};
     }
 
@@ -236,17 +207,13 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
     auto configMember = readConfigMember(rootObject,
                                          externalConfigs,
                                          *completeConfig,
-                                         *environmentVariables,
-                                         error);
+                                         *environmentVariables);
 
     if (!configMember)
     {
-        if (error != nullptr)
-        {
-            *error = QString("Failed to read the 'config' member:"
-                             "\n    file path: %1"
-                             "\n    error: [%2]").arg(absoluteFilePath, *error);
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << "Failed to read the 'config' member:"
+                   "\n    file path:" << absoluteFilePath;
         return {};
     }
 
@@ -254,31 +221,24 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
     completeConfig->apply(*configMember);
 
     // Resolve references
-    if (!resolveReferences(externalConfigs, completeConfig.get(), error))
+    if (!resolveReferences(externalConfigs, completeConfig.get()))
     {
-        if (error != nullptr)
-        {
-            *error = QString("Failed to resolve references:"
-                             "\n    file path: %1"
-                             "\n    error: [%2]").arg(absoluteFilePath, *error);
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << "Failed to resolve references:"
+                   "\n    file path:" << absoluteFilePath;
         return {};
     }
 
     // Transform the configuration node based on source and destination node paths
     auto transformedConfig = transformConfig(std::move(completeConfig),
                                              sourceNodePath,
-                                             destinationNodePath,
-                                             error);
+                                             destinationNodePath);
 
     if (!transformedConfig)
     {
-        if (error != nullptr)
-        {
-            *error = QString("Failed to transform the config:"
-                             "\n    file path: %1"
-                             "\n    error: [%2]").arg(absoluteFilePath, *error);
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << "Failed to transform the config:"
+                   "\n    file path:" << absoluteFilePath;
         return {};
     }
 
@@ -292,16 +252,13 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
         const ConfigNodePath &destinationNodePath,
         const QVariantMap &otherParameters,
         const std::vector<const ConfigObjectNode *> &externalConfigs,
-        EnvironmentVariables *environmentVariables,
-        QString *error) const
+        EnvironmentVariables *environmentVariables) const
 {
     // Extract file path
     if (!otherParameters.contains(QStringLiteral("file_path")))
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("The 'file_path' parameter is missing");
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << "The 'file_path' parameter is missing";
         return {};
     }
 
@@ -309,10 +266,8 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
 
     if (filePath.isEmpty())
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("The 'file_path' parameter is not valid");
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << "The 'file_path' parameter is not valid";
         return {};
     }
 
@@ -330,14 +285,13 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
                 sourceNodePath,
                 destinationNodePath,
                 externalConfigs,
-                environmentVariables, error);
+                environmentVariables);
 }
 
 // -------------------------------------------------------------------------------------------------
 
 bool ConfigReader::readEnvironmentVariablesMember(const QJsonObject &rootObject,
-                                                  EnvironmentVariables *environmentVariables,
-                                                  QString *error) const
+                                                  EnvironmentVariables *environmentVariables) const
 {
     Q_ASSERT(environmentVariables);
 
@@ -352,11 +306,9 @@ bool ConfigReader::readEnvironmentVariablesMember(const QJsonObject &rootObject,
 
     if (!envVarsValue.isObject())
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("The 'environment_variables' member in the root JSON Object is "
-                                    "not a JSON Object!");
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << "The 'environment_variables' member in the root JSON Object is not a JSON "
+                   "Object!";
         return false;
     }
 
@@ -371,10 +323,8 @@ bool ConfigReader::readEnvironmentVariablesMember(const QJsonObject &rootObject,
 
         if (!regex.match(name).hasMatch())
         {
-            if (error != nullptr)
-            {
-                *error = QStringLiteral("Invalid environment variable name: ") % name;
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                    << "Invalid environment variable name:" << name;
             return false;
         }
 
@@ -404,11 +354,9 @@ bool ConfigReader::readEnvironmentVariablesMember(const QJsonObject &rootObject,
 
             default:
             {
-                if (error != nullptr)
-                {
-                    *error = QString("Environment variable [%1] does not have a value that can be "
-                                     "converted to a string!").arg(it.key());
-                }
+                qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                        << QString("Environment variable [%1] does not have a value that can be "
+                                   "converted to a string!").arg(it.key());
                 return false;
             }
         }
@@ -428,8 +376,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readIncludesMember(
         const QJsonObject &rootObject,
         const QDir &workingDir,
         const std::vector<const ConfigObjectNode *> &externalConfigs,
-        EnvironmentVariables *environmentVariables,
-        QString *error) const
+        EnvironmentVariables *environmentVariables) const
 {
     // Check if the root object has any includes
     const auto includesValue = rootObject.value(QStringLiteral("includes"));
@@ -442,11 +389,8 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readIncludesMember(
 
     if (!includesValue.isArray())
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("The 'includes' member in the root JSON Object is not a JSON "
-                                    "array!");
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << "The 'includes' member in the root JSON Object is not a JSON Array!";
         return {};
     }
 
@@ -461,10 +405,8 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readIncludesMember(
 
         if (!includeValue.isObject())
         {
-            if (error != nullptr)
-            {
-                *error = QString("Include at index [%1] is not a JSON Object!").arg(i);
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                    << QString("Include at index [%1] is not a JSON Object!").arg(i);
             return {};
         }
 
@@ -478,11 +420,9 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readIncludesMember(
         {
             if (!typeValue.isString())
             {
-                if (error != nullptr)
-                {
-                    *error = QString("The 'type' member is not a string for include at index [%1]")
-                             .arg(i);
-                }
+                qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                        << QString("The 'type' member for include at index [%1] is not a string")
+                           .arg(i);
                 return {};
             }
 
@@ -498,11 +438,9 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readIncludesMember(
         {
             if (!destinationNodeValue.isString())
             {
-                if (error != nullptr)
-                {
-                    *error = QString("The 'destination_node' member must be a string for include "
-                                     "at index [%1]").arg(i);
-                }
+                qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                        << QString("The 'destination_node' member for include at index [%1] must "
+                                   "be a string").arg(i);
                 return {};
             }
 
@@ -510,11 +448,11 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readIncludesMember(
 
             if (destinationNodePath.isRelative() || (!destinationNodePath.isValid()))
             {
-                if (error != nullptr)
-                {
-                    *error = QString("The 'destination_node' member [%1] is not valid for include "
-                                     "at index [%2]").arg(destinationNodePath.path()).arg(i);
-                }
+                qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                        << QString("The 'destination_node' member [%1] for include at index [%2] "
+                                   "is not valid")
+                           .arg(destinationNodePath.path())
+                           .arg(i);
                 return {};
             }
         }
@@ -538,17 +476,12 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readIncludesMember(
                           destinationNodePath,
                           includeObject.toVariantMap(),
                           extendedExternalConfigs,
-                          environmentVariables,
-                          error);
+                          environmentVariables);
 
         if (!config)
         {
-            if (error != nullptr)
-            {
-                *error = QString("Failed to read config for include:"
-                                 "\n    index: %1"
-                                 "\n    error: [%2]").arg(i).arg(*error);
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                    << "Failed to read config for include at index:" << i;
             return {};
         }
 
@@ -565,8 +498,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readConfigMember(
         const QJsonObject &rootObject,
         const std::vector<const ConfigObjectNode *> &externalConfigs,
         const ConfigObjectNode &includesConfig,
-        const EnvironmentVariables &environmentVariables,
-        QString *error) const
+        const EnvironmentVariables &environmentVariables) const
 {
     // The root object must contain the 'config' member (but it can be an empty object)
     const auto configValue = rootObject.value(QStringLiteral("config"));
@@ -579,27 +511,20 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readConfigMember(
 
     if (!configValue.isObject())
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("The 'config' member in the root JSON Object is not a JSON "
-                                    "Object!");
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << "The 'config' member in the root JSON Object is not a JSON Object!";
         return {};
     }
 
     // Read 'config' object
     auto config = readObjectNode(configValue.toObject(),
                                  ConfigNodePath::ROOT_PATH,
-                                 environmentVariables,
-                                 error);
+                                 environmentVariables);
 
     if (!config)
     {
-        if (error != nullptr)
-        {
-            *error = QString("Failed to read the 'config' member in the root JSON Object:"
-                             "\n    error: [%1]").arg(*error);
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << "Failed to read the 'config' member in the root JSON Object!";
         return {};
     }
 
@@ -612,12 +537,10 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readConfigMember(
     }
 
     // Resolve references
-    if (!resolveReferences(extendedExternalConfigs, config.get(), error))
+    if (!resolveReferences(extendedExternalConfigs, config.get()))
     {
-        if (error != nullptr)
-        {
-            *error = QString("Failed to resolve references. Error: [%1]").arg(*error);
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << "Failed to resolve references!";
         return {};
     }
 
@@ -639,8 +562,7 @@ std::unique_ptr<ConfigValueNode> ConfigReader::readValueNode(const QJsonValue &j
 std::unique_ptr<ConfigObjectNode> ConfigReader::readObjectNode(
         const QJsonObject &jsonObject,
         const ConfigNodePath &currentNodePath,
-        const EnvironmentVariables &environmentVariables,
-        QString *error)
+        const EnvironmentVariables &environmentVariables)
 {
     auto objectNode = std::make_unique<ConfigObjectNode>();
 
@@ -660,11 +582,9 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readObjectNode(
         // Validate member name
         if (!ConfigNodePath::validateNodeName(memberName))
         {
-            if (error != nullptr)
-            {
-                *error = QString("Invalid member name [%1] in path [%2]")
-                         .arg(memberName, currentNodePath.path());
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                    << QString("Invalid member name [%1] in path [%2]")
+                       .arg(memberName, currentNodePath.path());
             return {};
         }
 
@@ -686,19 +606,14 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readObjectNode(
             {
                 // Explicit Value node (even if it is a JSON Object type) where references to
                 // environment variables in the value are resolved
-                const QJsonValue resolvedValue =
-                        resolveJsonValue(it.value(), environmentVariables, error);
+                const QJsonValue resolvedValue = resolveJsonValue(it.value(), environmentVariables);
 
                 if (resolvedValue.isUndefined())
                 {
-                    if (error != nullptr)
-                    {
-                        *error = QString("Failed to resolve a Value node with references to "
-                                         "environment variables:"
-                                         "\n    member node path: %1"
-                                         "\n    error: [%2]")
-                                 .arg(memberNodePath.path(), *error);
-                    }
+                    qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                            << "Failed to resolve a Value node with references to "
+                               "environment variables:"
+                               "\n    member node path:" << memberNodePath.path();
                     return {};
                 }
 
@@ -712,19 +627,13 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readObjectNode(
                 // One of the reference types
                 if (it.value().isString())
                 {
-                    memberNode = readNodeReferenceNode(it.value().toString(),
-                                                       memberNodePath,
-                                                       error);
+                    memberNode = readNodeReferenceNode(it.value().toString(), memberNodePath);
 
                     if (!memberNode)
                     {
-                        if (error != nullptr)
-                        {
-                            *error = QString("Failed to read the a NodeReference node member:"
-                                             "\n    member node path: %1"
-                                             "\n    error: [%2]")
-                                     .arg(memberNodePath.path(), *error);
-                        }
+                        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                                << "Failed to read the a NodeReference node member:"
+                                   "\n    member node path:" << memberNodePath.path();
                         return {};
                     }
                 }
@@ -732,28 +641,20 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readObjectNode(
                 {
                     memberNode = readDerivedObjectNode(it.value().toObject(),
                                                        memberNodePath,
-                                                       environmentVariables,
-                                                       error);
+                                                       environmentVariables);
 
                     if (!memberNode)
                     {
-                        if (error != nullptr)
-                        {
-                            *error = QString("Failed to read the a NodeReference node member:"
-                                             "\n    member node path: %1"
-                                             "\n    error: [%2]")
-                                     .arg(memberNodePath.path(), *error);
-                        }
+                        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                                << "Failed to read the a NodeReference node member:"
+                                   "\n    member node path:" << memberNodePath.path();
                         return {};
                     }
                 }
                 else
                 {
-                    if (error != nullptr)
-                    {
-                        *error = QStringLiteral("Unsupported reference type at path: ") %
-                                 memberNodePath.path();
-                    }
+                    qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                            << "Unsupported reference type at path:" << memberNodePath.path();
                     return {};
                 }
                 break;
@@ -766,18 +667,13 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readObjectNode(
                 {
                     memberNode = readObjectNode(it.value().toObject(),
                                                 memberNodePath,
-                                                environmentVariables,
-                                                error);
+                                                environmentVariables);
 
                     if (!memberNode)
                     {
-                        if (error != nullptr)
-                        {
-                            *error = QString("Failed to read the an ordinary Object node member:"
-                                             "\n    member node path: %1"
-                                             "\n    error: [%2]")
-                                     .arg(memberNodePath.path(), *error);
-                        }
+                        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                                << "Failed to read the an ordinary Object node member:"
+                                   "\n    member node path:" << memberNodePath.path();
                         return {};
                     }
                 }
@@ -801,19 +697,15 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readObjectNode(
 // -------------------------------------------------------------------------------------------------
 
 std::unique_ptr<ConfigNodeReference> ConfigReader::readNodeReferenceNode(
-        const QString &reference,
-        const ConfigNodePath &currentNodePath,
-        QString *error)
+        const QString &reference, const ConfigNodePath &currentNodePath)
 {
     const ConfigNodePath referencePath(reference);
 
     if (!referencePath.toAbsolute(currentNodePath).isValid())
     {
-        if (error != nullptr)
-        {
-            *error = QString("Invalid node reference [%1] with current path [%2]")
-                     .arg(reference, currentNodePath.path());
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << QString("Invalid node reference [%1] with current path [%2]")
+                   .arg(reference, currentNodePath.path());
         return {};
     }
 
@@ -825,19 +717,16 @@ std::unique_ptr<ConfigNodeReference> ConfigReader::readNodeReferenceNode(
 std::unique_ptr<ConfigDerivedObjectNode> ConfigReader::readDerivedObjectNode(
         const QJsonObject &jsonObject,
         const ConfigNodePath &currentNodePath,
-        const EnvironmentVariables &environmentVariables,
-        QString *error)
+        const EnvironmentVariables &environmentVariables)
 {
     // Extract bases
     const auto baseValue = jsonObject.value(QStringLiteral("base"));
 
     if (baseValue.isUndefined())
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("A derived object doesn't have the 'base' member at path: ") %
-                     currentNodePath.path();
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << "A derived object doesn't have the 'base' member at path:"
+                << currentNodePath.path();
         return {};
     }
 
@@ -854,11 +743,9 @@ std::unique_ptr<ConfigDerivedObjectNode> ConfigReader::readDerivedObjectNode(
         {
             if (!item.isString())
             {
-                if (error != nullptr)
-                {
-                    *error = QStringLiteral("Unsupported JSON type for an item in the 'base' "
-                                            "member at path: ") % currentNodePath.path();
-                }
+                qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                        << "Unsupported JSON type for an item in the 'base' member at path:"
+                        << currentNodePath.path();
                 return {};
             }
 
@@ -867,21 +754,16 @@ std::unique_ptr<ConfigDerivedObjectNode> ConfigReader::readDerivedObjectNode(
 
         if (bases.isEmpty())
         {
-            if (error != nullptr)
-            {
-                *error = QStringLiteral("The 'base' member is empty at path: ") %
-                         currentNodePath.path();
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                    << "The 'base' member is empty at path:" << currentNodePath.path();
             return {};
         }
     }
     else
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("Unsupported JSON type for an item in the 'base' member at "
-                                    "path: ") % currentNodePath.path();
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << "Unsupported JSON type for an item in the 'base' member at path:"
+                << currentNodePath.path();
         return {};
     }
 
@@ -889,13 +771,11 @@ std::unique_ptr<ConfigDerivedObjectNode> ConfigReader::readDerivedObjectNode(
     {
         if (!item.toAbsolute(currentNodePath).isValid())
         {
-            if (error != nullptr)
-            {
-                *error = QString("Invalid node path in base item at path:"
-                                 "\n    base item's node path: %1"
-                                 "\n    node path: %2")
-                         .arg(item.path(), currentNodePath.path());
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                    << QString("Invalid node path in base item at path:"
+                               "\n    base item's node path: %1"
+                               "\n    node path: %2")
+                       .arg(item.path(), currentNodePath.path());
             return {};
         }
     }
@@ -909,21 +789,13 @@ std::unique_ptr<ConfigDerivedObjectNode> ConfigReader::readDerivedObjectNode(
         if (configValue.isObject())
         {
             // Read overrides for the object derived from bases
-            config = readObjectNode(configValue.toObject(),
-                                    currentNodePath,
-                                    environmentVariables,
-                                    error);
+            config = readObjectNode(configValue.toObject(), currentNodePath, environmentVariables);
 
             if (!config)
             {
-                if (error != nullptr)
-                {
-                    *error = QString("Failed to read the overrides for the object derived from "
-                                     "bases at path:"
-                                     "\n    node path: %1"
-                                     "\n    error: [%2]")
-                             .arg(currentNodePath.path(), *error);
-                }
+                qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                        << "Failed to read the overrides for the object derived from bases at path:"
+                           "\n    node path:" << currentNodePath.path();
                 return {};
             }
         }
@@ -933,11 +805,9 @@ std::unique_ptr<ConfigDerivedObjectNode> ConfigReader::readDerivedObjectNode(
         }
         else
         {
-            if (error != nullptr)
-            {
-                *error = QStringLiteral("Unsupported JSON type for the 'config' member at path: ") %
-                         currentNodePath.path();
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                    << "Unsupported JSON type for the 'config' member at path:"
+                    << currentNodePath.path();
             return {};
         }
     }
@@ -949,8 +819,7 @@ std::unique_ptr<ConfigDerivedObjectNode> ConfigReader::readDerivedObjectNode(
 // -------------------------------------------------------------------------------------------------
 
 QJsonValue ConfigReader::resolveJsonValue(const QJsonValue &jsonValue,
-                                          const EnvironmentVariables &environmentVariables,
-                                          QString *error)
+                                          const EnvironmentVariables &environmentVariables)
 {
     QJsonValue resolvedJsonValue;
 
@@ -958,15 +827,13 @@ QJsonValue ConfigReader::resolveJsonValue(const QJsonValue &jsonValue,
     {
         case QJsonValue::Array:
         {
-            resolvedJsonValue = resolveJsonArray(jsonValue.toArray(), environmentVariables, error);
+            resolvedJsonValue = resolveJsonArray(jsonValue.toArray(), environmentVariables);
             break;
         }
 
         case QJsonValue::Object:
         {
-            resolvedJsonValue = resolveJsonObject(jsonValue.toObject(),
-                                                  environmentVariables,
-                                                  error);
+            resolvedJsonValue = resolveJsonObject(jsonValue.toObject(), environmentVariables);
             break;
         }
 
@@ -981,11 +848,8 @@ QJsonValue ConfigReader::resolveJsonValue(const QJsonValue &jsonValue,
 
                 if (value.isNull())
                 {
-                    if (error != nullptr)
-                    {
-                        *error = QStringLiteral("Failed to resolve String value: ") %
-                                 jsonValue.toString();
-                    }
+                    qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                            << "Failed to resolve String value:" << jsonValue.toString();
                     return QJsonValue(QJsonValue::Undefined);
                 }
             }
@@ -1008,8 +872,7 @@ QJsonValue ConfigReader::resolveJsonValue(const QJsonValue &jsonValue,
 // -------------------------------------------------------------------------------------------------
 
 QJsonValue ConfigReader::resolveJsonArray(const QJsonArray &jsonArray,
-                                          const EnvironmentVariables &environmentVariables,
-                                          QString *error)
+                                          const EnvironmentVariables &environmentVariables)
 {
     QJsonArray array;
 
@@ -1019,16 +882,12 @@ QJsonValue ConfigReader::resolveJsonArray(const QJsonArray &jsonArray,
 
         if (!item.isUndefined())
         {
-            item = resolveJsonValue(item, environmentVariables, error);
+            item = resolveJsonValue(item, environmentVariables);
 
             if (item.isUndefined())
             {
-                if (error != nullptr)
-                {
-                    *error = QString("Failed to resolve Array item:"
-                                     "\n    index: %1"
-                                     "\n    error: [%2]").arg(i).arg(*error);
-                }
+                qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                        << "Failed to resolve Array item at index:" << i;
                 return QJsonValue(QJsonValue::Undefined);
             }
         }
@@ -1043,8 +902,7 @@ QJsonValue ConfigReader::resolveJsonArray(const QJsonArray &jsonArray,
 // -------------------------------------------------------------------------------------------------
 
 QJsonValue ConfigReader::resolveJsonObject(const QJsonObject &jsonObject,
-                                           const EnvironmentVariables &environmentVariables,
-                                           QString *error)
+                                           const EnvironmentVariables &environmentVariables)
 {
     QJsonObject object;
 
@@ -1059,10 +917,8 @@ QJsonValue ConfigReader::resolveJsonObject(const QJsonObject &jsonObject,
 
             if (key.isNull())
             {
-                if (error != nullptr)
-                {
-                    *error = QStringLiteral("Failed to resolve Object key: ") % it.key();
-                }
+                qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                        << "Failed to resolve Object key:" << it.key();
                 return QJsonValue(QJsonValue::Undefined);
             }
         }
@@ -1072,16 +928,12 @@ QJsonValue ConfigReader::resolveJsonObject(const QJsonObject &jsonObject,
 
         if (!value.isUndefined())
         {
-            value = resolveJsonValue(value, environmentVariables, error);
+            value = resolveJsonValue(value, environmentVariables);
 
             if (value.isUndefined())
             {
-                if (error != nullptr)
-                {
-                    *error = QString("Failed to resolve Object value:"
-                                     "\n    key: %1"
-                                     "\n    error: [%2]").arg(it.key(), *error);
-                }
+                qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                        << "Failed to resolve Object value with key:" << it.key();
                 return QJsonValue(QJsonValue::Undefined);
             }
         }

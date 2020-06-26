@@ -25,6 +25,7 @@
 #include <CppConfigFramework/ConfigDerivedObjectNode.hpp>
 #include <CppConfigFramework/ConfigNodeReference.hpp>
 #include <CppConfigFramework/ConfigValueNode.hpp>
+#include <CppConfigFramework/LoggingCategories.hpp>
 
 // Qt includes
 #include <QtCore/QFile>
@@ -66,6 +67,7 @@ bool writeToFile(const ConfigObjectNode &node, const QString &filePath)
 
     if (doc.isEmpty())
     {
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigWriter) << "JSON document is empty!";
         return false;
     }
 
@@ -76,11 +78,26 @@ bool writeToFile(const ConfigObjectNode &node, const QString &filePath)
 
     if (!file.open(QIODevice::WriteOnly))
     {
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigWriter)
+                << "Failed to open file:" << filePath;
         return false;
     }
 
     const qint64 writtenSize = file.write(jsonData);
-    return (writtenSize == static_cast<qint64>(jsonData.size()));
+    const qint64 jsonDataSize = static_cast<qint64>(jsonData.size());
+
+    if (writtenSize != jsonDataSize)
+    {
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigWriter)
+                << QString("Number of bytes written [%1] to the file [%2] does not match the "
+                           "number of bytes [%3] in the JSON document")
+                   .arg(writtenSize)
+                   .arg(filePath)
+                   .arg(jsonDataSize);
+        return false;
+    }
+
+    return true;
 }
 
 } // namespace ConfigWriter

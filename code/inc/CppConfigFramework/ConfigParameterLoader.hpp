@@ -23,7 +23,7 @@
 
 // C++ Config Framework includes
 #include <CppConfigFramework/ConfigValueNode.hpp>
-#include <CppConfigFramework/HashFunctions.hpp>
+#include <CppConfigFramework/LoggingCategories.hpp>
 
 // Qt includes
 #include <QtCore/QVariant>
@@ -51,279 +51,210 @@ namespace ConfigParameterLoader
  * \param   nodeValue   Configuration parameter's node value
  *
  * \param[out]  parameterValue  Output for the configuration parameter value
- * \param[out]  error           Optional output for the error string
  *
  * \retval  true    Success
  * \retval  false   Failure
  */
 template<typename T>
-bool load(const QVariant &nodeValue, T *parameterValue, QString *error);
+bool load(const QVariant &nodeValue, T *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    bool *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, bool *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    int8_t *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, int8_t *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    uint8_t *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, uint8_t *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    int16_t *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, int16_t *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    uint16_t *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, uint16_t *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    int32_t *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, int32_t *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    uint32_t *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, uint32_t *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    int64_t *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, int64_t *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    uint64_t *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, uint64_t *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    float *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, float *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    double *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, double *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    QChar *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, QChar *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    QString *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, QString *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    QByteArray *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, QByteArray *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    std::string *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, std::string *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    std::wstring *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, std::wstring *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    std::u16string *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, std::u16string *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    std::u32string *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, std::u32string *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    QDate *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, QDate *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    QTime *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, QTime *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    QDateTime *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, QDateTime *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    QVariant *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, QVariant *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    QUrl *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, QUrl *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    QUuid *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, QUuid *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    QSize *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, QSize *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    QSizeF *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, QSizeF *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    QPoint *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, QPoint *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    QPointF *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, QPointF *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    QLine *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, QLine *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    QLineF *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, QLineF *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    QRect *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, QRect *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    QRectF *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, QRectF *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<>
-CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue,
-                                    QStringList *parameterValue,
-                                    QString *error);
+CPPCONFIGFRAMEWORK_EXPORT bool load(const QVariant &nodeValue, QStringList *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<typename T1, typename T2>
-bool load(const QVariant &nodeValue, QPair<T1, T2> *parameterValue, QString *error);
+bool load(const QVariant &nodeValue, QPair<T1, T2> *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<typename T1, typename T2>
-bool load(const QVariant &nodeValue, std::pair<T1, T2> *parameterValue, QString *error);
+bool load(const QVariant &nodeValue, std::pair<T1, T2> *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<typename T>
-bool load(const QVariant &nodeValue, QList<T> *parameterValue, QString *error);
+bool load(const QVariant &nodeValue, QList<T> *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<typename T>
-bool load(const QVariant &nodeValue, std::list<T> *parameterValue, QString *error);
+bool load(const QVariant &nodeValue, std::list<T> *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<typename T>
-bool load(const QVariant &nodeValue, QVector<T> *parameterValue, QString *error);
+bool load(const QVariant &nodeValue, QVector<T> *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<typename T>
-bool load(const QVariant &nodeValue, std::vector<T> *parameterValue, QString *error);
+bool load(const QVariant &nodeValue, std::vector<T> *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<typename T>
-bool load(const QVariant &nodeValue, QSet<T> *parameterValue, QString *error);
+bool load(const QVariant &nodeValue, QSet<T> *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<typename K, typename V>
-bool load(const QVariant &nodeValue, QMap<K, V> *parameterValue, QString *error);
+bool load(const QVariant &nodeValue, QMap<K, V> *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<typename K, typename V>
-bool load(const QVariant &nodeValue, std::map<K, V> *parameterValue, QString *error);
+bool load(const QVariant &nodeValue, std::map<K, V> *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<typename K, typename V>
-bool load(const QVariant &nodeValue, QHash<K, V> *parameterValue, QString *error);
+bool load(const QVariant &nodeValue, QHash<K, V> *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<typename K, typename V>
-bool load(const QVariant &nodeValue, std::unordered_map<K, V> *parameterValue, QString *error);
+bool load(const QVariant &nodeValue, std::unordered_map<K, V> *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<typename K, typename V>
-bool load(const QVariant &nodeValue, QMultiMap<K, V> *parameterValue, QString *error);
+bool load(const QVariant &nodeValue, QMultiMap<K, V> *parameterValue);
 
 //! \copydoc    ConfigParameterLoader::load()
 template<typename K, typename V>
-bool load(const QVariant &nodeValue, QMultiHash<K, V> *parameterValue, QString *error);
+bool load(const QVariant &nodeValue, QMultiHash<K, V> *parameterValue);
 
 // -------------------------------------------------------------------------------------------------
 // Template definitions
 // -------------------------------------------------------------------------------------------------
 
 template<typename T1, typename T2>
-bool load(const QVariant &nodeValue, QPair<T1, T2> *parameterValue, QString *error)
+bool load(const QVariant &nodeValue, QPair<T1, T2> *parameterValue)
 {
     // Needs to be a map with 'first' and 'second' parameters
     if (!nodeValue.canConvert<QVariantMap>())
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("Node value must either be an Object value with only 'first' "
-                                    "and 'second' members!");
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                << "Node value must either be an Object value with only 'first' and 'second' "
+                   "members!";
         return false;
     }
 
@@ -333,35 +264,29 @@ bool load(const QVariant &nodeValue, QPair<T1, T2> *parameterValue, QString *err
         (!container.contains(QStringLiteral("first"))) ||
         (!container.contains(QStringLiteral("second"))))
     {
-        if (error != nullptr)
-        {
-            *error = QString("Node value should have only 'first' and 'second' members but it "
-                             "has these [%1]!").arg(container.keys().join(", "));
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                << "Node value should have only 'first' and 'second' members but it has these:"
+                << container.keys().join(", ");
         return false;
     }
 
     // Extract first
     T1 first;
 
-    if (!load(container.value(QStringLiteral("first")), &first, error))
+    if (!load(container.value(QStringLiteral("first")), &first))
     {
-        if (error != nullptr)
-        {
-            *error = QString("The 'first' value is invalid! Error: [%1]").arg(*error);
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                << "The 'first' value is invalid!";
         return false;
     }
 
     // Extract second
     T2 second;
 
-    if (!load(container.value(QStringLiteral("second")), &second, error))
+    if (!load(container.value(QStringLiteral("second")), &second))
     {
-        if (error != nullptr)
-        {
-            *error = QString("The 'second' value is invalid! Error: [%1]").arg(*error);
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                << "The 'second' value is invalid!";
         return false;
     }
 
@@ -373,16 +298,14 @@ bool load(const QVariant &nodeValue, QPair<T1, T2> *parameterValue, QString *err
 // -------------------------------------------------------------------------------------------------
 
 template<typename T1, typename T2>
-bool load(const QVariant &nodeValue, std::pair<T1, T2> *parameterValue, QString *error)
+bool load(const QVariant &nodeValue, std::pair<T1, T2> *parameterValue)
 {
     // Needs to be a map with 'first' and 'second' parameters
     if (!nodeValue.canConvert<QVariantMap>())
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("Node value must either be an Object value with only 'first' "
-                                    "and 'second' members!");
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                << "Node value must either be an Object value with only 'first' and 'second' "
+                   "members!";
         return false;
     }
 
@@ -392,35 +315,29 @@ bool load(const QVariant &nodeValue, std::pair<T1, T2> *parameterValue, QString 
         (!container.contains(QStringLiteral("first"))) ||
         (!container.contains(QStringLiteral("second"))))
     {
-        if (error != nullptr)
-        {
-            *error = QString("Node value should have only 'first' and 'second' members but it "
-                             "has these [%1]!").arg(container.keys().join(", "));
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                << "Node value should have only 'first' and 'second' members but it has these:"
+                << container.keys().join(", ");
         return false;
     }
 
     // Extract first
     T1 first;
 
-    if (!load(container.value(QStringLiteral("first")), &first, error))
+    if (!load(container.value(QStringLiteral("first")), &first))
     {
-        if (error != nullptr)
-        {
-            *error = QString("The 'first' value is invalid! Error: [%1]").arg(*error);
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                << "The 'first' value is invalid!";
         return false;
     }
 
     // Extract second
     T2 second;
 
-    if (!load(container.value(QStringLiteral("second")), &second, error))
+    if (!load(container.value(QStringLiteral("second")), &second))
     {
-        if (error != nullptr)
-        {
-            *error = QString("The 'second' value is invalid! Error: [%1]").arg(*error);
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                << "The 'second' value is invalid!";
         return false;
     }
 
@@ -432,14 +349,12 @@ bool load(const QVariant &nodeValue, std::pair<T1, T2> *parameterValue, QString 
 // -------------------------------------------------------------------------------------------------
 
 template<typename T>
-bool load(const QVariant &nodeValue, QList<T> *parameterValue, QString *error)
+bool load(const QVariant &nodeValue, QList<T> *parameterValue)
 {
     if (!nodeValue.canConvert<QVariantList>())
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("Node value must be an Array!");
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                << "Node value must be an Array!";
         return false;
     }
 
@@ -451,13 +366,10 @@ bool load(const QVariant &nodeValue, QList<T> *parameterValue, QString *error)
     {
         T value;
 
-        if (!load(item, &value, error))
+        if (!load(item, &value))
         {
-            if (error != nullptr)
-            {
-                *error = QString("Failed to load the element at index [%1]! Error: [%2]")
-                         .arg(container.size()).arg(*error);
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                    << "Failed to load the element at index:" << container.size();
             return false;
         }
 
@@ -471,14 +383,12 @@ bool load(const QVariant &nodeValue, QList<T> *parameterValue, QString *error)
 // -------------------------------------------------------------------------------------------------
 
 template<typename T>
-bool load(const QVariant &nodeValue, std::list<T> *parameterValue, QString *error)
+bool load(const QVariant &nodeValue, std::list<T> *parameterValue)
 {
     if (!nodeValue.canConvert<QVariantList>())
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("Node value must be an Array!");
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                << "Node value must be an Array!";
         return false;
     }
 
@@ -489,13 +399,10 @@ bool load(const QVariant &nodeValue, std::list<T> *parameterValue, QString *erro
     {
         T value;
 
-        if (!load(item, &value, error))
+        if (!load(item, &value))
         {
-            if (error != nullptr)
-            {
-                *error = QString("Failed to load the element at index [%1]! Error: [%2]")
-                         .arg(container.size()).arg(*error);
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                    << "Failed to load the element at index:" << container.size();
             return false;
         }
 
@@ -509,14 +416,12 @@ bool load(const QVariant &nodeValue, std::list<T> *parameterValue, QString *erro
 // -------------------------------------------------------------------------------------------------
 
 template<typename T>
-bool load(const QVariant &nodeValue, QVector<T> *parameterValue, QString *error)
+bool load(const QVariant &nodeValue, QVector<T> *parameterValue)
 {
     if (!nodeValue.canConvert<QVariantList>())
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("Node value must be an Array!");
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                << "Node value must be an Array!";
         return false;
     }
 
@@ -528,13 +433,10 @@ bool load(const QVariant &nodeValue, QVector<T> *parameterValue, QString *error)
     {
         T value;
 
-        if (!load(item, &value, error))
+        if (!load(item, &value))
         {
-            if (error != nullptr)
-            {
-                *error = QString("Failed to load the element at index [%1]! Error: [%2]")
-                         .arg(container.size()).arg(*error);
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                    << "Failed to load the element at index:" << container.size();
             return false;
         }
 
@@ -548,14 +450,12 @@ bool load(const QVariant &nodeValue, QVector<T> *parameterValue, QString *error)
 // -------------------------------------------------------------------------------------------------
 
 template<typename T>
-bool load(const QVariant &nodeValue, std::vector<T> *parameterValue, QString *error)
+bool load(const QVariant &nodeValue, std::vector<T> *parameterValue)
 {
     if (!nodeValue.canConvert<QVariantList>())
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("Node value must be an Array!");
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                << "Node value must be an Array!";
         return false;
     }
 
@@ -567,13 +467,10 @@ bool load(const QVariant &nodeValue, std::vector<T> *parameterValue, QString *er
     {
         T value;
 
-        if (!load(item, &value, error))
+        if (!load(item, &value))
         {
-            if (error != nullptr)
-            {
-                *error = QString("Failed to load the element at index [%1]! Error: [%2]")
-                         .arg(container.size()).arg(*error);
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                    << "Failed to load the element at index:" << container.size();
             return false;
         }
 
@@ -587,14 +484,12 @@ bool load(const QVariant &nodeValue, std::vector<T> *parameterValue, QString *er
 // -------------------------------------------------------------------------------------------------
 
 template<typename T>
-bool load(const QVariant &nodeValue, QSet<T> *parameterValue, QString *error)
+bool load(const QVariant &nodeValue, QSet<T> *parameterValue)
 {
     if (!nodeValue.canConvert<QVariantList>())
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("Node value must be an Array!");
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                << "Node value must be an Array!";
         return false;
     }
 
@@ -605,22 +500,17 @@ bool load(const QVariant &nodeValue, QSet<T> *parameterValue, QString *error)
     {
         T value;
 
-        if (!load(item, &value, error))
+        if (!load(item, &value))
         {
-            if (error != nullptr)
-            {
-                *error = QString("Failed to load the element at index [%1]! Error: [%2]")
-                         .arg(container.size()).arg(*error);
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                    << "Failed to load the element at index:" << container.size();
             return false;
         }
 
         if (container.contains(value))
         {
-            if (error != nullptr)
-            {
-                *error = QString("The element at index [%1] is a duplicate!").arg(container.size());
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                    << "The element at index is a duplicate:" << container.size();
             return false;
         }
 
@@ -634,14 +524,12 @@ bool load(const QVariant &nodeValue, QSet<T> *parameterValue, QString *error)
 // -------------------------------------------------------------------------------------------------
 
 template<typename K, typename V>
-bool load(const QVariant &nodeValue, QMap<K, V> *parameterValue, QString *error)
+bool load(const QVariant &nodeValue, QMap<K, V> *parameterValue)
 {
     if (!nodeValue.canConvert<QVariantMap>())
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("Node value must be an Object!");
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                << "Node value must be an Object!";
         return false;
     }
 
@@ -653,24 +541,20 @@ bool load(const QVariant &nodeValue, QMap<K, V> *parameterValue, QString *error)
         // Load key
         K key;
 
-        if (!load(it.key(), &key, error))
+        if (!load(it.key(), &key))
         {
-            if (error != nullptr)
-            {
-                *error = QString("Failed to load the member's key! Error: [%1]").arg(*error);
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                    << "Failed to load the member's key!";
             return false;
         }
 
         // Load value
         V value;
 
-        if (!load(it.value(), &value, error))
+        if (!load(it.value(), &value))
         {
-            if (error != nullptr)
-            {
-                *error = QString("Failed to load the member's value! Error: [%1]").arg(*error);
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                    << "Failed to load the member's value!";
             return false;
         }
 
@@ -684,14 +568,12 @@ bool load(const QVariant &nodeValue, QMap<K, V> *parameterValue, QString *error)
 // -------------------------------------------------------------------------------------------------
 
 template<typename K, typename V>
-bool load(const QVariant &nodeValue, std::map<K, V> *parameterValue, QString *error)
+bool load(const QVariant &nodeValue, std::map<K, V> *parameterValue)
 {
     if (!nodeValue.canConvert<QVariantMap>())
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("Node value must be an Object!");
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                << "Node value must be an Object!";
         return false;
     }
 
@@ -703,24 +585,20 @@ bool load(const QVariant &nodeValue, std::map<K, V> *parameterValue, QString *er
         // Load key
         K key;
 
-        if (!load(it.key(), &key, error))
+        if (!load(it.key(), &key))
         {
-            if (error != nullptr)
-            {
-                *error = QString("Failed to load the member's key! Error: [%1]").arg(*error);
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                    << "Failed to load the member's key!";
             return false;
         }
 
         // Load value
         V value;
 
-        if (!load(it.value(), &value, error))
+        if (!load(it.value(), &value))
         {
-            if (error != nullptr)
-            {
-                *error = QString("Failed to load the member's value! Error: [%1]").arg(*error);
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                    << "Failed to load the member's value!";
             return false;
         }
 
@@ -734,14 +612,12 @@ bool load(const QVariant &nodeValue, std::map<K, V> *parameterValue, QString *er
 // -------------------------------------------------------------------------------------------------
 
 template<typename K, typename V>
-bool load(const QVariant &nodeValue, QHash<K, V> *parameterValue, QString *error)
+bool load(const QVariant &nodeValue, QHash<K, V> *parameterValue)
 {
     if (!nodeValue.canConvert<QVariantMap>())
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("Node value must be an Object!");
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                << "Node value must be an Object!";
         return false;
     }
 
@@ -753,24 +629,20 @@ bool load(const QVariant &nodeValue, QHash<K, V> *parameterValue, QString *error
         // Load key
         K key;
 
-        if (!load(it.key(), &key, error))
+        if (!load(it.key(), &key))
         {
-            if (error != nullptr)
-            {
-                *error = QString("Failed to load the member's key! Error: [%1]").arg(*error);
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                    << "Failed to load the member's key!";
             return false;
         }
 
         // Load value
         V value;
 
-        if (!load(it.value(), &value, error))
+        if (!load(it.value(), &value))
         {
-            if (error != nullptr)
-            {
-                *error = QString("Failed to load the member's value! Error: [%1]").arg(*error);
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                    << "Failed to load the member's value!";
             return false;
         }
 
@@ -784,14 +656,12 @@ bool load(const QVariant &nodeValue, QHash<K, V> *parameterValue, QString *error
 // -------------------------------------------------------------------------------------------------
 
 template<typename K, typename V>
-bool load(const QVariant &nodeValue, std::unordered_map<K, V> *parameterValue, QString *error)
+bool load(const QVariant &nodeValue, std::unordered_map<K, V> *parameterValue)
 {
     if (!nodeValue.canConvert<QVariantMap>())
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("Node value must be an Object!");
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                << "Node value must be an Object!";
         return false;
     }
 
@@ -803,24 +673,20 @@ bool load(const QVariant &nodeValue, std::unordered_map<K, V> *parameterValue, Q
         // Load key
         K key;
 
-        if (!load(it.key(), &key, error))
+        if (!load(it.key(), &key))
         {
-            if (error != nullptr)
-            {
-                *error = QString("Failed to load the member's key! Error: [%1]").arg(*error);
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                    << "Failed to load the member's key!";
             return false;
         }
 
         // Load value
         V value;
 
-        if (!load(it.value(), &value, error))
+        if (!load(it.value(), &value))
         {
-            if (error != nullptr)
-            {
-                *error = QString("Failed to load the member's value! Error: [%1]").arg(*error);
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                    << "Failed to load the member's value!";
             return false;
         }
 
@@ -834,14 +700,12 @@ bool load(const QVariant &nodeValue, std::unordered_map<K, V> *parameterValue, Q
 // -------------------------------------------------------------------------------------------------
 
 template<typename K, typename V>
-bool load(const QVariant &nodeValue, QMultiMap<K, V> *parameterValue, QString *error)
+bool load(const QVariant &nodeValue, QMultiMap<K, V> *parameterValue)
 {
     if (!nodeValue.canConvert<QVariantMap>())
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("Node value must be an Object!");
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                << "Node value must be an Object!";
         return false;
     }
 
@@ -853,24 +717,20 @@ bool load(const QVariant &nodeValue, QMultiMap<K, V> *parameterValue, QString *e
         // Load key
         K key;
 
-        if (!load(it.key(), &key, error))
+        if (!load(it.key(), &key))
         {
-            if (error != nullptr)
-            {
-                *error = QString("Failed to load the member's key! Error: [%1]").arg(*error);
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                    << "Failed to load the member's key!";
             return false;
         }
 
         // Load values
         QVector<V> values;
 
-        if (!load(it.value(), &values, error))
+        if (!load(it.value(), &values))
         {
-            if (error != nullptr)
-            {
-                *error = QString("Failed to load the member's values! Error: [%1]").arg(*error);
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                    << "Failed to load the member's values!";
             return false;
         }
 
@@ -887,14 +747,12 @@ bool load(const QVariant &nodeValue, QMultiMap<K, V> *parameterValue, QString *e
 // -------------------------------------------------------------------------------------------------
 
 template<typename K, typename V>
-bool load(const QVariant &nodeValue, QMultiHash<K, V> *parameterValue, QString *error)
+bool load(const QVariant &nodeValue, QMultiHash<K, V> *parameterValue)
 {
     if (!nodeValue.canConvert<QVariantMap>())
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("Node value must either be an Array!");
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                << "Node value must be an Object!";
         return false;
     }
 
@@ -906,24 +764,20 @@ bool load(const QVariant &nodeValue, QMultiHash<K, V> *parameterValue, QString *
         // Load key
         K key;
 
-        if (!load(it.key(), &key, error))
+        if (!load(it.key(), &key))
         {
-            if (error != nullptr)
-            {
-                *error = QString("Failed to load the member's key! Error: [%2]").arg(*error);
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                    << "Failed to load the member's key!";
             return false;
         }
 
         // Load values
         QVector<V> values;
 
-        if (!load(it.value(), &values, error))
+        if (!load(it.value(), &values))
         {
-            if (error != nullptr)
-            {
-                *error = QString("Failed to load the member's values! Error: [%1]").arg(*error);
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterLoader)
+                    << "Failed to load the member's values!";
             return false;
         }
 
