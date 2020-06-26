@@ -22,6 +22,7 @@
 #define CPPCONFIGFRAMEWORK_CONFIGPARAMETERVALIDATOR_HPP
 
 // C++ Config Framework includes
+#include <CppConfigFramework/LoggingCategories.hpp>
 
 // Qt includes
 #include <QtCore/QVariant>
@@ -39,31 +40,36 @@ namespace CppConfigFramework
 {
 
 /*!
+ * Type alias for configuration parameter validator
+ *
+ * \tparam  T   Data type of the value to validate
+ *
+ * \param   value   Value to validate
+ *
+ * \retval  true    Value is valid
+ * \retval  false   Value is not valid
+ */
+template<typename T>
+using ConfigParameterValidator = std::function<bool(const T &value)>;
+
+// -------------------------------------------------------------------------------------------------
+
+/*!
  * This configuration parameter validator does not do any validation, but just returns "true"
  *
  * \tparam  T   Data type of the value to validate
+ *
+ * \param   value   Value to validate
+ *
+ * \retval  true    Value is valid
+ * \retval  false   Value is not valid
  */
 template<typename T>
-class ConfigParameterDefaultValidator
+bool defaultConfigParameterValidator(const T &value)
 {
-public:
-    /*!
-     * Validates the value
-     *
-     * \param   value   Value to validate
-     *
-     * \param[out]  error   Optional output for the error string
-     *
-     * \retval  true    Value is valid
-     * \retval  false   Value is not valid
-     */
-    bool operator()(const T &value, QString *error) const
-    {
-        Q_UNUSED(value)
-        Q_UNUSED(error)
-        return true;
-    }
-};
+    Q_UNUSED(value)
+    return true;
+}
 
 // -------------------------------------------------------------------------------------------------
 
@@ -89,26 +95,31 @@ public:
     {
     }
 
-    //! \copydoc    ConfigParameterDefaultValidator::operator()()
-    bool operator()(const T &value, QString *error) const
+    /*!
+     * Validates the value
+     *
+     * \param   value   Value to validate
+     *
+     * \retval  true    Value is valid
+     * \retval  false   Value is not valid
+     */
+    bool operator()(const T &value) const
     {
         if (value < m_minValue)
         {
-            if (error != nullptr)
-            {
-                *error = QString("Value [%1] is less than the min value [%2]!")
-                         .arg(value).arg(m_minValue);
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterValidator)
+                    << QString("Value [%1] is less than the min value [%2]!")
+                       .arg(value)
+                       .arg(m_minValue);
             return false;
         }
 
         if (value > m_maxValue)
         {
-            if (error != nullptr)
-            {
-                *error = QString("Value [%1] is greater than the max value [%2]!")
-                         .arg(value).arg(m_maxValue);
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterValidator)
+                    << QString("Value [%1] is greater than the max value [%2]!")
+                       .arg(value)
+                       .arg(m_maxValue);
             return false;
         }
 
@@ -122,6 +133,22 @@ private:
     //! Holds the max value
     const T m_maxValue;
 };
+
+// -------------------------------------------------------------------------------------------------
+
+/*!
+ * Helper method for creation of a ConfigParameterValidator from ConfigParameterRangeValidator
+ *
+ * \tparam  T   Data type of the value to validate
+ *
+ * \param   minValue    Min value
+ * \param   maxValue    Max value
+ */
+template<typename T>
+ConfigParameterValidator<T> makeConfigParameterRangeValidator(const T &minValue, const T &maxValue)
+{
+    return ConfigParameterValidator<T>(ConfigParameterRangeValidator<T>(minValue, maxValue));
+}
 
 // -------------------------------------------------------------------------------------------------
 
@@ -145,23 +172,29 @@ public:
     {
     }
 
-    //! \copydoc    ConfigParameterDefaultValidator::operator()()
-    bool operator()(const T &value, QString *error) const
+    /*!
+     * Validates the value
+     *
+     * \param   value   Value to validate
+     *
+     * \retval  true    Value is valid
+     * \retval  false   Value is not valid
+     */
+    bool operator()(const T &value) const
     {
         if (!m_validValues.contains(value))
         {
-            if (error != nullptr)
+            QStringList allowedValuesPrintable;
+
+            for (const T &item : m_validValues)
             {
-                QStringList allowedValuesPrintable;
-
-                for (const T &item : m_validValues)
-                {
-                    allowedValuesPrintable.append(QString("'%1'").arg(item));
-                }
-
-                *error = QString("Value [%1] does not match any of the allowed values [%2]!")
-                         .arg(value).arg(allowedValuesPrintable.join(", "));
+                allowedValuesPrintable.append(QString("'%1'").arg(item));
             }
+
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigParameterValidator)
+                    << QString("Value [%1] does not match any of the allowed values [%2]!")
+                       .arg(value)
+                       .arg(allowedValuesPrintable.join(", "));
             return false;
         }
 
@@ -172,6 +205,21 @@ private:
     //! Holds the list of valid values
     const QList<T> m_validValues;
 };
+
+// -------------------------------------------------------------------------------------------------
+
+/*!
+ * Helper method for creation of a ConfigParameterValidator from ConfigParameterListValidator
+ *
+ * \tparam  T   Data type of the value to validate
+ *
+ * \param   validValues     List of valid values
+ */
+template<typename T>
+ConfigParameterValidator<T> makeConfigParameterListValidator(const QList<T> &validValues)
+{
+    return ConfigParameterValidator<T>(ConfigParameterListValidator<T>(validValues));
+}
 
 } // namespace CppConfigFramework
 

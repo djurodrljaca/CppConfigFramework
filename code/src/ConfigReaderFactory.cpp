@@ -24,6 +24,7 @@
 // C++ Config Framework includes
 #include <CppConfigFramework/ConfigObjectNode.hpp>
 #include <CppConfigFramework/ConfigReader.hpp>
+#include <CppConfigFramework/LoggingCategories.hpp>
 
 // Qt includes
 #include <QtCore/QStringBuilder>
@@ -68,18 +69,15 @@ std::unique_ptr<ConfigObjectNode> ConfigReaderFactory::readConfig(
         const ConfigNodePath &destinationNodePath,
         const QVariantMap &otherParameters,
         const std::vector<const ConfigObjectNode *> &externalConfigs,
-        EnvironmentVariables *environmentVariables,
-        QString *error) const
+        EnvironmentVariables *environmentVariables) const
 {
     // Get the specified type of config reader
     auto it = m_configReaders.find(type);
 
     if (it == m_configReaders.end())
     {
-        if (error != nullptr)
-        {
-            *error = QStringLiteral("Unsupported configuration type: ") % type;
-        }
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << "Unsupported configuration type:" << type;
         return {};
     }
 
@@ -90,8 +88,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReaderFactory::readConfig(
                               destinationNodePath,
                               otherParameters,
                               externalConfigs,
-                              environmentVariables,
-                              error);
+                              environmentVariables);
 }
 
 // -------------------------------------------------------------------------------------------------

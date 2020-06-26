@@ -25,6 +25,7 @@
 #include <CppConfigFramework/ConfigWriter.hpp>
 
 // Qt includes
+#include <QtCore/QDateTime>
 #include <QtCore/QLine>
 #include <QtCore/QLineF>
 #include <QtCore/QPoint>

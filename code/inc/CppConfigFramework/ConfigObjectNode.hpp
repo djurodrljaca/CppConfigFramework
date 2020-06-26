@@ -23,7 +23,6 @@
 
 // C++ Config Framework includes
 #include <CppConfigFramework/ConfigNode.hpp>
-#include <CppConfigFramework/HashFunctions.hpp>
 
 // Qt includes
 

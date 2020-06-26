@@ -78,8 +78,6 @@ public:
      *
      * \param[in,out]   environmentVariables    Environment variables
      *
-     * \param[out]  error                   Optional output for the error string
-     *
      * \return  Configuration node instance or in case of failure a null pointer
      *
      * The externalConfigs items are used to provide an additional source for reference resolution.
@@ -92,8 +90,7 @@ public:
             const ConfigNodePath &destinationNodePath,
             const QVariantMap &otherParameters,
             const std::vector<const ConfigObjectNode *> &externalConfigs,
-            EnvironmentVariables *environmentVariables,
-            QString *error) const;
+            EnvironmentVariables *environmentVariables) const;
 
 private:
     //! Constructor

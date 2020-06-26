@@ -87,8 +87,6 @@ public:
      *
      * \param[in,out]   environmentVariables    Environment variables
      *
-     * \param[out]  error                   Optional output for the error string
-     *
      * \return  Configuration node instance or in case of failure a null pointer
      *
      * The externalConfigs items are used to provide an additional source for reference resolution.
@@ -100,8 +98,7 @@ public:
             const ConfigNodePath &destinationNodePath,
             const QVariantMap &otherParameters,
             const std::vector<const ConfigObjectNode *> &externalConfigs,
-            EnvironmentVariables *environmentVariables,
-            QString *error) const = 0;
+            EnvironmentVariables *environmentVariables) const = 0;
 
 protected:
     //! Enumerates the possible results of reference resolution procedure
@@ -140,14 +137,10 @@ protected:
      *
      * \param[in,out]   config  Configuration node
      *
-     * \param[out]  error   Optional output for the error string
-     *
      * \return  Reference resolution result
      */
-    bool resolveReferences(
-            const std::vector<const ConfigObjectNode *> &externalConfigs,
-            ConfigObjectNode *config,
-            QString *error) const;
+    bool resolveReferences(const std::vector<const ConfigObjectNode *> &externalConfigs,
+                           ConfigObjectNode *config) const;
 
     /*!
      * Tries to resolve all references in the specified Object node
@@ -156,14 +149,11 @@ protected:
      *
      * \param[in,out]   node    Configuration node
      *
-     * \param[out]  error   Optional output for the error string
-     *
      * \return  Reference resolution result
      */
     static ReferenceResolutionResult resolveObjectReferences(
             const std::vector<const ConfigObjectNode *> &externalConfigs,
-            ConfigObjectNode *node,
-            QString *error);
+            ConfigObjectNode *node);
 
     /*!
      * Updates the reference resolution result
@@ -184,14 +174,11 @@ protected:
      *
      * \param[in,out]   node    Configuration node
      *
-     * \param[out]  error   Optional output for the error string
-     *
      * \return  Reference resolution result
      */
     static ReferenceResolutionResult resolveNodeReference(
             const std::vector<const ConfigObjectNode *> &externalConfigs,
-            ConfigNodeReference *node,
-            QString *error);
+            ConfigNodeReference *node);
 
     /*!
      * Tries to resolve all references in the specified DerivedObject node
@@ -200,14 +187,11 @@ protected:
      *
      * \param[in,out]   node    Configuration node
      *
-     * \param[out]  error   Optional output for the error string
-     *
      * \return  Reference resolution result
      */
     static ReferenceResolutionResult resolveDerivedObjectReferences(
             const std::vector<const ConfigObjectNode *> &externalConfigs,
-            ConfigDerivedObjectNode *node,
-            QString *error);
+            ConfigDerivedObjectNode *node);
 
     /*!
      * Try to find the referenced configuration node from the parent and as an alternative from the
@@ -234,15 +218,12 @@ protected:
      * \param   destinationNodePath Node path to the destination node where the result needs to be
      *                              stored (must be absolute node path)
      *
-     * \param[out]  error   Optional output for the error string
-     *
      * \return  Configuration node instance or in case of failure a null pointer
      */
     static std::unique_ptr<ConfigObjectNode> transformConfig(
             std::unique_ptr<ConfigObjectNode> &&config,
             const ConfigNodePath &sourceNodePath,
-            const ConfigNodePath &destinationNodePath,
-            QString *error);
+            const ConfigNodePath &destinationNodePath);
 
 private:
     //! Holds the default value for max number of cycles for reference resolution procedure

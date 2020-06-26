@@ -45,6 +45,20 @@ namespace CppConfigFramework
 class CPPCONFIGFRAMEWORK_EXPORT ConfigLoader
 {
 public:
+    /*!
+     * Type alias for container item creator
+     *
+     * \tparam  T   Data type of an item in the container to load (needs to be derived from
+     *              ConfigLoader class)
+     *
+     * \param   name    Item name
+     *
+     * \return  Container item instance
+     */
+    template<typename T, std::enable_if_t<std::is_base_of<ConfigLoader, T>::value, bool> = true>
+    using ContainerItemCreator = std::function<T(const QString &name)>;
+
+public:
     //! Constructor
     ConfigLoader() = default;
 
@@ -68,12 +82,10 @@ public:
      *
      * \param   node    Configuration node from which this configuration structure should be loaded
      *
-     * \param[out]  error   Optional output for the error string
-     *
      * \retval  true    Success
      * \retval  false   Failure
      */
-    bool loadConfig(const ConfigNode &node, QString *error = nullptr);
+    bool loadConfig(const ConfigNode &node);
 
     /*!
      * Loads configuration parameters for this configuration structure
@@ -83,14 +95,10 @@ public:
      * \param   config          Configuration node from which this configuration structure should be
      *                          loaded
      *
-     * \param[out]  error   Optional output for the error string
-     *
      * \retval  true    Success
      * \retval  false   Failure
      */
-    bool loadConfig(const QString &parameterName,
-                    const ConfigObjectNode &config,
-                    QString *error = nullptr);
+    bool loadConfig(const QString &parameterName, const ConfigObjectNode &config);
 
     /*!
      * Loads configuration parameters for this optional configuration structure
@@ -101,15 +109,13 @@ public:
      *                          loaded
      *
      * \param[out]  loaded  Optional output for the loading result
-     * \param[out]  error   Optional output for the error string
      *
      * \retval  true    Success
      * \retval  false   Failure
      */
     bool loadOptionalConfig(const QString &parameterName,
                             const ConfigObjectNode &config,
-                            bool *loaded = nullptr,
-                            QString *error = nullptr);
+                            bool *loaded = nullptr);
 
     /*!
      * Loads configuration parameters for this configuration structure
@@ -117,19 +123,13 @@ public:
      * \param   path    Node path to the configuration node for this configuration structure
      * \param   config  Configuration node from which this configuration structure should be loaded
      *
-     * \param[out]  error   Optional output for the error string
-     *
      * \retval  true    Success
      * \retval  false   Failure
      */
-    bool loadConfigAtPath(const ConfigNodePath &path,
-                          const ConfigObjectNode &config,
-                          QString *error = nullptr);
+    bool loadConfigAtPath(const ConfigNodePath &path, const ConfigObjectNode &config);
 
     //! \copydoc    ConfigLoader::loadConfigAtPath()
-    bool loadConfigAtPath(const QString &path,
-                          const ConfigObjectNode &config,
-                          QString *error = nullptr);
+    bool loadConfigAtPath(const QString &path, const ConfigObjectNode &config);
 
     /*!
      * Loads configuration parameters for this optional configuration structure
@@ -138,21 +138,18 @@ public:
      * \param   config  Configuration node from which this configuration structure should be loaded
      *
      * \param[out]  loaded  Optional output for the loading result
-     * \param[out]  error   Optional output for the error string
      *
      * \retval  true    Success
      * \retval  false   Failure
      */
     bool loadOptionalConfigAtPath(const ConfigNodePath &path,
                                   const ConfigObjectNode &config,
-                                  bool *loaded = nullptr,
-                                  QString *error = nullptr);
+                                  bool *loaded = nullptr);
 
     //! \copydoc    ConfigLoader::loadOptionalConfigAtPath()
     bool loadOptionalConfigAtPath(const QString &path,
                                   const ConfigObjectNode &config,
-                                  bool *loaded = nullptr,
-                                  QString *error = nullptr);
+                                  bool *loaded = nullptr);
 
 protected:
     /*!
@@ -166,23 +163,18 @@ protected:
      * \param   config          Configuration node from which this configuration structure should be
      *                          loaded
      *
-     * \param[out]  error   Optional output for the error string
-     *
      * \retval  true    Success
      * \retval  false   Failure
      */
     template<typename T>
     bool loadRequiredConfigParameter(T *parameterValue,
                                      const QString &parameterName,
-                                     const ConfigObjectNode &config,
-                                     QString *error = nullptr);
+                                     const ConfigObjectNode &config);
 
     /*!
      * Loads the required configuration parameter from the configuration node with validation
      *
-     * \tparam  T           Data type of the parameter to load
-     * \tparam  Validator   Validator must be an executable object with signature:
-     *                      bool validator(const T &value, QString *error)
+     * \tparam  T   Data type of the parameter to load
      *
      * \param[out]  parameterValue  Output for the configuration parameter value
      *
@@ -191,17 +183,14 @@ protected:
      *                          loaded
      * \param   validator       Validator for the loaded parameter value
      *
-     * \param[out]  error   Optional output for the error string
-     *
      * \retval  true    Success
      * \retval  false   Failure
      */
-    template<typename T, typename Validator>
+    template<typename T>
     bool loadRequiredConfigParameter(T *parameterValue,
                                      const QString &parameterName,
                                      const ConfigObjectNode &config,
-                                     Validator validator,
-                                     QString *error = nullptr);
+                                     ConfigParameterValidator<T> validator);
 
     /*!
      * Loads the optional configuration parameter from the configuration node without validation
@@ -215,7 +204,6 @@ protected:
      *                          loaded
      *
      * \param[out]  loaded  Optional output for the loading result
-     * \param[out]  error   Optional output for the error string
      *
      * \retval  true    Success
      * \retval  false   Failure
@@ -224,15 +212,12 @@ protected:
     bool loadOptionalConfigParameter(T *parameterValue,
                                      const QString &parameterName,
                                      const ConfigObjectNode &config,
-                                     bool *loaded = nullptr,
-                                     QString *error = nullptr);
+                                     bool *loaded = nullptr);
 
     /*!
      * Loads the optional configuration parameter from the configuration node with validation
      *
-     * \tparam  T           Data type of the parameter to load
-     * \tparam  Validator   Validator must be an executable object with signature:
-     *                      bool validator(const T &value, QString *error)
+     * \tparam  T   Data type of the parameter to load
      *
      * \param[out]  parameterValue  Output for the configuration parameter value
      *
@@ -242,18 +227,16 @@ protected:
      * \param   validator       Validator for the loaded parameter value
      *
      * \param[out]  loaded  Optional output for the loading result
-     * \param[out]  error   Optional output for the error string
      *
      * \retval  true    Success
      * \retval  false   Failure
      */
-    template<typename T, typename Validator>
+    template<typename T>
     bool loadOptionalConfigParameter(T *parameterValue,
                                      const QString &parameterName,
                                      const ConfigObjectNode &config,
-                                     Validator validator,
-                                     bool *loaded = nullptr,
-                                     QString *error = nullptr);
+                                     ConfigParameterValidator<T> validator,
+                                     bool *loaded = nullptr);
 
     /*!
      * Loads the required configuration container from the configuration node
@@ -267,24 +250,19 @@ protected:
      * \param   config          Configuration node from which this configuration structure should be
      *                          loaded
      *
-     * \param[out]  error   Optional output for the error string
-     *
      * \retval  true    Success
      * \retval  false   Failure
      */
     template<typename T>
     bool loadRequiredConfigContainer(T *container,
                                      const QString &parameterName,
-                                     const ConfigObjectNode &config,
-                                     QString *error = nullptr);
+                                     const ConfigObjectNode &config);
 
     /*!
      * Loads the required configuration container from the configuration node
      *
-     * \tparam  T           Data type of the container to load (its value type needs to be derived
-     *                      from ConfigLoader class)
-     * \tparam  ItemCreator Item creator must be an executable object with signature:
-     *                      bool itemCreator(const QString &name)
+     * \tparam  T   Data type of the container to load (its value type needs to be derived from
+     *              ConfigLoader class)
      *
      * \param[out]  container   Output for the configuration container
      *
@@ -293,17 +271,15 @@ protected:
      *                          loaded
      * \param   itemCreator     Functor for creating the initial item instances for the container
      *
-     * \param[out]  error   Optional output for the error string
-     *
      * \retval  true    Success
      * \retval  false   Failure
      */
-    template<typename T, typename ItemCreator>
-    bool loadRequiredConfigContainer(T *container,
-                                     const QString &parameterName,
-                                     const ConfigObjectNode &config,
-                                     ItemCreator itemCreator,
-                                     QString *error = nullptr);
+    template<typename T>
+    bool loadRequiredConfigContainer(
+            T *container,
+            const QString &parameterName,
+            const ConfigObjectNode &config,
+            ContainerItemCreator<typename ConfigContainerHelper<T>::ItemType> itemCreator);
 
     /*!
      * Loads the optional configuration container from the configuration node
@@ -318,7 +294,6 @@ protected:
      *                          loaded
      *
      * \param[out]  loaded  Optional output for the loading result
-     * \param[out]  error   Optional output for the error string
      *
      * \retval  true    Success
      * \retval  false   Failure
@@ -327,16 +302,13 @@ protected:
     bool loadOptionalConfigContainer(T *container,
                                      const QString &parameterName,
                                      const ConfigObjectNode &config,
-                                     bool *loaded = nullptr,
-                                     QString *error = nullptr);
+                                     bool *loaded = nullptr);
 
     /*!
      * Loads the optional configuration container from the configuration node
      *
-     * \tparam  T           Data type of the container to load (its value type needs to be derived
-     *                      from ConfigLoader class)
-     * \tparam  ItemCreator Item creator must be an executable object with signature:
-     *                      bool itemCreator(const QString &name)
+     * \tparam  T   Data type of the container to load (its value type needs to be derived from
+     *              ConfigLoader class)
      *
      * \param[out]  container   Output for the configuration container
      *
@@ -346,26 +318,23 @@ protected:
      * \param   itemCreator     Functor for creating the initial item instances for the container
      *
      * \param[out]  loaded  Optional output for the loading result
-     * \param[out]  error   Optional output for the error string
      *
      * \retval  true    Success
      * \retval  false   Failure
      */
-    template<typename T, typename ItemCreator>
-    bool loadOptionalConfigContainer(T *container,
-                                     const QString &parameterName,
-                                     const ConfigObjectNode &config,
-                                     ItemCreator itemCreator,
-                                     bool *loaded = nullptr,
-                                     QString *error = nullptr);
+    template<typename T>
+    bool loadOptionalConfigContainer(
+            T *container,
+            const QString &parameterName,
+            const ConfigObjectNode &config,
+            ContainerItemCreator<typename ConfigContainerHelper<T>::ItemType> itemCreator,
+            bool *loaded = nullptr);
 
 private:
     /*!
      * Loads the configuration parameter from the configuration node with validation
      *
-     * \tparam  T           Data type of the parameter to load
-     * \tparam  Validator   Validator must be an executable object with signature:
-     *                      bool validator(const T &value, QString *error)
+     * \tparam  T   Data type of the parameter to load
      *
      * \param[out]  parameterValue  Output for the configuration parameter value
      *
@@ -373,45 +342,35 @@ private:
      *                          loaded
      * \param   validator       Validator for the loaded parameter value
      *
-     * \param[out]  error   Optional output for the error string
-     *
      * \return  Configuration parameter loading result
      */
-    template<typename T, typename Validator>
+    template<typename T>
     bool loadConfigParameterFromNode(T *parameterValue,
                                      const ConfigNode &node,
-                                     Validator validator,
-                                     QString *error);
+                                     ConfigParameterValidator<T> validator);
 
     /*!
      * Validates the configuration parameter
      *
-     * \tparam  T           Data type of the parameter to validate
-     * \tparam  Validator   Validator must be an executable object with signature:
-     *                      bool validator(const T &value, QString *error)
+     * \tparam  T   Data type of the parameter to validate
      *
      * \param   parameterValue  Configuration parameter value
      * \param   node            Configuration node from which this configuration parameter should be
      *                          loaded
      * \param   validator       Validator for the loaded parameter value
      *
-     * \param[out]  error   Optional output for the error string
-     *
      * \return  Configuration parameter loading result
      */
-    template<typename T, typename Validator>
+    template<typename T>
     bool validateConfigParameter(const T &parameterValue,
                                  const ConfigNode &node,
-                                 Validator validator,
-                                 QString *error);
+                                 ConfigParameterValidator<T> validator);
 
     /*!
      * Loads the configuration container from the configuration node
      *
-     * \tparam  T           Data type of the container to load (its value type needs to be derived
-     *                      from ConfigLoader class)
-     * \tparam  ItemCreator Item creator must be an executable object with signature:
-     *                      bool itemCreator(const QString &name)
+     * \tparam  T   Data type of the container to load (its value type needs to be derived from
+     *              ConfigLoader class)
      *
      * \param[out]  container   Output for the configuration container
      *
@@ -419,16 +378,14 @@ private:
      *                      loaded
      * \param   itemCreator Functor for creating the initial item instances for the container
      *
-     * \param[out]  error   Optional output for the error string
-     *
      * \retval  true    Success
      * \retval  false   Failure
      */
-    template<typename T, typename ItemCreator>
-    bool loadConfigContainerFromNode(T *container,
-                                     const ConfigNode &node,
-                                     ItemCreator itemCreator,
-                                     QString *error = nullptr);
+    template<typename T>
+    bool loadConfigContainerFromNode(
+            T *container,
+            const ConfigNode &node,
+            ContainerItemCreator<typename ConfigContainerHelper<T>::ItemType> itemCreator);
 
     /*!
      * Default container item creator
@@ -439,9 +396,12 @@ private:
      * \return  Default constructed item instance
      */
     template<typename T>
-    static T defaultContainerItemCreator(const QString &)
+    static ContainerItemCreator<T> defaultContainerItemCreator()
     {
-        return T();
+        return [](const QString &)
+        {
+            return T();
+        };
     }
 
     /*!
@@ -449,19 +409,15 @@ private:
      *
      * \param   config  Configuration node from which this configuration parameters should be loaded
      *
-     * \param[out]  error   Output for the error string
-     *
      * \retval  true    Success
      * \retval  false   Failure
      */
-    virtual bool loadConfigParameters(const ConfigObjectNode &config, QString *error = nullptr) = 0;
+    virtual bool loadConfigParameters(const ConfigObjectNode &config) = 0;
 
     /*!
      * Validates the configuration structure
      *
-     * \param[out]  error   Output for the error string
-     *
-     * \return  Empty string if the configuration structure is valid or the error string
+     * \return  Empty string if the configuration structure is valid
      *
      * \note    Default implementation just returns an empty string
      */
@@ -486,24 +442,21 @@ private:
 template<typename T>
 bool ConfigLoader::loadRequiredConfigParameter(T *parameterValue,
                                                const QString &parameterName,
-                                               const ConfigObjectNode &config,
-                                               QString *error)
+                                               const ConfigObjectNode &config)
 {
     return loadRequiredConfigParameter(parameterValue,
                                        parameterName,
                                        config,
-                                       ConfigParameterDefaultValidator<T>(),
-                                       error);
+                                       defaultConfigParameterValidator<T>);
 }
 
 // -------------------------------------------------------------------------------------------------
 
-template<typename T, typename Validator>
+template<typename T>
 bool ConfigLoader::loadRequiredConfigParameter(T *parameterValue,
                                                const QString &parameterName,
                                                const ConfigObjectNode &config,
-                                               Validator validator,
-                                               QString *error)
+                                               ConfigParameterValidator<T> validator)
 {
     // Validate parameters
     Q_ASSERT(parameterValue != nullptr);
@@ -513,12 +466,8 @@ bool ConfigLoader::loadRequiredConfigParameter(T *parameterValue,
         const QString errorString = QString("Configuration parameter name [%1] is not valid "
                                             "(configuration node [%2])!")
                                     .arg(parameterName, config.nodePath().path());
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
         handleError(errorString);
-
-        if (error != nullptr)
-        {
-            *error = errorString;
-        }
         return false;
     }
 
@@ -530,17 +479,13 @@ bool ConfigLoader::loadRequiredConfigParameter(T *parameterValue,
         const QString errorString = QString("Configuration parameter node with name [%1] was not "
                                             "found in configuration node [%2]!")
                                     .arg(parameterName, config.nodePath().path());
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
         handleError(errorString);
-
-        if (error != nullptr)
-        {
-            *error = errorString;
-        }
         return false;
     }
 
     // Load configuration parameter from the configuration node
-    return loadConfigParameterFromNode(parameterValue, *node, validator, error);
+    return loadConfigParameterFromNode(parameterValue, *node, validator);
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -549,26 +494,23 @@ template<typename T>
 bool ConfigLoader::loadOptionalConfigParameter(T *parameterValue,
                                                const QString &parameterName,
                                                const ConfigObjectNode &config,
-                                               bool *loaded,
-                                               QString *error)
+                                               bool *loaded)
 {
     return loadOptionalConfigParameter(parameterValue,
                                        parameterName,
                                        config,
-                                       ConfigParameterDefaultValidator<T>(),
-                                       loaded,
-                                       error);
+                                       defaultConfigParameterValidator<T>,
+                                       loaded);
 }
 
 // -------------------------------------------------------------------------------------------------
 
-template<typename T, typename Validator>
+template<typename T>
 bool ConfigLoader::loadOptionalConfigParameter(T *parameterValue,
                                                const QString &parameterName,
                                                const ConfigObjectNode &config,
-                                               Validator validator,
-                                               bool *loaded,
-                                               QString *error)
+                                               ConfigParameterValidator<T> validator,
+                                               bool *loaded)
 {
     // Validate parameters
     Q_ASSERT(parameterValue != nullptr);
@@ -578,12 +520,8 @@ bool ConfigLoader::loadOptionalConfigParameter(T *parameterValue,
         const QString errorString = QString("Configuration parameter name [%1] is not valid "
                                             "(configuration node [%2])!")
                                     .arg(parameterName, config.nodePath().path());
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
         handleError(errorString);
-
-        if (error != nullptr)
-        {
-            *error = errorString;
-        }
 
         if (loaded != nullptr)
         {
@@ -606,7 +544,7 @@ bool ConfigLoader::loadOptionalConfigParameter(T *parameterValue,
     }
 
     // Load configuration parameter from the configuration node
-    const bool result = loadConfigParameterFromNode(parameterValue, *node, validator, error);
+    const bool result = loadConfigParameterFromNode(parameterValue, *node, validator);
 
     if (loaded != nullptr)
     {
@@ -620,26 +558,24 @@ bool ConfigLoader::loadOptionalConfigParameter(T *parameterValue,
 template<typename T>
 bool ConfigLoader::loadRequiredConfigContainer(T *container,
                                                const QString &parameterName,
-                                               const ConfigObjectNode &config,
-                                               QString *error)
+                                               const ConfigObjectNode &config)
 {
     using ItemType = typename ConfigContainerHelper<T>::ItemType;
 
     return loadRequiredConfigContainer(container,
                                        parameterName,
                                        config,
-                                       ConfigLoader::defaultContainerItemCreator<ItemType>,
-                                       error);
+                                       ConfigLoader::defaultContainerItemCreator<ItemType>());
 }
 
 // -------------------------------------------------------------------------------------------------
 
-template<typename T, typename ItemCreator>
-bool ConfigLoader::loadRequiredConfigContainer(T *container,
-                                               const QString &parameterName,
-                                               const ConfigObjectNode &config,
-                                               ItemCreator itemCreator,
-                                               QString *error)
+template<typename T>
+bool ConfigLoader::loadRequiredConfigContainer(
+        T *container,
+        const QString &parameterName,
+        const ConfigObjectNode &config,
+        ContainerItemCreator<typename ConfigContainerHelper<T>::ItemType> itemCreator)
 {
     container->clear();
 
@@ -651,12 +587,8 @@ bool ConfigLoader::loadRequiredConfigContainer(T *container,
         const QString errorString = QString("Configuration parameter name [%1] is not valid "
                                             "(configuration node [%2])!")
                                     .arg(parameterName, config.nodePath().path());
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
         handleError(errorString);
-
-        if (error != nullptr)
-        {
-            *error = errorString;
-        }
         return false;
     }
 
@@ -668,17 +600,13 @@ bool ConfigLoader::loadRequiredConfigContainer(T *container,
         const QString errorString = QString("Configuration parameter node with name [%1] was not "
                                             "found in configuration node [%2]!")
                                     .arg(parameterName, config.nodePath().path());
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
         handleError(errorString);
-
-        if (error != nullptr)
-        {
-            *error = errorString;
-        }
         return false;
     }
 
     // Load configuration container from the configuration node
-    return loadConfigContainerFromNode(container, *node, itemCreator, error);
+    return loadConfigContainerFromNode(container, *node, itemCreator);
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -687,28 +615,26 @@ template<typename T>
 bool ConfigLoader::loadOptionalConfigContainer(T *container,
                                                const QString &parameterName,
                                                const ConfigObjectNode &config,
-                                               bool *loaded,
-                                               QString *error)
+                                               bool *loaded)
 {
     using ItemType = typename ConfigContainerHelper<T>::ItemType;
 
     return loadOptionalConfigContainer(container,
                                        parameterName,
                                        config,
-                                       ConfigLoader::defaultContainerItemCreator<ItemType>,
-                                       loaded,
-                                       error);
+                                       ConfigLoader::defaultContainerItemCreator<ItemType>(),
+                                       loaded);
 }
 
 // -------------------------------------------------------------------------------------------------
 
-template<typename T, typename ItemCreator>
-bool ConfigLoader::loadOptionalConfigContainer(T *container,
-                                               const QString &parameterName,
-                                               const ConfigObjectNode &config,
-                                               ItemCreator itemCreator,
-                                               bool *loaded,
-                                               QString *error)
+template<typename T>
+bool ConfigLoader::loadOptionalConfigContainer(
+        T *container,
+        const QString &parameterName,
+        const ConfigObjectNode &config,
+        ContainerItemCreator<typename ConfigContainerHelper<T>::ItemType> itemCreator,
+        bool *loaded)
 {
     container->clear();
 
@@ -720,12 +646,8 @@ bool ConfigLoader::loadOptionalConfigContainer(T *container,
         const QString errorString = QString("Configuration parameter name [%1] is not valid "
                                             "(configuration node [%2])!")
                                     .arg(parameterName, config.nodePath().path());
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
         handleError(errorString);
-
-        if (error != nullptr)
-        {
-            *error = errorString;
-        }
         return false;
     }
 
@@ -743,7 +665,7 @@ bool ConfigLoader::loadOptionalConfigContainer(T *container,
     }
 
     // Load configuration container from the configuration node
-    const bool result = loadConfigContainerFromNode(container, *node, itemCreator, error);
+    const bool result = loadConfigContainerFromNode(container, *node, itemCreator);
 
     if (loaded != nullptr)
     {
@@ -754,56 +676,37 @@ bool ConfigLoader::loadOptionalConfigContainer(T *container,
 
 // -------------------------------------------------------------------------------------------------
 
-template<typename T, typename Validator>
+template<typename T>
 bool ConfigLoader::loadConfigParameterFromNode(T *parameterValue,
                                                const ConfigNode &node,
-                                               Validator validator,
-                                               QString *error)
+                                               ConfigParameterValidator<T> validator)
 {
     if (!node.isValue())
     {
         const QString errorString = QString("Configuration parameter node [%1] is not a Value "
                                             "node!").arg(node.nodePath().path());
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
         handleError(errorString);
-
-        if (error != nullptr)
-        {
-            *error = errorString;
-        }
         return false;
     }
 
     // Load the node value to the parameter
-    QString loadingError;
-
-    if (!ConfigParameterLoader::load(node.toValue().value(), parameterValue, &loadingError))
+    if (!ConfigParameterLoader::load(node.toValue().value(), parameterValue))
     {
-        const QString errorString = QString("Failed to load configuration parameter's value [%1]. "
-                                            "Error: [%2]").arg(node.nodePath().path(),
-                                                               loadingError);
+        const QString errorString = QString("Failed to load configuration parameter's value [%1]")
+                                    .arg(node.nodePath().path());
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
         handleError(errorString);
-
-        if (error != nullptr)
-        {
-            *error = errorString;
-        }
         return false;
     }
 
     // Validate the value
-    QString validationError;
-
-    if (!validator(*parameterValue, &validationError))
+    if (!validator(*parameterValue))
     {
-        const QString errorString = QString("Configuration parameter's value [%1] is not "
-                                            "valid. Error: [%2]").arg(node.nodePath().path(),
-                                                                      validationError);
+        const QString errorString = QString("Configuration parameter's value [%1] is not valid")
+                                    .arg(node.nodePath().path());
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
         handleError(errorString);
-
-        if (error != nullptr)
-        {
-            *error = errorString;
-        }
         return false;
     }
 
@@ -813,22 +716,18 @@ bool ConfigLoader::loadConfigParameterFromNode(T *parameterValue,
 
 // -------------------------------------------------------------------------------------------------
 
-template<typename T, typename ItemCreator>
-bool ConfigLoader::loadConfigContainerFromNode(T *container,
-                                               const ConfigNode &node,
-                                               ItemCreator itemCreator,
-                                               QString *error)
+template<typename T>
+bool ConfigLoader::loadConfigContainerFromNode(
+        T *container,
+        const ConfigNode &node,
+        ContainerItemCreator<typename ConfigContainerHelper<T>::ItemType> itemCreator)
 {
     if (!node.isObject())
     {
         const QString errorString = QString("Configuration container node [%1] is not an Object"
                                             "node!").arg(node.nodePath().path());
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
         handleError(errorString);
-
-        if (error != nullptr)
-        {
-            *error = errorString;
-        }
         return false;
     }
 
@@ -842,7 +741,7 @@ bool ConfigLoader::loadConfigContainerFromNode(T *container,
         const auto *itemNode = nodeObject.member(itemName);
         Q_ASSERT(itemNode != nullptr);
 
-        if (!item.loadConfig(*itemNode, error))
+        if (!item.loadConfig(*itemNode))
         {
             return false;
         }
