@@ -15,7 +15,7 @@
 /*!
  * \file
  *
- * Contains a base class for the loading configuration nodes to actual configuration parameters
+ * Contains logging categories
  */
 
 #ifndef CPPCONFIGFRAMEWORK_LOGGINGCATEGORIES_HPP
