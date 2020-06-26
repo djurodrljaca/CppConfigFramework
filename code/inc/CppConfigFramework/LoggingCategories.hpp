@@ -32,7 +32,6 @@
 // Forward declarations
 
 // Macros
-Q_DECLARE_LOGGING_CATEGORY(CppConfigFramework_ConfigLoader_Log)
 
 // -------------------------------------------------------------------------------------------------
 
