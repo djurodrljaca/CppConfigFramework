@@ -19,7 +19,7 @@
  */
 
 // Own header
-#include <CppConfigFramework/ConfigLoader.hpp>
+#include <CppConfigFramework/LoggingCategories.hpp>
 
 // C++ Config Framework includes
 
@@ -30,7 +30,6 @@
 // Forward declarations
 
 // Macros
-Q_LOGGING_CATEGORY(CppConfigFramework_ConfigLoader_Log, "CppConfigFramework.ConfigLoader")
 
 // -------------------------------------------------------------------------------------------------
 
