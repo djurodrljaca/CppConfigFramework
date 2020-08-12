@@ -285,20 +285,18 @@ bool loadIntegerParameter(const QVariant &nodeValue, T *parameterValue)
     // Check for a compatible numeric type in the QVariant value
     switch (nodeValueType)
     {
-        case qMetaTypeId<uint8_t>():
-        case qMetaTypeId<uint16_t>():
-        case qMetaTypeId<uint32_t>():
-        case qMetaTypeId<uint64_t>():
-        case qMetaTypeId<qulonglong>():
+        case qMetaTypeId<quint8>():
+        case qMetaTypeId<quint16>():
+        case qMetaTypeId<quint32>():
+        case qMetaTypeId<quint64>():
         {
             return convertIntegerValue(nodeValue.value<uint64_t>(), parameterValue);
         }
 
-        case qMetaTypeId<int8_t>():
-        case qMetaTypeId<int16_t>():
-        case qMetaTypeId<int32_t>():
-        case qMetaTypeId<int64_t>():
-        case qMetaTypeId<qlonglong>():
+        case qMetaTypeId<qint8>():
+        case qMetaTypeId<qint16>():
+        case qMetaTypeId<qint32>():
+        case qMetaTypeId<qint64>():
         {
             return convertIntegerValue(nodeValue.value<int64_t>(), parameterValue);
         }
@@ -374,16 +372,14 @@ bool loadFloatingPointParameter(const QVariant &nodeValue, T *parameterValue)
     // Check for a compatible numeric type in the QVariant value
     switch (nodeValueType)
     {
-        case qMetaTypeId<uint8_t>():
-        case qMetaTypeId<uint16_t>():
-        case qMetaTypeId<uint32_t>():
-        case qMetaTypeId<uint64_t>():
-        case qMetaTypeId<qulonglong>():
-        case qMetaTypeId<int8_t>():
-        case qMetaTypeId<int16_t>():
-        case qMetaTypeId<int32_t>():
-        case qMetaTypeId<int64_t>():
-        case qMetaTypeId<qlonglong>():
+        case qMetaTypeId<quint8>():
+        case qMetaTypeId<quint16>():
+        case qMetaTypeId<quint32>():
+        case qMetaTypeId<quint64>():
+        case qMetaTypeId<qint8>():
+        case qMetaTypeId<qint16>():
+        case qMetaTypeId<qint32>():
+        case qMetaTypeId<qint64>():
         case qMetaTypeId<float>():
         case qMetaTypeId<double>():
         {
@@ -439,20 +435,18 @@ bool load(const QVariant &nodeValue, bool *parameterValue)
             return true;
         }
 
-        case qMetaTypeId<uint8_t>():
-        case qMetaTypeId<uint16_t>():
-        case qMetaTypeId<uint32_t>():
-        case qMetaTypeId<uint64_t>():
-        case qMetaTypeId<qulonglong>():
+        case qMetaTypeId<quint8>():
+        case qMetaTypeId<quint16>():
+        case qMetaTypeId<quint32>():
+        case qMetaTypeId<quint64>():
         {
             return Internal::convertBooleanValue(nodeValue.toULongLong(), parameterValue);
         }
 
-        case qMetaTypeId<int8_t>():
-        case qMetaTypeId<int16_t>():
-        case qMetaTypeId<int32_t>():
-        case qMetaTypeId<int64_t>():
-        case qMetaTypeId<qlonglong>():
+        case qMetaTypeId<qint8>():
+        case qMetaTypeId<qint16>():
+        case qMetaTypeId<qint32>():
+        case qMetaTypeId<qint64>():
         {
             return Internal::convertBooleanValue(nodeValue.toLongLong(), parameterValue);
         }
@@ -626,21 +620,19 @@ bool load(const QVariant &nodeValue, QString *parameterValue)
     // Check for a compatible numeric type in the QVariant value
     switch (nodeValue.userType())
     {
-        case qMetaTypeId<int8_t>():
-        case qMetaTypeId<int16_t>():
-        case qMetaTypeId<int32_t>():
-        case qMetaTypeId<int64_t>():
-        case qMetaTypeId<qlonglong>():
+        case qMetaTypeId<qint8>():
+        case qMetaTypeId<qint16>():
+        case qMetaTypeId<qint32>():
+        case qMetaTypeId<qint64>():
         {
             *parameterValue = QString::number(nodeValue.toLongLong());
             return true;
         }
 
-        case qMetaTypeId<uint8_t>():
-        case qMetaTypeId<uint16_t>():
-        case qMetaTypeId<uint32_t>():
-        case qMetaTypeId<uint64_t>():
-        case qMetaTypeId<qulonglong>():
+        case qMetaTypeId<quint8>():
+        case qMetaTypeId<quint16>():
+        case qMetaTypeId<quint32>():
+        case qMetaTypeId<quint64>():
         {
             *parameterValue = QString::number(nodeValue.toULongLong());
             return true;
