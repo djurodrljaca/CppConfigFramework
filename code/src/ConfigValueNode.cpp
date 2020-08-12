@@ -269,20 +269,18 @@ QVariant ConfigValueNode::toSimplifiedVariant(const QVariant &value)
             return toSimplifiedVariant(value.value<bool>());
         }
 
-        case qMetaTypeId<uint8_t>():
-        case qMetaTypeId<uint16_t>():
-        case qMetaTypeId<uint32_t>():
-        case qMetaTypeId<uint64_t>():
-        case qMetaTypeId<qulonglong>():
+        case qMetaTypeId<quint8>():
+        case qMetaTypeId<quint16>():
+        case qMetaTypeId<quint32>():
+        case qMetaTypeId<quint64>():
         {
             return toSimplifiedVariant(value.value<uint64_t>());
         }
 
-        case qMetaTypeId<int8_t>():
-        case qMetaTypeId<int16_t>():
-        case qMetaTypeId<int32_t>():
-        case qMetaTypeId<int64_t>():
-        case qMetaTypeId<qlonglong>():
+        case qMetaTypeId<qint8>():
+        case qMetaTypeId<qint16>():
+        case qMetaTypeId<qint32>():
+        case qMetaTypeId<qint64>():
         {
             return toSimplifiedVariant(value.value<int64_t>());
         }
