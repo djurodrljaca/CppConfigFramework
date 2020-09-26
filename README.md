@@ -4,6 +4,12 @@ The purpose of this config framework is to simplify creation and loading of conf
 
 The framework can be used to create cross-platform applications, since it is using only Qt and STL libraries.
 
+## Build requirements
+
+* CMake v3.5 or later
+* C++14 compliant compiler
+* Qt5 framework (only Core and Test modules)
+* [Cedar Framework](https://github.com/djurodrljaca/CedarFramework)
 
 ## Requirements
 
