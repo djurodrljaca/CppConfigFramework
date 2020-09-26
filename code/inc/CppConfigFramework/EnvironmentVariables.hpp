@@ -18,8 +18,7 @@
  * Contains a class for accessing environment variables
  */
 
-#ifndef CPPCONFIGFRAMEWORK_ENVIRONMENTVARIABLES_HPP
-#define CPPCONFIGFRAMEWORK_ENVIRONMENTVARIABLES_HPP
+#pragma once
 
 // C++ Config Framework includes
 #include <CppConfigFramework/CppConfigFrameworkExport.hpp>
@@ -109,5 +108,3 @@ private:
 };
 
 } // namespace CppConfigFramework
-
-#endif // CPPCONFIGFRAMEWORK_ENVIRONMENTVARIABLES_HPP

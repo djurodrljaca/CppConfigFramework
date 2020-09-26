@@ -18,8 +18,7 @@
  * Contains logging categories
  */
 
-#ifndef CPPCONFIGFRAMEWORK_LOGGINGCATEGORIES_HPP
-#define CPPCONFIGFRAMEWORK_LOGGINGCATEGORIES_HPP
+#pragma once
 
 // C++ Config Framework includes
 #include <CppConfigFramework/CppConfigFrameworkExport.hpp>
@@ -44,8 +43,8 @@ namespace LoggingCategory
 //! Logging category for ConfigLoader
 CPPCONFIGFRAMEWORK_EXPORT extern const QLoggingCategory ConfigLoader;
 
-//! Logging category for ConfigLoader
-CPPCONFIGFRAMEWORK_EXPORT extern const QLoggingCategory ConfigParameterLoader;
+//! Logging category for ConfigNodePath
+CPPCONFIGFRAMEWORK_EXPORT extern const QLoggingCategory ConfigNodePath;
 
 //! Logging category for ConfigParameterValidator
 CPPCONFIGFRAMEWORK_EXPORT extern const QLoggingCategory ConfigParameterValidator;
@@ -59,5 +58,3 @@ CPPCONFIGFRAMEWORK_EXPORT extern const QLoggingCategory ConfigWriter;
 } // namespace LoggingCategory
 
 } // namespace CppConfigFramework
-
-#endif // CPPCONFIGFRAMEWORK_LOGGINGCATEGORIES_HPP

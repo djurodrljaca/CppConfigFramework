@@ -24,6 +24,8 @@
 // C++ Config Framework includes
 
 // Qt includes
+#include <QtCore/QJsonArray>
+#include <QtCore/QJsonObject>
 
 // System includes
 
@@ -61,9 +63,9 @@ ConfigNode::Type ConfigDerivedObjectNode::type() const
 
 // -------------------------------------------------------------------------------------------------
 
-QVariant ConfigDerivedObjectNode::toSimplifiedVariant() const
+QJsonValue ConfigDerivedObjectNode::toJson() const
 {
-    QVariantMap data;
+    QJsonObject data;
 
     // Base member
     QStringList bases;
@@ -85,11 +87,11 @@ QVariant ConfigDerivedObjectNode::toSimplifiedVariant() const
     else
     {
         // Add the array of bases
-        data.insert(QStringLiteral("base"), QVariant(bases));
+        data.insert(QStringLiteral("base"), QJsonArray::fromStringList(bases));
     }
 
     // Config member
-    data.insert(QStringLiteral("config"), m_config.toSimplifiedVariant());
+    data.insert(QStringLiteral("config"), m_config.toJson());
 
     return data;
 }
@@ -123,21 +125,3 @@ void ConfigDerivedObjectNode::setConfig(const ConfigObjectNode &config)
 }
 
 } // namespace CppConfigFramework
-
-// -------------------------------------------------------------------------------------------------
-
-bool operator==(const CppConfigFramework::ConfigDerivedObjectNode &left,
-                const CppConfigFramework::ConfigDerivedObjectNode &right)
-{
-    return ((left.nodePath() != right.nodePath()) ||
-            (left.bases() != right.bases()) ||
-            (left.config() != right.config()));
-}
-
-// -------------------------------------------------------------------------------------------------
-
-bool operator!=(const CppConfigFramework::ConfigDerivedObjectNode &left,
-                const CppConfigFramework::ConfigDerivedObjectNode &right)
-{
-    return !(left == right);
-}

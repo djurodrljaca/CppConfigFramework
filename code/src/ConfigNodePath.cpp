@@ -22,6 +22,7 @@
 #include <CppConfigFramework/ConfigNodePath.hpp>
 
 // C++ Config Framework includes
+#include <CppConfigFramework/LoggingCategories.hpp>
 
 // Qt includes
 #include <QtCore/QRegularExpression>
@@ -399,4 +400,22 @@ bool operator!=(const CppConfigFramework::ConfigNodePath &left,
                 const CppConfigFramework::ConfigNodePath &right)
 {
     return !(left == right);
+}
+
+// -------------------------------------------------------------------------------------------------
+
+template<>
+bool CedarFramework::deserialize(const QJsonValue &json, CppConfigFramework::ConfigNodePath *value)
+{
+    Q_ASSERT(value != nullptr);
+
+    if (!json.isString())
+    {
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigNodePath)
+                << QStringLiteral("JSON value is not a string:") << json;
+        return false;
+    }
+
+    value->setPath(json.toString());
+    return true;
 }

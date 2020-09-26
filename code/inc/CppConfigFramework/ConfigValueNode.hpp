@@ -18,8 +18,7 @@
  * Contains a class for the Value configuration node
  */
 
-#ifndef CPPCONFIGFRAMEWORK_CONFIGVALUENODE_HPP
-#define CPPCONFIGFRAMEWORK_CONFIGVALUENODE_HPP
+#pragma once
 
 // C++ Config Framework includes
 #include <CppConfigFramework/ConfigNode.hpp>
@@ -47,7 +46,7 @@ public:
      * \param   value   Value for this configuration node
      * \param   parent  Parent for this configuration node
      */
-    ConfigValueNode(const QVariant &value = QVariant(), ConfigObjectNode *parent = nullptr);
+    ConfigValueNode(const QJsonValue &value = QJsonValue(), ConfigObjectNode *parent = nullptr);
 
     //! Copy constructor is disabled
     ConfigValueNode(const ConfigValueNode &) = delete;
@@ -70,110 +69,26 @@ public:
     //! \copydoc    ConfigNode::type()
     Type type() const override;
 
-    //! \copydoc    ConfigNode::toSimplifiedVariant()
-    QVariant toSimplifiedVariant() const override;
+    //! \copydoc    ConfigNode::toJson()
+    QJsonValue toJson() const override;
 
     /*!
      * Gets the value of the configuration node
      *
      * \return  Configuration node's value
      */
-    QVariant value() const;
+    QJsonValue value() const;
 
     /*!
      * Sets the value of the configuration node
      *
      * \param   value   New value
      */
-    void setValue(const QVariant &value);
-
-private:
-    //! \copydoc    ConfigNode::toSimplifiedVariant()
-    static QVariant toSimplifiedVariant(const bool value);
-
-    //! \copydoc    ConfigNode::toSimplifiedVariant()
-    static QVariant toSimplifiedVariant(const int64_t value);
-
-    //! \copydoc    ConfigNode::toSimplifiedVariant()
-    static QVariant toSimplifiedVariant(const uint64_t value);
-
-    //! \copydoc    ConfigNode::toSimplifiedVariant()
-    static QVariant toSimplifiedVariant(const double value);
-
-    //! \copydoc    ConfigNode::toSimplifiedVariant()
-    static QVariant toSimplifiedVariant(const QString value);
-
-    //! \copydoc    ConfigNode::toSimplifiedVariant()
-    static QVariant toSimplifiedVariant(const QTime &value);
-
-    //! \copydoc    ConfigNode::toSimplifiedVariant()
-    static QVariant toSimplifiedVariant(const QDate &value);
-
-    //! \copydoc    ConfigNode::toSimplifiedVariant()
-    static QVariant toSimplifiedVariant(const QDateTime &value);
-
-    //! \copydoc    ConfigNode::toSimplifiedVariant()
-    static QVariant toSimplifiedVariant(const QSize &value);
-
-    //! \copydoc    ConfigNode::toSimplifiedVariant()
-    static QVariant toSimplifiedVariant(const QSizeF &value);
-
-    //! \copydoc    ConfigNode::toSimplifiedVariant()
-    static QVariant toSimplifiedVariant(const QPoint &value);
-
-    //! \copydoc    ConfigNode::toSimplifiedVariant()
-    static QVariant toSimplifiedVariant(const QPointF &value);
-
-    //! \copydoc    ConfigNode::toSimplifiedVariant()
-    static QVariant toSimplifiedVariant(const QLine &value);
-
-    //! \copydoc    ConfigNode::toSimplifiedVariant()
-    static QVariant toSimplifiedVariant(const QLineF &value);
-
-    //! \copydoc    ConfigNode::toSimplifiedVariant()
-    static QVariant toSimplifiedVariant(const QRect &value);
-
-    //! \copydoc    ConfigNode::toSimplifiedVariant()
-    static QVariant toSimplifiedVariant(const QRectF &value);
-
-    //! \copydoc    ConfigNode::toSimplifiedVariant()
-    static QVariant toSimplifiedVariant(const QVariant &value);
-
-    //! \copydoc    ConfigNode::toSimplifiedVariant()
-    static QVariant toSimplifiedVariant(const QSequentialIterable &iterable);
-
-    //! \copydoc    ConfigNode::toSimplifiedVariant()
-    static QVariant toSimplifiedVariant(const QAssociativeIterable &iterable);
+    void setValue(const QJsonValue &value);
 
 private:
     //! Configuration node's value
-    QVariant m_value;
+    QJsonValue m_value;
 };
 
 } // namespace CppConfigFramework
-
-/*!
- * Global "equal to" operator for CppConfigFramework::ConfigValueNode
- *
- * \param   left    Node
- * \param   right   Node
- *
- * \retval  true    Nodes are equal
- * \retval  false   Nodes are not equal
- */
-CPPCONFIGFRAMEWORK_EXPORT bool operator==(const CppConfigFramework::ConfigValueNode &left,
-                                          const CppConfigFramework::ConfigValueNode &right);
-
-/*!
- * Global "not equal to" operator for CppConfigFramework::ConfigValueNode
- *
- * \param   left    Node
- * \param   right   Node
- *
- * \retval  true    Nodes are equal
- * \retval  false   Nodes are not equal
- */
-CPPCONFIGFRAMEWORK_EXPORT bool operator!=(const CppConfigFramework::ConfigValueNode &left,
-                                          const CppConfigFramework::ConfigValueNode &right);
-
-#endif // CPPCONFIGFRAMEWORK_CONFIGVALUENODE_HPP

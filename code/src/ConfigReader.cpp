@@ -36,7 +36,6 @@
 #include <QtCore/QJsonObject>
 #include <QtCore/QJsonValue>
 #include <QtCore/QRegularExpression>
-#include <QtCore/QStringBuilder>
 
 // System includes
 
@@ -250,33 +249,37 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
 std::unique_ptr<ConfigObjectNode> ConfigReader::read(
         const QDir &workingDir,
         const ConfigNodePath &destinationNodePath,
-        const QVariantMap &otherParameters,
+        const QJsonObject &otherParameters,
         const std::vector<const ConfigObjectNode *> &externalConfigs,
         EnvironmentVariables *environmentVariables) const
 {
     // Extract file path
-    if (!otherParameters.contains(QStringLiteral("file_path")))
+    QString filePath;
+
+    if (!CedarFramework::deserializeNode(otherParameters, QStringLiteral("file_path"), &filePath))
     {
         qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
-                << "The 'file_path' parameter is missing";
+                << "The 'file_path' parameter is missing or invalid";
         return {};
     }
-
-    const QString filePath = otherParameters.value(QStringLiteral("file_path")).toString();
 
     if (filePath.isEmpty())
     {
         qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
-                << "The 'file_path' parameter is not valid";
+                << "The 'file_path' parameter is must not be empty";
         return {};
     }
 
     // Extract source node
-    auto sourceNodePath = ConfigNodePath::ROOT_PATH;
+    ConfigNodePath sourceNodePath = ConfigNodePath::ROOT_PATH;
 
-    if (otherParameters.contains(QStringLiteral("source_node")))
+    if (!CedarFramework::deserializeOptionalNode(otherParameters,
+                                                 QStringLiteral("source_node"),
+                                                 &sourceNodePath))
     {
-        sourceNodePath.setPath(otherParameters.value(QStringLiteral("source_node")).toString());
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << "The 'source_node' parameter is invalid";
+        return {};
     }
 
     // Read the configuration file
@@ -295,27 +298,19 @@ bool ConfigReader::readEnvironmentVariablesMember(const QJsonObject &rootObject,
 {
     Q_ASSERT(environmentVariables);
 
-    // Check if the root object has any environment variables
-    const auto envVarsValue = rootObject.value(QStringLiteral("environment_variables"));
+    // Read individual environment variables
+    QMap<QString, QString> newEnvironmentVariables;
 
-    if (envVarsValue.isNull() || envVarsValue.isUndefined())
-    {
-        // No additional environment variables
-        return true;
-    }
-
-    if (!envVarsValue.isObject())
+    if (!CedarFramework::deserializeOptionalNode(rootObject,
+                                                 QStringLiteral("environment_variables"),
+                                                 &newEnvironmentVariables))
     {
         qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
-                << "The 'environment_variables' member in the root JSON Object is not a JSON "
-                   "Object!";
+                << "The 'environment_variables' member in the root JSON Object is invalid";
         return false;
     }
 
-    // Read individual environment variables
-    auto envVarsObject = envVarsValue.toObject();
-
-    for (auto it = envVarsObject.begin(); it != envVarsObject.end(); it++)
+    for (auto it = newEnvironmentVariables.begin(); it != newEnvironmentVariables.end(); it++)
     {
         // Extract the name
         static const QRegularExpression regex("^\\w+$");
@@ -328,42 +323,10 @@ bool ConfigReader::readEnvironmentVariablesMember(const QJsonObject &rootObject,
             return false;
         }
 
-        // Extract the value
-        const QJsonValue jsonValue = it.value();
-        QString value;
-
-        switch (jsonValue.type())
-        {
-            case QJsonValue::Bool:
-            {
-                value = jsonValue.toBool() ? QStringLiteral("1") : QStringLiteral("0");
-                break;
-            }
-
-            case QJsonValue::Double:
-            {
-                value = QString::number(jsonValue.toDouble());
-                break;
-            }
-
-            case QJsonValue::String:
-            {
-                value = jsonValue.toString();
-                break;
-            }
-
-            default:
-            {
-                qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
-                        << QString("Environment variable [%1] does not have a value that can be "
-                                   "converted to a string!").arg(it.key());
-                return false;
-            }
-        }
-
+        // Add the environment variable value only if it is not set yet
         if (!environmentVariables->contains(name))
         {
-            environmentVariables->setValue(name, value);
+            environmentVariables->setValue(name, it.value());
         }
     }
 
@@ -378,83 +341,64 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readIncludesMember(
         const std::vector<const ConfigObjectNode *> &externalConfigs,
         EnvironmentVariables *environmentVariables) const
 {
-    // Check if the root object has any includes
-    const auto includesValue = rootObject.value(QStringLiteral("includes"));
+    // Read individual environment variables
+    QVector<QJsonObject> includes;
 
-    if (includesValue.isNull() || includesValue.isUndefined())
-    {
-        // No includes
-        return std::make_unique<ConfigObjectNode>();
-    }
-
-    if (!includesValue.isArray())
+    if (!CedarFramework::deserializeOptionalNode(rootObject,
+                                                 QStringLiteral("includes"),
+                                                 &includes))
     {
         qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
-                << "The 'includes' member in the root JSON Object is not a JSON Array!";
+                << "The 'includes' member in the root JSON Object is invalid";
         return {};
     }
 
-    // Iterate over all includes and extract their value
     auto includesConfig = std::make_unique<ConfigObjectNode>();
-    const auto includesArray = includesValue.toArray();
 
-    for (int i = 0; i < includesArray.size(); i++)
+    for (int i = 0; i < includes.size(); i++)
     {
-        // Include item must be a JSON Object
-        const auto includeValue = includesArray.at(i);
-
-        if (!includeValue.isObject())
-        {
-            qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
-                    << QString("Include at index [%1] is not a JSON Object!").arg(i);
-            return {};
-        }
-
-        const auto includeObject = includeValue.toObject();
+        const auto includeObject = includes.at(i);
 
         // Extract configuration file type
         QString type = QStringLiteral("CppConfigFramework");
-        const auto typeValue = includeObject.value(QStringLiteral("type"));
 
-        if ((!typeValue.isNull()) && (!typeValue.isUndefined()))
+        if (!CedarFramework::deserializeOptionalNode(includeObject,
+                                                     QStringLiteral("type"),
+                                                     &type))
         {
-            if (!typeValue.isString())
-            {
-                qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
-                        << QString("The 'type' member for include at index [%1] is not a string")
-                           .arg(i);
-                return {};
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                    << QString("The 'type' member for include at index [%1] is invalid").arg(i);
+            return {};
+        }
 
-            // Extract the type
-            type = typeValue.toString();
+        if (type.isEmpty())
+        {
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                    << QString("The 'type' member for include at index [%1] is empty").arg(i);
+            return {};
         }
 
         // Extract destination node
         auto destinationNodePath = ConfigNodePath::ROOT_PATH;
-        const auto destinationNodeValue = includeObject.value(QStringLiteral("destination_node"));
 
-        if ((!destinationNodeValue.isNull()) && (!destinationNodeValue.isUndefined()))
+        if (!CedarFramework::deserializeOptionalNode(includeObject,
+                                                     QStringLiteral("destination_node"),
+                                                     &destinationNodePath))
         {
-            if (!destinationNodeValue.isString())
-            {
-                qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
-                        << QString("The 'destination_node' member for include at index [%1] must "
-                                   "be a string").arg(i);
-                return {};
-            }
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                    << QString("The 'destination_node' member for include at index [%1] is invalid")
+                       .arg(i);
+            return {};
+        }
 
-            destinationNodePath.setPath(destinationNodeValue.toString());
-
-            if (destinationNodePath.isRelative() || (!destinationNodePath.isValid()))
-            {
-                qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
-                        << QString("The 'destination_node' member [%1] for include at index [%2] "
-                                   "is not valid")
-                           .arg(destinationNodePath.path())
-                           .arg(i);
-                return {};
-            }
+        if (destinationNodePath.isRelative() || (!destinationNodePath.isValid()))
+        {
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                    << QString("The 'destination_node' member [%1] for include at index [%2] "
+                               "is invalid")
+                       .arg(destinationNodePath.path())
+                       .arg(i);
+            return {};
         }
 
         // Extend the external configs with the includesConfig value if necessary
@@ -474,7 +418,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readIncludesMember(
                           type,
                           workingDir,
                           destinationNodePath,
-                          includeObject.toVariantMap(),
+                          includeObject,
                           extendedExternalConfigs,
                           environmentVariables);
 
@@ -554,7 +498,7 @@ std::unique_ptr<ConfigValueNode> ConfigReader::readValueNode(const QJsonValue &j
 {
     Q_UNUSED(currentNodePath)
 
-    return std::make_unique<ConfigValueNode>(jsonValue.toVariant());
+    return std::make_unique<ConfigValueNode>(jsonValue);
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -784,9 +728,9 @@ std::unique_ptr<ConfigDerivedObjectNode> ConfigReader::readDerivedObjectNode(
     auto config = std::make_unique<ConfigObjectNode>();
     const auto configValue = jsonObject.value(QStringLiteral("config"));
 
-    if (!configValue.isUndefined())
+    switch (configValue.type())
     {
-        if (configValue.isObject())
+        case QJsonValue::Object:
         {
             // Read overrides for the object derived from bases
             config = readObjectNode(configValue.toObject(), currentNodePath, environmentVariables);
@@ -798,12 +742,17 @@ std::unique_ptr<ConfigDerivedObjectNode> ConfigReader::readDerivedObjectNode(
                            "\n    node path:" << currentNodePath.path();
                 return {};
             }
+            break;
         }
-        else if (configValue.isNull())
+
+        case QJsonValue::Null:
+        case QJsonValue::Undefined:
         {
             // No overrides for the object derived from bases
+            break;
         }
-        else
+
+        default:
         {
             qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
                     << "Unsupported JSON type for the 'config' member at path:"

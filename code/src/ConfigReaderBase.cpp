@@ -29,7 +29,6 @@
 #include <CppConfigFramework/LoggingCategories.hpp>
 
 // Qt includes
-#include <QtCore/QStringBuilder>
 
 // System includes
 
