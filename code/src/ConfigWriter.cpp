@@ -31,8 +31,6 @@
 #include <QtCore/QFile>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
-#include <QtCore/QJsonValue>
-#include <QtCore/QStringBuilder>
 
 // System includes
 
@@ -51,9 +49,7 @@ namespace ConfigWriter
 QJsonDocument writeToJson(const ConfigObjectNode &node)
 {
     // Convert the configuration node to JSON
-    const QJsonObject root {
-        { QStringLiteral("config"), QJsonValue::fromVariant(node.toSimplifiedVariant()) }
-    };
+    const QJsonObject root { { QStringLiteral("config"), node.toJson() } };
 
     return QJsonDocument(root);
 }

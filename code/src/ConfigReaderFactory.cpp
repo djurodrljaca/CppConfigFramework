@@ -27,7 +27,6 @@
 #include <CppConfigFramework/LoggingCategories.hpp>
 
 // Qt includes
-#include <QtCore/QStringBuilder>
 
 // System includes
 
@@ -67,7 +66,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReaderFactory::readConfig(
         const QString &type,
         const QDir &workingDir,
         const ConfigNodePath &destinationNodePath,
-        const QVariantMap &otherParameters,
+        const QJsonObject &otherParameters,
         const std::vector<const ConfigObjectNode *> &externalConfigs,
         EnvironmentVariables *environmentVariables) const
 {

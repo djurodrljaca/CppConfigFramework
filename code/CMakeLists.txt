@@ -55,7 +55,6 @@ add_library(CppConfigFramework SHARED
         inc/CppConfigFramework/ConfigNodePath.hpp
         inc/CppConfigFramework/ConfigNodeReference.hpp
         inc/CppConfigFramework/ConfigObjectNode.hpp
-        inc/CppConfigFramework/ConfigParameterLoader.hpp
         inc/CppConfigFramework/ConfigParameterValidator.hpp
         inc/CppConfigFramework/ConfigReader.hpp
         inc/CppConfigFramework/ConfigReaderBase.hpp
@@ -71,7 +70,6 @@ add_library(CppConfigFramework SHARED
         src/ConfigNodePath.cpp
         src/ConfigNodeReference.cpp
         src/ConfigObjectNode.cpp
-        src/ConfigParameterLoader.cpp
         src/ConfigReader.cpp
         src/ConfigReaderBase.cpp
         src/ConfigReaderFactory.cpp
@@ -167,5 +165,5 @@ install(
 # --------------------------------------------------------------------------------------------------
 # Tests
 # --------------------------------------------------------------------------------------------------
-#enable_testing()
-#add_subdirectory(tests)
+enable_testing()
+add_subdirectory(tests)

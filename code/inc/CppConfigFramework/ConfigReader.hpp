@@ -18,8 +18,7 @@
  * Contains a class for reading configuration files
  */
 
-#ifndef CPPCONFIGFRAMEWORK_CONFIGREADER_HPP
-#define CPPCONFIGFRAMEWORK_CONFIGREADER_HPP
+#pragma once
 
 // C++ Config Framework includes
 #include <CppConfigFramework/ConfigReaderBase.hpp>
@@ -90,7 +89,7 @@ public:
     std::unique_ptr<ConfigObjectNode> read(
             const QDir &workingDir,
             const ConfigNodePath &destinationNodePath,
-            const QVariantMap &otherParameters,
+            const QJsonObject &otherParameters,
             const std::vector<const ConfigObjectNode *> &externalConfigs,
             EnvironmentVariables *environmentVariables) const override;
 
@@ -255,5 +254,3 @@ private:
 };
 
 } // namespace CppConfigFramework
-
-#endif // CPPCONFIGFRAMEWORK_CONFIGREADER_HPP

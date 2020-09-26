@@ -18,8 +18,7 @@
  * Contains a class for the Object configuration node
  */
 
-#ifndef CPPCONFIGFRAMEWORK_CONFIGOBJECTNODE_HPP
-#define CPPCONFIGFRAMEWORK_CONFIGOBJECTNODE_HPP
+#pragma once
 
 // C++ Config Framework includes
 #include <CppConfigFramework/ConfigNode.hpp>
@@ -27,7 +26,7 @@
 // Qt includes
 
 // System includes
-#include <unordered_map>
+#include <map>
 
 // Forward declarations
 
@@ -78,8 +77,8 @@ public:
     //! \copydoc    ConfigNode::type()
     Type type() const override;
 
-    //! \copydoc    ConfigNode::toSimplifiedVariant()
-    QVariant toSimplifiedVariant() const override;
+    //! \copydoc    ConfigNode::toJson()
+    QJsonValue toJson() const override;
 
     /*!
      * Gets the number of members in this node
@@ -168,33 +167,7 @@ public:
 
 private:
     //! Configuration node members
-    std::unordered_map<QString, std::unique_ptr<ConfigNode>> m_members;
+    std::map<QString, std::unique_ptr<ConfigNode>> m_members;
 };
 
 } // namespace CppConfigFramework
-
-/*!
- * Global "equal to" operator for CppConfigFramework::ConfigObjectNode
- *
- * \param   left    Node
- * \param   right   Node
- *
- * \retval  true    Nodes are equal
- * \retval  false   Nodes are not equal
- */
-CPPCONFIGFRAMEWORK_EXPORT bool operator==(const CppConfigFramework::ConfigObjectNode &left,
-                                          const CppConfigFramework::ConfigObjectNode &right);
-
-/*!
- * Global "not equal to" operator for CppConfigFramework::ConfigObjectNode
- *
- * \param   left    Node
- * \param   right   Node
- *
- * \retval  true    Nodes are equal
- * \retval  false   Nodes are not equal
- */
-CPPCONFIGFRAMEWORK_EXPORT bool operator!=(const CppConfigFramework::ConfigObjectNode &left,
-                                          const CppConfigFramework::ConfigObjectNode &right);
-
-#endif // CPPCONFIGFRAMEWORK_CONFIGOBJECTNODE_HPP

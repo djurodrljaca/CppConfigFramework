@@ -18,14 +18,12 @@
  * Contains methods for writing configuration files
  */
 
-#ifndef CPPCONFIGFRAMEWORK_CONFIGWRITER_HPP
-#define CPPCONFIGFRAMEWORK_CONFIGWRITER_HPP
+#pragma once
 
 // C++ Config Framework includes
 #include <CppConfigFramework/ConfigObjectNode.hpp>
 
 // Qt includes
-#include <QtCore/QVariant>
 
 // System includes
 
@@ -64,5 +62,3 @@ CPPCONFIGFRAMEWORK_EXPORT bool writeToFile(const ConfigObjectNode &node, const Q
 } // namespace ConfigWriter
 
 } // namespace CppConfigFramework
-
-#endif // CPPCONFIGFRAMEWORK_CONFIGWRITER_HPP

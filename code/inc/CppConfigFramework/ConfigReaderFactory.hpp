@@ -18,15 +18,12 @@
  * Contains the factory for classes that can read different type of configuration files
  */
 
-#ifndef CPPCONFIGFRAMEWORK_CONFIGREADERFACTORY_HPP
-#define CPPCONFIGFRAMEWORK_CONFIGREADERFACTORY_HPP
+#pragma once
 
 // C++ Config Framework includes
 #include <CppConfigFramework/ConfigReaderBase.hpp>
 
 // Qt includes
-#include <QtCore/QString>
-#include <QtCore/QDir>
 
 // System includes
 #include <unordered_map>
@@ -88,7 +85,7 @@ public:
             const QString &type,
             const QDir &workingDir,
             const ConfigNodePath &destinationNodePath,
-            const QVariantMap &otherParameters,
+            const QJsonObject &otherParameters,
             const std::vector<const ConfigObjectNode *> &externalConfigs,
             EnvironmentVariables *environmentVariables) const;
 
@@ -98,9 +95,7 @@ private:
 
 private:
     //! Holds the
-    std::unordered_map<QString, std::unique_ptr<ConfigReaderBase>> m_configReaders;
+    std::map<QString, std::unique_ptr<ConfigReaderBase>> m_configReaders;
 };
 
 } // namespace CppConfigFramework
-
-#endif // CPPCONFIGFRAMEWORK_CONFIGREADERFACTORY_HPP

@@ -18,15 +18,15 @@
  * Contains a base class for the loading configuration nodes to actual configuration parameters
  */
 
-#ifndef CPPCONFIGFRAMEWORK_CONFIGLOADER_HPP
-#define CPPCONFIGFRAMEWORK_CONFIGLOADER_HPP
+#pragma once
 
 // C++ Config Framework includes
 #include <CppConfigFramework/ConfigContainerHelper.hpp>
-#include <CppConfigFramework/ConfigNode.hpp>
-#include <CppConfigFramework/ConfigObjectNode.hpp>
-#include <CppConfigFramework/ConfigParameterLoader.hpp>
 #include <CppConfigFramework/ConfigParameterValidator.hpp>
+#include <CppConfigFramework/ConfigObjectNode.hpp>
+
+// Cedar Framework includes
+#include <CedarFramework/Deserialization.hpp>
 
 // Qt includes
 
@@ -681,20 +681,20 @@ bool ConfigLoader::loadConfigParameterFromNode(T *parameterValue,
                                                const ConfigNode &node,
                                                ConfigParameterValidator<T> validator)
 {
-    if (!node.isValue())
+    if ((!node.isValue()) && (!node.isObject()))
     {
-        const QString errorString = QString("Configuration parameter node [%1] is not a Value "
-                                            "node!").arg(node.nodePath().path());
+        const QString errorString = QString("Configuration parameter node [%1] is neither a Value "
+                                            "nor an Object node!").arg(node.nodePath().path());
         qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
         handleError(errorString);
         return false;
     }
 
     // Load the node value to the parameter
-    if (!ConfigParameterLoader::load(node.toValue().value(), parameterValue))
+    if (!CedarFramework::deserialize(node.toJson(), parameterValue))
     {
-        const QString errorString = QString("Failed to load configuration parameter's value [%1]")
-                                    .arg(node.nodePath().path());
+        const QString errorString = QString("Failed to load configuration parameter's value at "
+                                            "node path [%1]").arg(node.nodePath().path());
         qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
         handleError(errorString);
         return false;
@@ -754,5 +754,3 @@ bool ConfigLoader::loadConfigContainerFromNode(
 }
 
 } // namespace CppConfigFramework
-
-#endif // CPPCONFIGFRAMEWORK_CONFIGLOADER_HPP

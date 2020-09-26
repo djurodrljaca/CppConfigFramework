@@ -64,6 +64,7 @@ private slots:
     void testReadInvalidConfigFile();
     void testReadInvalidConfigFile_data();
     void testCurrentDirectoryEnvironmentVariable();
+    void testReadConfigNullEnvironmentVariables();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -138,7 +139,7 @@ void TestConfigReader::testReadValidConfig()
                 QVERIFY(subNode1->toObject().contains("array_param"));
                 const auto *arrayParam = subNode1->toObject().member("array_param");
                 QVERIFY(arrayParam->isValue());
-                QCOMPARE(arrayParam->toValue().value(), QVariantList({5, 6, 7}));
+                QCOMPARE(arrayParam->toValue().value(), QJsonArray({5, 6, 7}));
             }
 
             // Check "/root_node/sub_node/sub_node2"
@@ -200,7 +201,7 @@ void TestConfigReader::testReadConfigWithNodeReference()
             QVERIFY(ref_value2->toObject().contains("value"));
             const auto *value = ref_value2->toObject().member("value");
             QVERIFY(value->isValue());
-            QCOMPARE(value->toValue().value(), QVariant("str"));
+            QCOMPARE(value->toValue().value(), QJsonValue("str"));
         }
     }
 
@@ -210,7 +211,7 @@ void TestConfigReader::testReadConfigWithNodeReference()
         const auto *ref_value3 = config->nodeAtPath("/root_node2/ref_value3");
         QVERIFY(ref_value3 != nullptr);
         QVERIFY(ref_value3->isValue());
-        QCOMPARE(ref_value3->toValue().value(), QVariantList({1, 2, 3}));
+        QCOMPARE(ref_value3->toValue().value(), QJsonArray({1, 2, 3}));
     }
 }
 
@@ -257,7 +258,7 @@ void TestConfigReader::testReadConfigWithDerivedObject()
                 QVERIFY(subNode->toObject().contains("value"));
                 const auto *value = subNode->toObject().member("value");
                 QVERIFY(value->isValue());
-                QCOMPARE(value->toValue().value(), QVariant("str"));
+                QCOMPARE(value->toValue().value(), QJsonValue("str"));
             }
         }
     }
@@ -274,7 +275,7 @@ void TestConfigReader::testReadConfigWithDerivedObject()
             QVERIFY(derived_object2->toObject().contains("value"));
             const auto *value = derived_object2->toObject().member("value");
             QVERIFY(value->isValue());
-            QCOMPARE(value->toValue().value(), QVariantList({1, 2, 3}));
+            QCOMPARE(value->toValue().value(), QJsonArray({1, 2, 3}));
         }
 
         // Check "/derived_object2/sub_node
@@ -288,7 +289,7 @@ void TestConfigReader::testReadConfigWithDerivedObject()
                 QVERIFY(subNode->toObject().contains("value"));
                 const auto *value = subNode->toObject().member("value");
                 QVERIFY(value->isValue());
-                QCOMPARE(value->toValue().value(), QVariant("abc"));
+                QCOMPARE(value->toValue().value(), QJsonValue("abc"));
             }
         }
     }
@@ -319,7 +320,7 @@ void TestConfigReader::testReadConfigWithDerivedObject()
                 QVERIFY(subNode->toObject().contains("value"));
                 const auto *value = subNode->toObject().member("value");
                 QVERIFY(value->isValue());
-                QCOMPARE(value->toValue().value(), QVariant("abc"));
+                QCOMPARE(value->toValue().value(), QJsonValue("abc"));
             }
         }
     }
@@ -364,7 +365,7 @@ void TestConfigReader::testReadConfigWithIncludes()
             QVERIFY(included_config1->toObject().contains("new_item"));
             const auto *new_item = included_config1->toObject().member("new_item");
             QVERIFY(new_item->isValue());
-            QCOMPARE(new_item->toValue().value(), QVariant("str"));
+            QCOMPARE(new_item->toValue().value(), QJsonValue("str"));
         }
     }
 
@@ -468,9 +469,9 @@ void TestConfigReader::testReadConfigWithIncludesAndEnv()
         QVERIFY(array != nullptr);
         QVERIFY(array->isValue());
 
-        const QVariantList expected {
-            { QVariantMap { { "k1", "v1" } } },
-            { QVariantMap { { "k0", "v0" } } }
+        const QJsonArray expected {
+            { QJsonObject { { "k1", "v1" } } },
+            { QJsonObject { { "k0", "v0" } } }
         };
         QCOMPARE(array->toValue().value(), expected);
     }
@@ -481,7 +482,7 @@ void TestConfigReader::testReadConfigWithIncludesAndEnv()
         QVERIFY(object != nullptr);
         QVERIFY(object->isValue());
 
-        const QVariantMap expected {
+        const QJsonObject expected {
             { "value1", "v1" },
             { "value2", "v0" }
         };
@@ -742,6 +743,21 @@ void TestConfigReader::testCurrentDirectoryEnvironmentVariable()
         QVERIFY(currentDir->isValue());
         QCOMPARE(currentDir->toValue().value(), QStringLiteral(":/TestData/includes"));
     }
+}
+
+void TestConfigReader::testReadConfigNullEnvironmentVariables()
+{
+    const QString configFilePath(QStringLiteral(":/TestData/ValidConfig.json"));
+    EnvironmentVariables *environmentVariables = nullptr;
+    ConfigReader configReader;
+
+    auto config = configReader.read(configFilePath,
+                                    QDir::current(),
+                                    ConfigNodePath::ROOT_PATH,
+                                    ConfigNodePath::ROOT_PATH,
+                                    std::vector<const ConfigObjectNode *>(),
+                                    environmentVariables);
+    QVERIFY(!config);
 }
 
 // Main function -----------------------------------------------------------------------------------
