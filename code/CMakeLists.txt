@@ -11,13 +11,38 @@
 # You should have received a copy of the GNU Lesser General Public License along with C++ Config
 # Framework. If not, see <http://www.gnu.org/licenses/>.
 
-cmake_minimum_required(VERSION 3.3.0)
+cmake_minimum_required(VERSION 3.5.0)
 
 project(CppConfigFramework VERSION 1.0.0)
 
 set(CMAKE_AUTOMOC ON)
 
 find_package(Qt5 COMPONENTS Core REQUIRED)
+find_package(CedarFramework REQUIRED)
+
+# --------------------------------------------------------------------------------------------------
+# Code Coverage
+# --------------------------------------------------------------------------------------------------
+option(CppConfigFramework_CodeCoverage "C++ Config Framework Code Coverage" OFF)
+
+if (CppConfigFramework_CodeCoverage MATCHES ON)
+    include(cmake/CodeCoverage.cmake)
+    APPEND_COVERAGE_COMPILER_FLAGS()
+
+    set(excludes_cmake_prefix_path)
+    foreach(item ${CMAKE_PREFIX_PATH})
+        get_filename_component(item ${item} ABSOLUTE)
+        list(APPEND excludes_cmake_prefix_path "'${item}/*'")
+    endforeach()
+
+    set(CppConfigFramework_CodeCoverage_EXCLUDES
+            "'/opt/*'"
+            "'/usr/*'"
+            ${excludes_cmake_prefix_path}
+            "'${CMAKE_SOURCE_DIR}/tests/*'"
+            "'${CMAKE_BINARY_DIR}/*'"
+        )
+endif()
 
 # --------------------------------------------------------------------------------------------------
 # CppConfigFramework library
@@ -56,6 +81,10 @@ add_library(CppConfigFramework SHARED
         src/LoggingCategories.cpp
     )
 
+set_target_properties(CppConfigFramework PROPERTIES
+    VERSION ${PROJECT_VERSION}
+    SOVERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
+
 include(GenerateExportHeader)
 generate_export_header(CppConfigFramework
     EXPORT_FILE_NAME exports/CppConfigFramework/CppConfigFrameworkExport.hpp)
@@ -68,6 +97,7 @@ target_include_directories(CppConfigFramework PUBLIC
 
 target_link_libraries(CppConfigFramework PUBLIC
         Qt5::Core
+        CedarFramework::CedarFramework
     )
 
 set_target_properties(CppConfigFramework PROPERTIES
@@ -135,31 +165,7 @@ install(
     )
 
 # --------------------------------------------------------------------------------------------------
-# Code Coverage
-# --------------------------------------------------------------------------------------------------
-option(CppConfigFramework_CodeCoverage "C++ Config Framework Code Coverage" OFF)
-
-if (CppConfigFramework_CodeCoverage MATCHES ON)
-    include(cmake/CodeCoverage.cmake)
-    APPEND_COVERAGE_COMPILER_FLAGS()
-
-    set(excludes_cmake_prefix_path)
-    foreach(item ${CMAKE_PREFIX_PATH})
-        get_filename_component(item ${item} ABSOLUTE)
-        list(APPEND excludes_cmake_prefix_path "'${item}/*'")
-    endforeach()
-
-    set(CppConfigFramework_CodeCoverage_EXCLUDES
-            "'/opt/*'"
-            "'/usr/*'"
-            ${excludes_cmake_prefix_path}
-            "'${CMAKE_SOURCE_DIR}/tests/*'"
-            "'${CMAKE_BINARY_DIR}/*'"
-        )
-endif()
-
-# --------------------------------------------------------------------------------------------------
 # Tests
 # --------------------------------------------------------------------------------------------------
-enable_testing()
-add_subdirectory(tests)
+#enable_testing()
+#add_subdirectory(tests)
