@@ -63,41 +63,6 @@ ConfigNode::Type ConfigDerivedObjectNode::type() const
 
 // -------------------------------------------------------------------------------------------------
 
-QJsonValue ConfigDerivedObjectNode::toJson() const
-{
-    QJsonObject data;
-
-    // Base member
-    QStringList bases;
-
-    for (const auto &base : m_bases)
-    {
-        bases.append(base.path());
-    }
-
-    if (bases.isEmpty())
-    {
-        // Do not add the "base" member to the variant data
-    }
-    else if (bases.size() == 1)
-    {
-        // Add the single base as a string
-        data.insert(QStringLiteral("base"), bases.first());
-    }
-    else
-    {
-        // Add the array of bases
-        data.insert(QStringLiteral("base"), QJsonArray::fromStringList(bases));
-    }
-
-    // Config member
-    data.insert(QStringLiteral("config"), m_config.toJson());
-
-    return data;
-}
-
-// -------------------------------------------------------------------------------------------------
-
 QList<ConfigNodePath> ConfigDerivedObjectNode::bases() const
 {
     return m_bases;

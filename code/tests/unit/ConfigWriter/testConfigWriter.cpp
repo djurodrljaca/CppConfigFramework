@@ -59,8 +59,9 @@ private slots:
     void cleanup();
 
     // Test functions
-    void testWriteToJson();
-    void testWriteToFile();
+    void testWriteToJsonConfig();
+    void testWriteToJsonConfigFile();
+    void testConvertToJsonValue();
 
 private:
     static ConfigObjectNode createConfig();
@@ -94,18 +95,18 @@ void TestConfigWriter::cleanup()
     }
 }
 
-// Test: writeToJson() -----------------------------------------------------------------------------
+// Test: writeToJsonConfig() -----------------------------------------------------------------------
 
-void TestConfigWriter::testWriteToJson()
+void TestConfigWriter::testWriteToJsonConfig()
 {
-    const auto doc = ConfigWriter::writeToJson(createConfig());
+    const auto doc = ConfigWriter::writeToJsonConfig(createConfig());
 
     QCOMPARE(doc, createJson());
 }
 
-// Test: writeToFile() -----------------------------------------------------------------------------
+// Test: writeToJsonConfigFile() -------------------------------------------------------------------
 
-void TestConfigWriter::testWriteToFile()
+void TestConfigWriter::testWriteToJsonConfigFile()
 {
     // Remove output file if it already exists
     if (QFile::exists(m_testFilePath))
@@ -114,7 +115,7 @@ void TestConfigWriter::testWriteToFile()
     }
 
     // Write to file
-    QVERIFY(ConfigWriter::writeToFile(createConfig(), m_testFilePath));
+    QVERIFY(ConfigWriter::writeToJsonConfigFile(createConfig(), m_testFilePath));
 
     // Check file contents
     QFile file(m_testFilePath);
@@ -126,6 +127,87 @@ void TestConfigWriter::testWriteToFile()
     QCOMPARE(doc, createJson());
 }
 
+// Test: convertToJsonValue() -------------------------------------------------------------------
+
+void TestConfigWriter::testConvertToJsonValue()
+{
+    // Positive tests
+    ConfigObjectNode node1
+    {
+        { "a", ConfigValueNode(1) },
+        {
+            "b1", ConfigObjectNode
+            {
+                { "bool", ConfigValueNode(true) }
+            }
+        },
+        {
+            "b2", ConfigObjectNode
+            {
+                { "a", ConfigValueNode(123) },
+                { "b", ConfigValueNode( QJsonArray{ 1, 2, 3 } ) },
+                {
+                    "c", ConfigObjectNode
+                    {
+                        { "a", ConfigValueNode("asd") },
+                    }
+                },
+            }
+        }
+    };
+
+    QJsonObject expectedJson
+    {
+        { "a", 1 },
+        {
+            "b1", QJsonObject
+            {
+                { "bool", true }
+            }
+        },
+        {
+            "b2", QJsonObject
+            {
+                { "a", 123 },
+                { "b", QJsonArray{ 1, 2, 3 } },
+                {
+                    "c", QJsonObject
+                    {
+                        { "a", "asd" },
+                    }
+                },
+            }
+        }
+    };
+
+    QCOMPARE(ConfigWriter::convertToJsonValue(node1), expectedJson);
+
+    // Negative tests
+    ConfigObjectNode node2
+    {
+        { "a", ConfigValueNode(1) },
+        { "ref", ConfigNodeReference(ConfigNodePath("/a")) }
+    };
+
+    QCOMPARE(ConfigWriter::convertToJsonValue(node2), QJsonValue(QJsonValue::Undefined));
+
+    ConfigObjectNode node3
+    {
+        {
+            "a", ConfigObjectNode
+            {
+                { "b", ConfigValueNode("b") }
+            }
+        },
+        {
+            "c", ConfigDerivedObjectNode({ ConfigNodePath("/a") },
+                                         ConfigObjectNode { { "d", ConfigValueNode("d") } })
+        }
+    };
+
+    QCOMPARE(ConfigWriter::convertToJsonValue(node3), QJsonValue(QJsonValue::Undefined));
+}
+
 // -------------------------------------------------------------------------------------------------
 
 ConfigObjectNode TestConfigWriter::createConfig()
@@ -134,17 +216,25 @@ ConfigObjectNode TestConfigWriter::createConfig()
     {
         { "a", ConfigValueNode(1) },
         {
-            "b", ConfigObjectNode
+            "b1", ConfigObjectNode
             {
-                { "b1", ConfigValueNode(true) }
+                { "bool", ConfigValueNode(true) }
+            }
+        },
+        {
+            "b2", ConfigObjectNode
+            {
+                { "a", ConfigNodeReference(ConfigNodePath("/a")) }
             }
         },
         { "c", ConfigNodeReference(ConfigNodePath("/a")) },
         {
-            "d", ConfigDerivedObjectNode({ ConfigNodePath("/b") },
-                                         ConfigObjectNode {
-                                             { "d1", ConfigValueNode("d") }
-                                         })
+            "d1", ConfigDerivedObjectNode({ ConfigNodePath("/b1") },
+                                          ConfigObjectNode { { "d1", ConfigValueNode("d1") } })
+        },
+        {
+            "d2", ConfigDerivedObjectNode({ ConfigNodePath("/b1"), ConfigNodePath("/b2") },
+                                          ConfigObjectNode { { "d2", ConfigValueNode("d2") } })
         }
     };
 }
@@ -160,20 +250,38 @@ QJsonDocument TestConfigWriter::createJson()
             {
                 { "#a", QJsonValue(1) },
                 {
-                    "b", QJsonObject
+                    "b1", QJsonObject
                     {
-                        { "#b1", QJsonValue(true) }
+                        { "#bool", true }
                     }
                 },
-                { "&c", QJsonValue("/a") },
                 {
-                    "&d", QJsonObject
+                    "b2", QJsonObject
                     {
-                        { "base", QJsonValue("/b") },
+                        { "&a", "/a" }
+                    }
+                },
+                { "&c", "/a" },
+                {
+                    "&d1", QJsonObject
+                    {
+                        { "base", "/b1" },
                         {
                             "config", QJsonObject
                             {
-                                { "#d1", QJsonValue("d") }
+                                { "#d1", "d1" }
+                            }
+                        }
+                    }
+                },
+                {
+                    "&d2", QJsonObject
+                    {
+                        { "base", QJsonArray { "/b1", "/b2" } },
+                        {
+                            "config", QJsonObject
+                            {
+                                { "#d2", "d2" }
                             }
                         }
                     }

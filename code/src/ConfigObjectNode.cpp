@@ -112,45 +112,6 @@ ConfigNode::Type ConfigObjectNode::type() const
 
 // -------------------------------------------------------------------------------------------------
 
-QJsonValue ConfigObjectNode::toJson() const
-{
-    QJsonObject data;
-
-    for (const auto &member : m_members)
-    {
-        switch (member.second->type())
-        {
-            case ConfigNode::Type::Value:
-            {
-                data.insert(QChar('#') % member.first, member.second->toJson());
-                break;
-            }
-
-            case ConfigNode::Type::Object:
-            {
-                data.insert(member.first, member.second->toJson());
-                break;
-            }
-
-            case ConfigNode::Type::NodeReference:
-            case ConfigNode::Type::DerivedObject:
-            {
-                data.insert(QChar('&') % member.first, member.second->toJson());
-                break;
-            }
-
-            default:
-            {
-                return {};
-            }
-        }
-    }
-
-    return data;
-}
-
-// -------------------------------------------------------------------------------------------------
-
 int ConfigObjectNode::count() const
 {
     return static_cast<int>(m_members.size());

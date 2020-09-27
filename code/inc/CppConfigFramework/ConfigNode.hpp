@@ -104,13 +104,6 @@ public:
     virtual Type type() const = 0;
 
     /*!
-     * Converts the configuration node to JSON
-     *
-     * \return  JSON representation of the configuration node
-     */
-    virtual QJsonValue toJson() const = 0;
-
-    /*!
      * Checks if the configuration node is of Value type
      *
      * \retval  true    This is a Value configuration node

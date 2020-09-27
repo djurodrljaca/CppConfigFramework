@@ -58,13 +58,6 @@ ConfigNode::Type ConfigValueNode::type() const
 
 // -------------------------------------------------------------------------------------------------
 
-QJsonValue ConfigValueNode::toJson() const
-{
-    return m_value;
-}
-
-// -------------------------------------------------------------------------------------------------
-
 QJsonValue ConfigValueNode::value() const
 {
     return m_value;
