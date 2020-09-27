@@ -125,3 +125,21 @@ void ConfigDerivedObjectNode::setConfig(const ConfigObjectNode &config)
 }
 
 } // namespace CppConfigFramework
+
+// -------------------------------------------------------------------------------------------------
+
+bool operator==(const CppConfigFramework::ConfigDerivedObjectNode &left,
+                const CppConfigFramework::ConfigDerivedObjectNode &right)
+{
+    return ((left.nodePath() == right.nodePath()) &&
+            (left.bases() == right.bases()) &&
+            (left.config() == right.config()));
+}
+
+// -------------------------------------------------------------------------------------------------
+
+bool operator!=(const CppConfigFramework::ConfigDerivedObjectNode &left,
+                const CppConfigFramework::ConfigDerivedObjectNode &right)
+{
+    return !(left == right);
+}

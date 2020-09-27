@@ -96,6 +96,11 @@ private slots:
     void testApplyObject();
 
     void testDerivedObjectNode();
+
+    void testEqualityOperatorsValue();
+    void testEqualityOperatorsObject();
+    void testEqualityOperatorsNodeReference();
+    void testEqualityOperatorsDerivedObject();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -1071,6 +1076,289 @@ void TestConfigNode::testDerivedObjectNode()
     QVERIFY(derivedObject.config().contains("b"));
     QVERIFY(derivedObject.config().member("b")->isValue());
     QCOMPARE(derivedObject.config().member("b")->toValue().value(), QJsonValue("str"));
+}
+
+// Test: Equality operators for Value node ---------------------------------------------------------
+
+void TestConfigNode::testEqualityOperatorsValue()
+{
+    // Test with no parent
+    const ConfigValueNode node1(123);
+    const ConfigValueNode node2(123);
+    const ConfigValueNode node3(100);
+
+    QVERIFY(node1 == node2);
+    QVERIFY(!(node1 != node2));
+
+    QVERIFY(node1 != node3);
+    QVERIFY(!(node1 == node3));
+
+    // Test with same node path
+    ConfigObjectNode root1;
+    root1.setMember("test", node1.clone());
+
+    ConfigObjectNode root2;
+    root2.setMember("test", node2.clone());
+
+    ConfigObjectNode root3;
+    root3.setMember("test", node3.clone());
+
+    QVERIFY(root1.member("test")->toValue() == root2.member("test")->toValue());
+    QVERIFY(!(root1.member("test")->toValue() != root2.member("test")->toValue()));
+
+    QVERIFY(root1.member("test")->toValue() != root3.member("test")->toValue());
+    QVERIFY(!(root1.member("test")->toValue() == root3.member("test")->toValue()));
+
+    // Test with other node path
+    root2.setMember("other", node2.clone());
+    root3.setMember("other", node3.clone());
+
+    QVERIFY(root1.member("test")->toValue() != root2.member("other")->toValue());
+    QVERIFY(!(root1.member("test")->toValue() == root2.member("other")->toValue()));
+
+    QVERIFY(root1.member("test")->toValue() != root3.member("other")->toValue());
+    QVERIFY(!(root1.member("test")->toValue() == root3.member("other")->toValue()));
+}
+
+// Test: Equality operators for Object node --------------------------------------------------------
+
+void TestConfigNode::testEqualityOperatorsObject()
+{
+    // Test with no parent
+    ConfigValueNode childValueNode1(123);
+    ConfigValueNode childValueNode2(100);
+
+    ConfigObjectNode childObjectNode1;
+    childObjectNode1.setMember("value", ConfigValueNode(123));
+
+    ConfigObjectNode childObjectNode2;
+    childObjectNode2.setMember("value", ConfigValueNode(100));
+
+    ConfigNodeReference childNodeReference1(ConfigNodePath("/ref1"));
+    ConfigNodeReference childNodeReference2(ConfigNodePath("/ref2"));
+
+    ConfigDerivedObjectNode childDerivedObjectNode1({}, childObjectNode1);
+    ConfigDerivedObjectNode childDerivedObjectNode2({}, childObjectNode2);
+
+    ConfigObjectNode node11;
+    node11.setMember("value", childValueNode1.clone());
+
+    ConfigObjectNode node12;
+    node12.setMember("value", childValueNode1.clone());
+
+    ConfigObjectNode node13;
+    node13.setMember("value", childValueNode2.clone());
+
+    ConfigObjectNode node14;
+
+    ConfigObjectNode node15;
+    node15.setMember("value", childObjectNode1.clone());
+
+    ConfigObjectNode node16;
+    node16.setMember("xyz", childValueNode1.clone());
+
+    ConfigObjectNode node17;
+    node17.setMember("value", childValueNode1.clone());
+    node17.setMember("xyz", childValueNode1.clone());
+
+    ConfigObjectNode node21;
+    node21.setMember("object", childObjectNode1.clone());
+
+    ConfigObjectNode node22;
+    node22.setMember("object", childObjectNode1.clone());
+
+    ConfigObjectNode node23;
+    node23.setMember("object", childObjectNode2.clone());
+
+    ConfigObjectNode node31;
+    node31.setMember("ref", childNodeReference1.clone());
+
+    ConfigObjectNode node32;
+    node32.setMember("ref", childNodeReference1.clone());
+
+    ConfigObjectNode node33;
+    node33.setMember("ref", childNodeReference2.clone());
+
+    ConfigObjectNode node41;
+    node41.setMember("derived", childDerivedObjectNode1.clone());
+
+    ConfigObjectNode node42;
+    node42.setMember("derived", childDerivedObjectNode1.clone());
+
+    ConfigObjectNode node43;
+    node43.setMember("derived", childDerivedObjectNode2.clone());
+
+    QVERIFY(node11 == node12);
+    QVERIFY(!(node11 != node12));
+
+    QVERIFY(node11 != node13);
+    QVERIFY(!(node11 == node13));
+
+    QVERIFY(node11 != node14);
+    QVERIFY(!(node11 == node14));
+
+    QVERIFY(node11 != node15);
+    QVERIFY(!(node11 == node15));
+
+    QVERIFY(node11 != node16);
+    QVERIFY(!(node11 == node16));
+
+    QVERIFY(node11 != node17);
+    QVERIFY(!(node11 == node17));
+
+    QVERIFY(node21 == node22);
+    QVERIFY(!(node21 != node22));
+
+    QVERIFY(node21 != node23);
+    QVERIFY(!(node21 == node23));
+
+    QVERIFY(node31 == node32);
+    QVERIFY(!(node31 != node32));
+
+    QVERIFY(node31 != node33);
+    QVERIFY(!(node31 == node33));
+
+    QVERIFY(node41 == node42);
+    QVERIFY(!(node41 != node42));
+
+    QVERIFY(node41 != node43);
+    QVERIFY(!(node41 == node43));
+
+    // Test with same node path
+    ConfigObjectNode root1;
+    root1.setMember("test", node11.clone());
+
+    ConfigObjectNode root2;
+    root2.setMember("test", node12.clone());
+
+    ConfigObjectNode root3;
+    root3.setMember("test", node13.clone());
+
+    QVERIFY(root1.member("test")->toObject() == root2.member("test")->toObject());
+    QVERIFY(!(root1.member("test")->toObject() != root2.member("test")->toObject()));
+
+    QVERIFY(root1.member("test")->toObject() != root3.member("test")->toObject());
+    QVERIFY(!(root1.member("test")->toObject() == root3.member("test")->toObject()));
+
+    // Test with other node path
+    root2.setMember("other", node12.clone());
+    root3.setMember("other", node13.clone());
+
+    QVERIFY(root1.member("test")->toObject() != root2.member("other")->toObject());
+    QVERIFY(!(root1.member("test")->toObject() == root2.member("other")->toObject()));
+
+    QVERIFY(root1.member("test")->toObject() != root3.member("other")->toObject());
+    QVERIFY(!(root1.member("test")->toObject() == root3.member("other")->toObject()));
+}
+
+// Test: Equality operators for NodeReference node -------------------------------------------------
+
+void TestConfigNode::testEqualityOperatorsNodeReference()
+{
+    // Test with no parent
+    const ConfigNodeReference node1(ConfigNodePath("/refA"));
+    const ConfigNodeReference node2(ConfigNodePath("/refA"));
+    const ConfigNodeReference node3(ConfigNodePath("/refB"));
+
+    QVERIFY(node1 == node2);
+    QVERIFY(!(node1 != node2));
+
+    QVERIFY(node1 != node3);
+    QVERIFY(!(node1 == node3));
+
+    // Test with same node path
+    ConfigObjectNode root1;
+    root1.setMember("test", node1.clone());
+
+    ConfigObjectNode root2;
+    root2.setMember("test", node2.clone());
+
+    ConfigObjectNode root3;
+    root3.setMember("test", node3.clone());
+
+    QVERIFY(root1.member("test")->toNodeReference() == root2.member("test")->toNodeReference());
+    QVERIFY(!(root1.member("test")->toNodeReference() != root2.member("test")->toNodeReference()));
+
+    QVERIFY(root1.member("test")->toNodeReference() != root3.member("test")->toNodeReference());
+    QVERIFY(!(root1.member("test")->toNodeReference() == root3.member("test")->toNodeReference()));
+
+    // Test with other node path
+    root2.setMember("other", node2.clone());
+    root3.setMember("other", node3.clone());
+
+    QVERIFY(root1.member("test")->toNodeReference() != root2.member("other")->toNodeReference());
+    QVERIFY(!(root1.member("test")->toNodeReference() == root2.member("other")->toNodeReference()));
+
+    QVERIFY(root1.member("test")->toNodeReference() != root3.member("other")->toNodeReference());
+    QVERIFY(!(root1.member("test")->toNodeReference() == root3.member("other")->toNodeReference()));
+}
+
+// Test: Equality operators for DerivedObject node -------------------------------------------------
+
+void TestConfigNode::testEqualityOperatorsDerivedObject()
+{
+    // Test with no parent
+    ConfigObjectNode childObjectNode1;
+    childObjectNode1.setMember("value", ConfigValueNode(123));
+
+    ConfigObjectNode childObjectNode2;
+    childObjectNode2.setMember("value", ConfigValueNode(100));
+
+    ConfigDerivedObjectNode node11({ConfigNodePath("/base")});
+    ConfigDerivedObjectNode node12({ConfigNodePath("/base")});
+    ConfigDerivedObjectNode node13({ConfigNodePath("/xyz")});
+
+    ConfigDerivedObjectNode node21({}, childObjectNode1);
+    ConfigDerivedObjectNode node22({}, childObjectNode1);
+    ConfigDerivedObjectNode node23({}, childObjectNode2);
+
+    ConfigDerivedObjectNode node31({ConfigNodePath("/base")}, childObjectNode1);
+    ConfigDerivedObjectNode node32({ConfigNodePath("/base")}, childObjectNode1);
+    ConfigDerivedObjectNode node33({ConfigNodePath("/xyz")}, childObjectNode2);
+
+    QVERIFY(node11 == node12);
+    QVERIFY(!(node11 != node12));
+
+    QVERIFY(node11 != node13);
+    QVERIFY(!(node11 == node13));
+
+    QVERIFY(node21 == node22);
+    QVERIFY(!(node21 != node22));
+
+    QVERIFY(node21 != node23);
+    QVERIFY(!(node21 == node23));
+
+    QVERIFY(node31 == node32);
+    QVERIFY(!(node31 != node32));
+
+    QVERIFY(node31 != node33);
+    QVERIFY(!(node31 == node33));
+
+    // Test with same node path
+    ConfigObjectNode root1;
+    root1.setMember("test", node11.clone());
+
+    ConfigObjectNode root2;
+    root2.setMember("test", node12.clone());
+
+    ConfigObjectNode root3;
+    root3.setMember("test", node13.clone());
+
+    QVERIFY(root1.member("test")->toDerivedObject() == root2.member("test")->toDerivedObject());
+    QVERIFY(!(root1.member("test")->toDerivedObject() != root2.member("test")->toDerivedObject()));
+
+    QVERIFY(root1.member("test")->toDerivedObject() != root3.member("test")->toDerivedObject());
+    QVERIFY(!(root1.member("test")->toDerivedObject() == root3.member("test")->toDerivedObject()));
+
+    // Test with other node path
+    root2.setMember("other", node12.clone());
+    root3.setMember("other", node13.clone());
+
+    QVERIFY(root1.member("test")->toDerivedObject() != root2.member("other")->toDerivedObject());
+    QVERIFY(!(root1.member("test")->toDerivedObject() == root2.member("other")->toDerivedObject()));
+
+    QVERIFY(root1.member("test")->toDerivedObject() != root3.member("other")->toDerivedObject());
+    QVERIFY(!(root1.member("test")->toDerivedObject() == root3.member("other")->toDerivedObject()));
 }
 
 // Main function -----------------------------------------------------------------------------------

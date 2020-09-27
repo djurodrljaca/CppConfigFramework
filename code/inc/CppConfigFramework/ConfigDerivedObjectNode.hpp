@@ -112,3 +112,32 @@ private:
 };
 
 } // namespace CppConfigFramework
+
+// -------------------------------------------------------------------------------------------------
+
+/*!
+ * Global "equal to" operator for CppConfigFramework::ConfigDerivedObjectNode
+ *
+ * \param   left    Node
+ * \param   right   Node
+ *
+ * \retval  true    Nodes are equal
+ * \retval  false   Nodes are not equal
+ */
+CPPCONFIGFRAMEWORK_EXPORT bool operator==(const CppConfigFramework::ConfigDerivedObjectNode &left,
+                                          const CppConfigFramework::ConfigDerivedObjectNode &right);
+
+// -------------------------------------------------------------------------------------------------
+
+/*!
+ * Global "not equal to" operator for CppConfigFramework::ConfigDerivedObjectNode
+ *
+ * \param   left    Node
+ * \param   right   Node
+ *
+ * \retval  true    Nodes are not equal
+ * \retval  false   Nodes are equal
+ */
+CPPCONFIGFRAMEWORK_EXPORT bool operator!=(const CppConfigFramework::ConfigDerivedObjectNode &left,
+                                          const CppConfigFramework::ConfigDerivedObjectNode &right);
+

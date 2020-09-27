@@ -78,3 +78,20 @@ void ConfigNodeReference::setReference(const ConfigNodePath &reference)
 }
 
 } // namespace CppConfigFramework
+
+// -------------------------------------------------------------------------------------------------
+
+bool operator==(const CppConfigFramework::ConfigNodeReference &left,
+                const CppConfigFramework::ConfigNodeReference &right)
+{
+    return ((left.nodePath() == right.nodePath()) &&
+            (left.reference() == right.reference()));
+}
+
+// -------------------------------------------------------------------------------------------------
+
+bool operator!=(const CppConfigFramework::ConfigNodeReference &left,
+                const CppConfigFramework::ConfigNodeReference &right)
+{
+    return !(left == right);
+}
