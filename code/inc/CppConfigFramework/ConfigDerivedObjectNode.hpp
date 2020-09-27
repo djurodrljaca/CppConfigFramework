@@ -72,9 +72,6 @@ public:
     //! \copydoc    ConfigNode::type()
     Type type() const override;
 
-    //! \copydoc    ConfigNode::toJson()
-    QJsonValue toJson() const override;
-
     /*!
      * Gets the bases for deriving the Object configuration node
      *

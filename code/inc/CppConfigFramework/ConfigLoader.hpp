@@ -24,6 +24,8 @@
 #include <CppConfigFramework/ConfigContainerHelper.hpp>
 #include <CppConfigFramework/ConfigParameterValidator.hpp>
 #include <CppConfigFramework/ConfigObjectNode.hpp>
+#include <CppConfigFramework/ConfigValueNode.hpp>
+#include <CppConfigFramework/ConfigWriter.hpp>
 
 // Cedar Framework includes
 #include <CedarFramework/Deserialization.hpp>
@@ -681,17 +683,45 @@ bool ConfigLoader::loadConfigParameterFromNode(T *parameterValue,
                                                const ConfigNode &node,
                                                ConfigParameterValidator<T> validator)
 {
-    if ((!node.isValue()) && (!node.isObject()))
+    // Load the node value to the parameter
+    QJsonValue nodeJsonValue;
+
+    switch (node.type())
     {
-        const QString errorString = QString("Configuration parameter node [%1] is neither a Value "
-                                            "nor an Object node!").arg(node.nodePath().path());
-        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
-        handleError(errorString);
-        return false;
+        case ConfigNode::Type::Value:
+        {
+            nodeJsonValue = node.toValue().value();
+            break;
+        }
+
+        case ConfigNode::Type::Object:
+        {
+            nodeJsonValue = ConfigWriter::convertToJsonValue(node.toObject());
+
+            if (nodeJsonValue.isUndefined())
+            {
+                const QString errorString = QString("Configuration parameter node [%1] has "
+                                                    "unresolved references!")
+                                            .arg(node.nodePath().path());
+                qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
+                handleError(errorString);
+                return false;
+            }
+            break;
+        }
+
+        default:
+        {
+            const QString errorString = QString("Configuration parameter node [%1] is neither a "
+                                                "Value nor an Object node!")
+                                        .arg(node.nodePath().path());
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
+            handleError(errorString);
+            return false;
+        }
     }
 
-    // Load the node value to the parameter
-    if (!CedarFramework::deserialize(node.toJson(), parameterValue))
+    if (!CedarFramework::deserialize(nodeJsonValue, parameterValue))
     {
         const QString errorString = QString("Failed to load configuration parameter's value at "
                                             "node path [%1]").arg(node.nodePath().path());

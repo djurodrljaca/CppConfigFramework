@@ -58,13 +58,6 @@ ConfigNode::Type ConfigNodeReference::type() const
 
 // -------------------------------------------------------------------------------------------------
 
-QJsonValue ConfigNodeReference::toJson() const
-{
-    return m_reference.path();
-}
-
-// -------------------------------------------------------------------------------------------------
-
 ConfigNodePath ConfigNodeReference::reference() const
 {
     return m_reference;
