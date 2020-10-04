@@ -183,7 +183,7 @@ ConfigNode *ConfigObjectNode::member(const QString &name)
 
 // -------------------------------------------------------------------------------------------------
 
-bool ConfigObjectNode::setMember(const QString &name, std::unique_ptr<ConfigNode> &&node)
+bool ConfigObjectNode::setMember(const QString &name, std::unique_ptr<ConfigNode> node)
 {
     // Make sure that name and node are both valid
     if ((!ConfigNodePath::validateNodeName(name)) || (!node))
