@@ -11,7 +11,7 @@ The framework can be used to create cross-platform applications, since it is usi
 * Qt5 framework (only Core and Test modules)
 * [Cedar Framework](https://github.com/djurodrljaca/CedarFramework)
 
-## Requirements
+## Software requirements
 
 Requirements document can be found [here](docs/Requirements.md).
 
