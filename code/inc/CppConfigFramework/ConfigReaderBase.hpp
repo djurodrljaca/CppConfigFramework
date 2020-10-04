@@ -219,7 +219,7 @@ protected:
      * \return  Configuration node instance or in case of failure a null pointer
      */
     static std::unique_ptr<ConfigObjectNode> transformConfig(
-            std::unique_ptr<ConfigObjectNode> &&config,
+            std::unique_ptr<ConfigObjectNode> config,
             const ConfigNodePath &sourceNodePath,
             const ConfigNodePath &destinationNodePath);
 

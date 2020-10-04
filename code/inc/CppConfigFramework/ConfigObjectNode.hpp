@@ -133,7 +133,7 @@ public:
      *
      * \note    When the node is stored its parent is updated to point to this node
      */
-    bool setMember(const QString &name, std::unique_ptr<ConfigNode> &&node);
+    bool setMember(const QString &name, std::unique_ptr<ConfigNode> node);
 
     //! \copydoc    ConfigObjectNode::setMember()
     bool setMember(const QString &name, const ConfigNode &node);

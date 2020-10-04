@@ -49,7 +49,7 @@ ConfigReaderFactory *ConfigReaderFactory::instance()
 // -------------------------------------------------------------------------------------------------
 
 bool ConfigReaderFactory::registerConfigReader(const QString &type,
-                                               std::unique_ptr<ConfigReaderBase> &&configReader)
+                                               std::unique_ptr<ConfigReaderBase> configReader)
 {
     if (type.isEmpty() || (!configReader))
     {

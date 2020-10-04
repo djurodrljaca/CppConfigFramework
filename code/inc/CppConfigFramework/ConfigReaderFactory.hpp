@@ -61,7 +61,7 @@ public:
      * \retval  false   Failure
      */
     bool registerConfigReader(const QString &type,
-                              std::unique_ptr<ConfigReaderBase> &&configReader);
+                              std::unique_ptr<ConfigReaderBase> configReader);
 
     /*!
      * Read the specified configuration

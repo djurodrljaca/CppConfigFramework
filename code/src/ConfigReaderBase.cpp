@@ -476,7 +476,7 @@ const ConfigNode *ConfigReaderBase::findReferencedConfigNode(
 // -------------------------------------------------------------------------------------------------
 
 std::unique_ptr<ConfigObjectNode> ConfigReaderBase::transformConfig(
-        std::unique_ptr<ConfigObjectNode> &&config,
+        std::unique_ptr<ConfigObjectNode> config,
         const ConfigNodePath &sourceNodePath,
         const ConfigNodePath &destinationNodePath)
 {
@@ -488,7 +488,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReaderBase::transformConfig(
     if (sourceNodePath.isRoot() && destinationNodePath.isRoot())
     {
         // Transformation is not needed, just return the original configuration node
-        return std::move(config);
+        return config;
     }
 
     // Take the source node
