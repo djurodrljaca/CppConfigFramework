@@ -199,7 +199,18 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
         return {};
     }
 
-    // Update current directory environment variable
+    if (!isFullyResolved(*completeConfig))
+    {
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << "The read 'includes' member has unresolved references:"
+                   "\n    file path:" << absoluteFilePath
+                << "\n    unresolved references:"
+                << unresolvedReferences(*completeConfig).join("; ");
+        return {};
+    }
+
+    // Make sure that the current directory environment variable contains the appropriate location
+    // (at this point the value could point to the last include's directory)
     setCurrentDirectory(QFileInfo(absoluteFilePath).absoluteDir(), environmentVariables);
 
     // Read 'config' member
@@ -216,17 +227,17 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
         return {};
     }
 
-    // Apply the overloads from 'config' member to the read configuration
-    completeConfig->apply(*configMember);
-
-    // Resolve references
-    if (!resolveReferences(externalConfigs, completeConfig.get()))
+    if (!isFullyResolved(*configMember))
     {
         qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
-                << "Failed to resolve references:"
-                   "\n    file path:" << absoluteFilePath;
+                << "The read 'config' member has unresolved references:"
+                   "\n    file path:" << absoluteFilePath
+                << "\n    unresolved references:" << unresolvedReferences(*configMember).join("; ");
         return {};
     }
+
+    // Apply the overloads from 'config' member to the read configuration
+    completeConfig->apply(*configMember);
 
     // Transform the configuration node based on source and destination node paths
     auto transformedConfig = transformConfig(std::move(completeConfig),
@@ -341,7 +352,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readIncludesMember(
         const std::vector<const ConfigObjectNode *> &externalConfigs,
         EnvironmentVariables *environmentVariables) const
 {
-    // Read individual environment variables
+    // Read included configurations
     QVector<QJsonObject> includes;
 
     if (!CedarFramework::deserializeOptionalNode(rootObject,
