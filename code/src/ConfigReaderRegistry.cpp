@@ -15,7 +15,7 @@
 /*!
  * \file
  *
- * Contains the factory for classes that can read different type of configuration files
+ * Contains the registry for classes that can read different type of configuration files
  */
 
 // Own header
@@ -49,7 +49,7 @@ ConfigReaderRegistry *ConfigReaderRegistry::instance()
 // -------------------------------------------------------------------------------------------------
 
 bool ConfigReaderRegistry::registerConfigReader(const QString &type,
-                                               std::unique_ptr<ConfigReaderBase> configReader)
+                                                std::unique_ptr<ConfigReaderBase> configReader)
 {
     if (type.isEmpty() || (!configReader))
     {
