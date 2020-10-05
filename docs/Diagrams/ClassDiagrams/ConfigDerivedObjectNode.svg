@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="264px" preserveAspectRatio="none" style="width:195px;height:264px;" version="1.1" viewBox="0 0 195 264" width="195px" zoomAndPan="magnify"><defs><filter height="300%" id="fcuf07yqb4cr" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><!--MD5=[a7a276926f9c52ae47a6f83d030a5f62]
+class ConfigNode--><rect fill="#FEFECE" filter="url(#fcuf07yqb4cr)" height="48" id="ConfigNode" style="stroke: #A80036; stroke-width: 1.5;" width="95" x="47.5" y="8"/><ellipse cx="62.5" cy="24" fill="#A9DCDF" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M57.6719,29.75 L61.0156,17.5625 L64.1563,17.5625 L67.5313,29.75 L65.0625,29.75 L64.3281,26.7344 L60.8125,26.7344 L60.0625,29.75 L57.6719,29.75 Z M62.0781,21.7031 L61.3281,24.7031 L63.8438,24.7031 L63.125,21.7031 Q62.9844,21.125 62.8594,20.5781 Q62.7344,20.0156 62.5938,19.4375 Q62.4844,20.0156 62.3438,20.5781 Q62.2031,21.125 62.0781,21.7031 Z "/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="63" x="76.5" y="28.656">ConfigNode</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="48.5" x2="141.5" y1="40" y2="40"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="48.5" x2="141.5" y1="48" y2="48"/><!--MD5=[180588c6ae06b7db2af095e0031c0ec7]
+class ConfigDerivedObjectNode--><rect fill="#FEFECE" filter="url(#fcuf07yqb4cr)" height="137.8913" id="ConfigDerivedObjectNode" style="stroke: #A80036; stroke-width: 1.5;" width="178" x="6" y="116"/><ellipse cx="21" cy="132" fill="#ADD1B2" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M20.4688,138.9219 Q18.7188,138.9219 17.5781,138.1875 Q16.4531,137.4375 15.8906,136.0938 Q15.3438,134.7344 15.3438,132.9375 Q15.3438,130.9063 16,129.4531 Q16.6563,128 17.9375,127.2188 Q19.2188,126.4375 21.0938,126.4375 Q21.9844,126.4375 22.6563,126.625 Q23.3281,126.7969 24.0156,127.1406 L23.2031,129.1563 Q22.5781,128.8438 22.0313,128.7188 Q21.5,128.5938 21.0156,128.5938 Q19.8438,128.5938 19.1406,129.125 Q18.4375,129.6563 18.1406,130.6094 Q17.8438,131.5625 17.8438,132.8281 Q17.8438,134.8438 18.5625,135.8125 Q19.2813,136.7656 20.875,136.7656 Q21.4688,136.7656 22.0938,136.6094 Q22.7188,136.4531 23.5469,136.0781 L23.5469,138.2969 Q22.8125,138.6094 22.0156,138.7656 Q21.2344,138.9219 20.4688,138.9219 Z "/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="146" x="35" y="136.656">ConfigDerivedObjectNode</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="7" x2="183" y1="148" y2="148"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="7" x2="183" y1="156" y2="156"/><ellipse cx="17" cy="167" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="31" x="26" y="171.7589">clone()</text><ellipse cx="17" cy="181.9819" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="26" x="26" y="186.7408">type()</text><ellipse cx="17" cy="196.9638" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="35" x="26" y="201.7227">bases()</text><ellipse cx="17" cy="211.9457" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="79" x="26" y="216.7046">setBases(bases)</text><ellipse cx="17" cy="226.9276" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="39" x="26" y="231.6865">config()</text><ellipse cx="17" cy="241.9094" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="89" x="26" y="246.6684">setConfig(config)</text><!--MD5=[199aeddf56979ecc1511136239c0505d]
+reverse link ConfigNode to ConfigDerivedObjectNode--><path d="M95,76.56 C95,88.87 95,102.57 95,115.96 " fill="none" id="ConfigNode&lt;-ConfigDerivedObjectNode" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="none" points="88,76.26,95,56.26,102,76.26,88,76.26" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[9a657bf211e8a4dcfcd2c3b6343a266a]
+@startuml ConfigDerivedObjectNode
+ConfigNode <|- - ConfigDerivedObjectNode
+
+abstract class ConfigNode
+
+class ConfigDerivedObjectNode {
+    {abstract} +clone()
+    {abstract} +type() 
+    +bases()
+    +setBases(bases)
+    +config()
+    +setConfig(config)
+}
+@enduml
+
+PlantUML version 1.2020.10(Sun May 17 11:35:57 CEST 2020)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Java Version: 11.0.8+10-post-Ubuntu-0ubuntu120.04
+Operating System: Linux
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>

@@ -1,0 +1,111 @@
+@startuml ConfigNode
+ConfigNode <|-- ConfigValueNode
+ConfigNode <|-- ConfigObjectNode
+ConfigNode <|-- ConfigNodeReference
+ConfigNode <|-- ConfigDerivedObjectNode
+
+abstract class ConfigNode {
+    {abstract} +clone()
+    {abstract} +type()
+    +isValue()
+    +isObject()
+    +isNodeReference()
+    +isDerivedObject()
+    +isRoot()
+    +parent()
+    +setParent(parent)
+    +rootNode()
+    +toValue()
+    +toObject()
+    +toNodeReference()
+    +toDerivedObject()
+    +nodePath()
+    +nodeAtPath(nodePath)
+}
+@enduml
+
+@startuml ConfigValueNode
+ConfigNode <|-- ConfigValueNode
+
+abstract class ConfigNode
+
+class ConfigValueNode {
+    {abstract} +clone()
+    {abstract} +type() 
+    +value()
+    +setValue(value)
+}
+@enduml
+
+@startuml ConfigObjectNode
+ConfigNode <|-- ConfigObjectNode
+
+abstract class ConfigNode
+
+class ConfigObjectNode {
+    {abstract} +clone()
+    {abstract} +type() 
+    +count()
+    +contains(name)
+    +names()
+    +name(node)
+    +member(name)
+    +setMember(name, node)
+    +remove(name)
+    +removeAll()
+    +apply(other)
+}
+@enduml
+
+@startuml ConfigNodeReference
+ConfigNode <|-- ConfigNodeReference
+
+abstract class ConfigNode
+
+class ConfigNodeReference {
+    {abstract} +clone()
+    {abstract} +type() 
+    +reference()
+    +setReference(reference)
+}
+@enduml
+
+@startuml ConfigDerivedObjectNode
+ConfigNode <|-- ConfigDerivedObjectNode
+
+abstract class ConfigNode
+
+class ConfigDerivedObjectNode {
+    {abstract} +clone()
+    {abstract} +type() 
+    +bases()
+    +setBases(bases)
+    +config()
+    +setConfig(config)
+}
+@enduml
+
+@startuml ConfigReader
+ConfigReaderBase <|-- ConfigReader
+ConfigReaderRegistry *-- ConfigReaderBase
+
+abstract class ConfigReaderBase {
+    +referenceResolutionMaxCycles()
+    +setReferenceResolutionMaxCycles(referenceResolutionMaxCycles)
+    {abstract} +read(workingDir, destinationNodePath, otherParameters, externalConfigs, environmentVariables)
+    {static} #isFullyResolved(node)
+    {static} #unresolvedReferences(node)
+    {static} #resolveReferences(externalConfigs, config)
+    {static} #transformConfig(config, sourceNodePath, destinationNodePath)
+}
+
+class ConfigReader {
+    +read(filePath, workingDir, sourceNodePath, destinationNodePath, externalConfigs, environmentVariables)
+}
+
+class ConfigReaderRegistry {
+    {static} +instance()
+    +registerConfigReader(type, configReader)
+    +readConfig(type, workingDir, destinationNodePath, otherParameters, externalConfigs, environmentVariables)
+}
+@enduml

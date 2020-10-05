@@ -84,6 +84,20 @@ The configuration files shall be read in the following sequence:
 
 ![Reading of configuration files](Diagrams/FlowCharts/ConfigReader.svg "Reading of configuration files")
 
+Configuration files shall be read using configuration reader classes that share the functionality for:
+
+* Getting and setting the limit for how many reference resolution cycles are allowed
+* Reading of a configuration file
+* Reference resolution
+* Transformation of configuration data
+
+![Class diagram for the configuration reader class](Diagrams/ClassDiagrams/ConfigReader.svg "Class diagram for the configuration reader class")
+
+For reading configuration files of different types the *ConfigReaderRegistry* shall be used. It shall provide:
+
+* Registration of configuration readers to a specific type
+* Reading of configuration based on the specified type
+
 
 ### Reading and parsing of a configuration file
 
