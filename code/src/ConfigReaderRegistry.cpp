@@ -19,7 +19,7 @@
  */
 
 // Own header
-#include <CppConfigFramework/ConfigReaderFactory.hpp>
+#include <CppConfigFramework/ConfigReaderRegistry.hpp>
 
 // C++ Config Framework includes
 #include <CppConfigFramework/ConfigObjectNode.hpp>
@@ -39,16 +39,16 @@
 namespace CppConfigFramework
 {
 
-ConfigReaderFactory *ConfigReaderFactory::instance()
+ConfigReaderRegistry *ConfigReaderRegistry::instance()
 {
-    static ConfigReaderFactory factory;
+    static ConfigReaderRegistry factory;
 
     return &factory;
 }
 
 // -------------------------------------------------------------------------------------------------
 
-bool ConfigReaderFactory::registerConfigReader(const QString &type,
+bool ConfigReaderRegistry::registerConfigReader(const QString &type,
                                                std::unique_ptr<ConfigReaderBase> configReader)
 {
     if (type.isEmpty() || (!configReader))
@@ -62,7 +62,7 @@ bool ConfigReaderFactory::registerConfigReader(const QString &type,
 
 // -------------------------------------------------------------------------------------------------
 
-std::unique_ptr<ConfigObjectNode> ConfigReaderFactory::readConfig(
+std::unique_ptr<ConfigObjectNode> ConfigReaderRegistry::readConfig(
         const QString &type,
         const QDir &workingDir,
         const ConfigNodePath &destinationNodePath,
@@ -92,7 +92,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReaderFactory::readConfig(
 
 // -------------------------------------------------------------------------------------------------
 
-ConfigReaderFactory::ConfigReaderFactory()
+ConfigReaderRegistry::ConfigReaderRegistry()
 {
     registerConfigReader(QStringLiteral("CppConfigFramework"), std::make_unique<ConfigReader>());
 }

@@ -58,7 +58,7 @@ add_library(CppConfigFramework SHARED
         inc/CppConfigFramework/ConfigParameterValidator.hpp
         inc/CppConfigFramework/ConfigReader.hpp
         inc/CppConfigFramework/ConfigReaderBase.hpp
-        inc/CppConfigFramework/ConfigReaderFactory.hpp
+        inc/CppConfigFramework/ConfigReaderRegistry.hpp
         inc/CppConfigFramework/ConfigValueNode.hpp
         inc/CppConfigFramework/ConfigWriter.hpp
         inc/CppConfigFramework/EnvironmentVariables.hpp
@@ -72,7 +72,7 @@ add_library(CppConfigFramework SHARED
         src/ConfigObjectNode.cpp
         src/ConfigReader.cpp
         src/ConfigReaderBase.cpp
-        src/ConfigReaderFactory.cpp
+        src/ConfigReaderRegistry.cpp
         src/ConfigValueNode.cpp
         src/ConfigWriter.cpp
         src/EnvironmentVariables.cpp
