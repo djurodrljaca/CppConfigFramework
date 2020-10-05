@@ -15,7 +15,7 @@
 /*!
  * \file
  *
- * Contains the factory for classes that can read different type of configuration files
+ * Contains the registry for classes that can read different type of configuration files
  */
 
 #pragma once
@@ -37,7 +37,7 @@
 namespace CppConfigFramework
 {
 
-//! This is a class for registring configuration readers
+//! This is a class for registering configuration readers
 class CPPCONFIGFRAMEWORK_EXPORT ConfigReaderRegistry
 {
 public:
