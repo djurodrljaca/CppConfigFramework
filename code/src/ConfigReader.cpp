@@ -25,7 +25,7 @@
 #include <CppConfigFramework/ConfigDerivedObjectNode.hpp>
 #include <CppConfigFramework/ConfigNodeReference.hpp>
 #include <CppConfigFramework/ConfigObjectNode.hpp>
-#include <CppConfigFramework/ConfigReaderFactory.hpp>
+#include <CppConfigFramework/ConfigReaderRegistry.hpp>
 #include <CppConfigFramework/ConfigValueNode.hpp>
 #include <CppConfigFramework/LoggingCategories.hpp>
 
@@ -425,7 +425,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readIncludesMember(
 
         // Read config file
         // TODO: limit the includes depth to prevent an endless include loop?
-        auto config = ConfigReaderFactory::instance()->readConfig(
+        auto config = ConfigReaderRegistry::instance()->readConfig(
                           type,
                           workingDir,
                           destinationNodePath,

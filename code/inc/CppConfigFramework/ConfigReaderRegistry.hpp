@@ -37,19 +37,19 @@
 namespace CppConfigFramework
 {
 
-//! This is a base class for reading configurations
-class CPPCONFIGFRAMEWORK_EXPORT ConfigReaderFactory
+//! This is a class for registring configuration readers
+class CPPCONFIGFRAMEWORK_EXPORT ConfigReaderRegistry
 {
 public:
     //! Destructor
-    ~ConfigReaderFactory() = default;
+    ~ConfigReaderRegistry() = default;
 
     /*!
      * Gets the factory instance
      *
      * \return  Factory instance
      */
-    static ConfigReaderFactory *instance();
+    static ConfigReaderRegistry *instance();
 
     /*!
      * Registers a configuration reader type
@@ -91,7 +91,7 @@ public:
 
 private:
     //! Constructor
-    ConfigReaderFactory();
+    ConfigReaderRegistry();
 
 private:
     //! Holds the
