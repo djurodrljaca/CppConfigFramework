@@ -109,3 +109,32 @@ class ConfigReaderRegistry {
     +readConfig(type, workingDir, destinationNodePath, otherParameters, externalConfigs, environmentVariables)
 }
 @enduml
+
+@startuml ConfigLoader
+ConfigLoader <|-- ExampleConfig
+
+abstract class ConfigLoader {
+    +loadConfig(config)
+    +loadConfig(parameterName, config)
+    +loadOptionalConfig(parameterName, config, loaded)
+    +loadConfigAtPath(path, config)
+    +loadOptionalConfigAtPath(path, config, loaded)
+    #loadRequiredConfigParameter(parameterValue, parameterName, config)
+    #loadRequiredConfigParameter(parameterValue, parameterName, config, validator)
+    #loadOptionalConfigParameter(parameterValue, parameterName, config, loaded)
+    #loadOptionalConfigParameter(parameterValue, parameterName, config, validator, loaded)
+    #loadRequiredConfigContainer(container, parameterName, config)
+    #loadRequiredConfigContainer(container, parameterName, config, itemCreator)
+    #loadOptionalConfigContainer(container, parameterName, config, loaded)
+    #loadOptionalConfigContainer(container, parameterName, config, itemCreator, loaded)
+    {abstract} -loadConfigParameters(config)
+    {abstract} -validateConfig()
+    {abstract} -handleError(error)
+}
+
+class ExampleConfig {
+    {abstract} -loadConfigParameters(config)
+    {abstract} -validateConfig()
+    {abstract} -handleError(error)
+}
+@enduml

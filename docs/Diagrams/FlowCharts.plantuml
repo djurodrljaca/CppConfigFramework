@@ -13,3 +13,14 @@
 --> "Transform config"
 --> (*)
 @enduml
+
+@startuml ConfigLoader
+(*) --> "Load config parameters"
+--> "Validate config"
+--> (*)
+
+"Load config parameters" -->[On error] "Handle error"
+"Validate config" -right->[On error] "Handle error"
+
+"Handle error" --> (*)
+@enduml
