@@ -15,7 +15,7 @@
 /*!
  * \file
  *
- * Contains a base class for the loading configuration nodes to actual configuration parameters
+ * Contains a base class for loading configuration nodes to actual configuration parameters
  */
 
 #pragma once
@@ -43,7 +43,8 @@
 namespace CppConfigFramework
 {
 
-//! This class holds the base class for a configuration class
+//! This class holds the base class for loading configuration nodes to actual configuration
+//! parameters
 class CPPCONFIGFRAMEWORK_EXPORT ConfigLoader
 {
 public:
@@ -82,12 +83,12 @@ public:
     /*!
      * Loads configuration parameters for this configuration structure
      *
-     * \param   node    Configuration node from which this configuration structure should be loaded
+     * \param   config  Configuration node from which this configuration structure should be loaded
      *
      * \retval  true    Success
      * \retval  false   Failure
      */
-    bool loadConfig(const ConfigNode &node);
+    bool loadConfig(const ConfigObjectNode &config);
 
     /*!
      * Loads configuration parameters for this configuration structure
@@ -771,7 +772,16 @@ bool ConfigLoader::loadConfigContainerFromNode(
         const auto *itemNode = nodeObject.member(itemName);
         Q_ASSERT(itemNode != nullptr);
 
-        if (!item.loadConfig(*itemNode))
+        if (!itemNode->isObject())
+        {
+            const QString errorString = QString("Configuration node [%1] is not an Object node!")
+                                        .arg(itemNode->nodePath().path());
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
+            handleError(errorString);
+            return false;
+        }
+
+        if (!item.loadConfig(itemNode->toObject()))
         {
             return false;
         }
