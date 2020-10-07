@@ -153,9 +153,32 @@ Then the *destination* transformation shall move the configuration data to the s
 
 ## Loading of a configuration structure into native C++ types
 
-TODO
+It shall be possible to load a configuration structure from:
+
+* A configuration object node
+* A member of a configuration object node
+* A node at a specific path of a configuration object node
+
+It shall also be possible to load an optional configuration structure from:
+
+* A member of a configuration object node
+* A node at a specific path of a configuration object node
+
+Note: the *loaded* flag shall be set only if the (optional) configuration's node is actually loaded.
+
+![Class diagram for the configuration loader class](Diagrams/ClassDiagrams/ConfigLoader.svg "Class diagram for the configuration loader class")
+
+When a configuration structure is loaded it shall first load the configuration parameters and then execute the validation of the loaded parameters. If at any point an error occurs the error handler shall be invoked and loading terminated.
+
+![Loading of a configuration structure](Diagrams/FlowCharts/ConfigLoader.svg "Loading of a configuration structure")
+
+A configuration structure shall be required to implement the ```loadConfigParameters()``` method where it shall load its individual configuration parameters with the help of the provided methods for loading od required and optional configuration parameters.
+
+Note: if a configuration parameter is derived from the ```ConfigLoader``` class then it shall be necessary to load it using its ```loadConfig()``` method (or one of the other helper methods). But if a configuration parameter is a container of items derived from the ```ConfigLoader``` class then the ```loadRequiredConfigContainer()``` or ```loadOptionalConfigContainer()``` method shall be used.
 
 
 ## Writing the configuration to files
 
-TODO
+It shall be possible to convert a configuration *Object* node to *JSON* in the *C++ Config Framework* format. With this functionality it shall be possible to store a configuration node to a file so that it can be read with *ConfigReader*.
+
+It shall also be possible to convert a fully resolved configuration *Object* node to an ordinary *JSON value* (without the *C++ Config Framework* format specifics).
