@@ -366,6 +366,13 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readIncludesMember(
 
     auto includesConfig = std::make_unique<ConfigObjectNode>();
 
+    std::vector<const ConfigObjectNode *> extendedExternalConfigs;
+    extendedExternalConfigs.reserve(externalConfigs.size() + 1U);
+    extendedExternalConfigs.push_back(includesConfig.get());
+    extendedExternalConfigs.insert(extendedExternalConfigs.end(),
+                                   externalConfigs.begin(),
+                                   externalConfigs.end());
+
     for (int i = 0; i < includes.size(); i++)
     {
         const auto includeObject = includes.at(i);
@@ -410,14 +417,6 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readIncludesMember(
                        .arg(destinationNodePath.path())
                        .arg(i);
             return {};
-        }
-
-        // Extend the external configs with the includesConfig value if necessary
-        auto extendedExternalConfigs = externalConfigs;
-
-        if (includesConfig->count() > 0)
-        {
-            extendedExternalConfigs.push_back(includesConfig.get());
         }
 
         // Update current directory environment variable
@@ -483,13 +482,13 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readConfigMember(
         return {};
     }
 
-    // Extend the external configs with the includesConfig value if necessary
-    auto extendedExternalConfigs = externalConfigs;
-
-    if (includesConfig.count() > 0)
-    {
-        extendedExternalConfigs.push_back(&includesConfig);
-    }
+    // Extend the external configs with the includesConfig
+    std::vector<const ConfigObjectNode *> extendedExternalConfigs;
+    extendedExternalConfigs.reserve(externalConfigs.size() + 1U);
+    extendedExternalConfigs.push_back(&includesConfig);
+    extendedExternalConfigs.insert(extendedExternalConfigs.end(),
+                                   externalConfigs.begin(),
+                                   externalConfigs.end());
 
     // Resolve references
     if (!resolveReferences(extendedExternalConfigs, config.get()))
@@ -559,8 +558,8 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readObjectNode(
 
             case '$':
             {
-                // Explicit Value node (even if it is a JSON Object type) where references to
-                // environment variables in the value are resolved
+                // Explicit Value node (even if it is a JSON Array or Object type) where references
+                // to environment variables in the value are resolved
                 const QJsonValue resolvedValue = resolveJsonValue(it.value(), environmentVariables);
 
                 if (resolvedValue.isUndefined())
