@@ -370,7 +370,8 @@ ConfigReaderBase::ReferenceResolutionResult ConfigReaderBase::resolveDerivedObje
 {
     // Derive the config node from the all of the base nodes
     auto *parentNode = node->parent();
-    ConfigObjectNode derivedObjectNode(parentNode);
+    std::vector<const ConfigObjectNode *> baseNodes;
+    baseNodes.reserve(node->bases().size());
 
     for (const auto &baseNodePath : node->bases())
     {
@@ -389,7 +390,7 @@ ConfigReaderBase::ReferenceResolutionResult ConfigReaderBase::resolveDerivedObje
             return ReferenceResolutionResult::Unchanged;
         }
 
-        // Apply the base to the derived object node
+        // Check if the node is an object
         if (!baseNode->isObject())
         {
             qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
@@ -399,10 +400,20 @@ ConfigReaderBase::ReferenceResolutionResult ConfigReaderBase::resolveDerivedObje
             return ReferenceResolutionResult::Error;
         }
 
-        derivedObjectNode.apply(baseNode->toObject());
+        // Store the base node to the temporary container
+        baseNodes.push_back(&baseNode->toObject());
     }
 
-    // Apply overrides to the derived object
+    // All the bases are resolved so they can now be applied to an empty object in the listed order
+    // to create a derived object node
+    ConfigObjectNode derivedObjectNode(parentNode);
+
+    for (const auto *baseNode : baseNodes)
+    {
+        derivedObjectNode.apply(*baseNode);
+    }
+
+    // Apply overrides to the derived object node
     if (node->config().count() > 0)
     {
         derivedObjectNode.apply(node->config());
