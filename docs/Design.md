@@ -28,7 +28,7 @@ Each configuration node shall provide the following:
 * Its location within the configuration structure (*configuration node path*)
 * Retrieval of a configuration node from it at the specified configuration node path
 
-![Class diagram for the configuration node class](Diagrams/ClassDiagrams/ConfigNode.svg "Class diagram for the configuration node class")
+![Class diagram for the configuration node](Diagrams/ClassDiagrams/ConfigNode.svg "Class diagram for the configuration node")
 
 
 ### Value node
@@ -37,7 +37,7 @@ A configuration value node shall contain only a *configuration parameter value* 
 
 A *configuration parameter value* shall be able to contain any *JSON* data type.
 
-![Class diagram for the configuration value node class](Diagrams/ClassDiagrams/ConfigValueNode.svg "Class diagram for the configuration value node class")
+![Class diagram for the configuration value node](Diagrams/ClassDiagrams/ConfigValueNode.svg "Class diagram for the configuration value node")
 
 
 ### Object node
@@ -57,14 +57,14 @@ It shall provide the standard functionalities for managing the container:
 
 It shall also enable applying one configuration node over another where configuration nodes that have the same name in both container shall be either replaced or applied to the container otherwise they shall be added to the container. A configuration node shall be applied to the container (instead of replaced) only if configuration nodes from both containers are of Object node type.
 
-![Class diagram for the configuration object node class](Diagrams/ClassDiagrams/ConfigObjectNode.svg "Class diagram for the configuration object node class")
+![Class diagram for the configuration object node](Diagrams/ClassDiagrams/ConfigObjectNode.svg "Class diagram for the configuration object node")
 
 
 ### Node reference
 
 A configuration node reference shall contain a reference to another configuration node. The reference shall be stored in the *configuration node path* format.
 
-![Class diagram for the configuration node reference class](Diagrams/ClassDiagrams/ConfigNodeReference.svg "Class diagram for the configuration node reference class")
+![Class diagram for the configuration node reference](Diagrams/ClassDiagrams/ConfigNodeReference.svg "Class diagram for the configuration node reference")
 
 
 ### Derived object node
@@ -75,7 +75,7 @@ The *bases* shall contain references to other configuration nodes of Object type
 
 The *configuration override node* shall provide overrides that shall be applied to the resulting base configuration node.
 
-![Class diagram for the configuration derived object node class](Diagrams/ClassDiagrams/ConfigDerivedObjectNode.svg "Class diagram for the configuration derived object node class")
+![Class diagram for the configuration derived object node](Diagrams/ClassDiagrams/ConfigDerivedObjectNode.svg "Class diagram for the configuration derived object node")
 
 
 ## Reading of configuration files
