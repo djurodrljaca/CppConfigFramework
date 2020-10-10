@@ -91,7 +91,7 @@ Configuration files shall be read using configuration reader classes that share 
 * Reference resolution
 * Transformation of configuration data
 
-![Class diagram for the configuration reader class](Diagrams/ClassDiagrams/ConfigReader.svg "Class diagram for the configuration reader class")
+![Class diagram for the configuration reader](Diagrams/ClassDiagrams/ConfigReader.svg "Class diagram for the configuration reader")
 
 For reading configuration files of different types the *ConfigReaderRegistry* shall be used. It shall provide:
 
@@ -166,7 +166,7 @@ It shall also be possible to load an optional configuration structure from:
 
 Note: the *loaded* flag shall be set only if the (optional) configuration's node is actually loaded.
 
-![Class diagram for the configuration loader class](Diagrams/ClassDiagrams/ConfigLoader.svg "Class diagram for the configuration loader class")
+![Class diagram for the configuration loader](Diagrams/ClassDiagrams/ConfigLoader.svg "Class diagram for the configuration loader")
 
 When a configuration structure is loaded it shall first load the configuration parameters and then execute the validation of the loaded parameters. If at any point an error occurs the error handler shall be invoked and loading terminated.
 
