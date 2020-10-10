@@ -101,6 +101,8 @@ abstract class ConfigReaderBase {
 
 class ConfigReader {
     +read(filePath, workingDir, sourceNodePath, destinationNodePath, externalConfigs, environmentVariables)
+    +read(configObject, workingDir, sourceNodePath, destinationNodePath, externalConfigs, environmentVariables)
+    +read(workingDir, destinationNodePath, otherParameters, externalConfigs, environmentVariables)
 }
 
 class ConfigReaderRegistry {

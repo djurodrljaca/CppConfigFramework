@@ -63,32 +63,6 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
         return {};
     }
 
-    // Validate source node path
-    if ((!sourceNodePath.isAbsolute()) ||
-        (!sourceNodePath.isValid()))
-    {
-        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
-                << "Invalid source node path:" << sourceNodePath.path();
-        return {};
-    }
-
-    // Validate destination node
-    if ((!destinationNodePath.isAbsolute()) ||
-        (!destinationNodePath.isValid()))
-    {
-        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
-                << "Invalid destination node path:" << destinationNodePath.path();
-        return {};
-    }
-
-    // Check if environment variables were provided
-    if (environmentVariables == nullptr)
-    {
-        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
-                << "Environment variables are not provided!";
-        return {};
-    }
-
     // Expand references to environment variables in the file path
     const QString expandedFilePath = environmentVariables->expandText(filePath);
 
@@ -109,17 +83,6 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
     else
     {
         absoluteFilePath = QDir::cleanPath(workingDir.absoluteFilePath(expandedFilePath));
-    }
-
-    // Check external configs
-    for (const auto *externalConfig : externalConfigs)
-    {
-        if (externalConfig == nullptr)
-        {
-            qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
-                    << "Invalid external configs for file at path:" << absoluteFilePath;
-            return {};
-        }
     }
 
     // Open file
@@ -174,28 +137,89 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
         return {};
     }
 
-    const auto rootObject = doc.object();
+    // Read the config
+    auto config = read(doc.object(),
+                       QFileInfo(absoluteFilePath).absoluteDir(),
+                       sourceNodePath,
+                       destinationNodePath,
+                       externalConfigs,
+                       environmentVariables);
 
-    // Read 'environment_variables' member
-    if (!readEnvironmentVariablesMember(rootObject, environmentVariables))
+    if (!config)
     {
         qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
-                << "Failed to read the 'environment_variables' member:"
-                   "\n    file path:" << absoluteFilePath;
+                << "Failed to read config file:" << absoluteFilePath;
+        return {};
+    }
+
+    return config;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+std::unique_ptr<ConfigObjectNode> ConfigReader::read(
+        const QJsonObject &configObject,
+        const QDir &workingDir,
+        const ConfigNodePath &sourceNodePath,
+        const ConfigNodePath &destinationNodePath,
+        const std::vector<const ConfigObjectNode *> &externalConfigs,
+        EnvironmentVariables *environmentVariables) const
+{
+    // Validate source node path
+    if ((!sourceNodePath.isAbsolute()) ||
+        (!sourceNodePath.isValid()))
+    {
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << "Invalid source node path:" << sourceNodePath.path();
+        return {};
+    }
+
+    // Validate destination node
+    if ((!destinationNodePath.isAbsolute()) ||
+        (!destinationNodePath.isValid()))
+    {
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << "Invalid destination node path:" << destinationNodePath.path();
+        return {};
+    }
+
+    // Check if environment variables were provided
+    if (environmentVariables == nullptr)
+    {
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << "Environment variables are not provided!";
+        return {};
+    }
+
+    // Check external configs
+    for (const auto *externalConfig : externalConfigs)
+    {
+        if (externalConfig == nullptr)
+        {
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                    << "Invalid external configs";
+            return {};
+        }
+    }
+
+    // Read 'environment_variables' member
+    if (!readEnvironmentVariablesMember(configObject, environmentVariables))
+    {
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
+                << "Failed to read the 'environment_variables' member";
         return {};
     }
 
     // Read 'includes' member
-    auto completeConfig = readIncludesMember(rootObject,
-                                             QFileInfo(absoluteFilePath).absoluteDir(),
+    auto completeConfig = readIncludesMember(configObject,
+                                             workingDir,
                                              externalConfigs,
                                              environmentVariables);
 
     if (!completeConfig)
     {
         qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
-                << "Failed to read the 'includes' member:"
-                   "\n    file path:" << absoluteFilePath;
+                << "Failed to read the 'includes' member";
         return {};
     }
 
@@ -203,18 +227,16 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
     {
         qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
                 << "The read 'includes' member has unresolved references:"
-                   "\n    file path:" << absoluteFilePath
-                << "\n    unresolved references:"
                 << unresolvedReferences(*completeConfig).join("; ");
         return {};
     }
 
     // Make sure that the current directory environment variable contains the appropriate location
     // (at this point the value could point to the last include's directory)
-    setCurrentDirectory(QFileInfo(absoluteFilePath).absoluteDir(), environmentVariables);
+    setCurrentDirectory(workingDir, environmentVariables);
 
     // Read 'config' member
-    auto configMember = readConfigMember(rootObject,
+    auto configMember = readConfigMember(configObject,
                                          externalConfigs,
                                          *completeConfig,
                                          *environmentVariables);
@@ -222,8 +244,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
     if (!configMember)
     {
         qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
-                << "Failed to read the 'config' member:"
-                   "\n    file path:" << absoluteFilePath;
+                << "Failed to read the 'config' member";
         return {};
     }
 
@@ -231,8 +252,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
     {
         qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
                 << "The read 'config' member has unresolved references:"
-                   "\n    file path:" << absoluteFilePath
-                << "\n    unresolved references:" << unresolvedReferences(*configMember).join("; ");
+                << unresolvedReferences(*configMember).join("; ");
         return {};
     }
 
@@ -247,8 +267,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
     if (!transformedConfig)
     {
         qCWarning(CppConfigFramework::LoggingCategory::ConfigReader)
-                << "Failed to transform the config:"
-                   "\n    file path:" << absoluteFilePath;
+                << "Failed to transform the config";
         return {};
     }
 
