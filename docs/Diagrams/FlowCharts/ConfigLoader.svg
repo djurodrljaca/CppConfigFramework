@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="269px" preserveAspectRatio="none" style="width:280px;height:269px;" version="1.1" viewBox="0 0 280 269" width="280px" zoomAndPan="magnify"><defs><filter height="300%" id="fs9je5i35zqv8" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><ellipse cx="140" cy="18" fill="#000000" filter="url(#fs9je5i35zqv8)" rx="10" ry="10" style="stroke: none; stroke-width: 1.0;"/><rect fill="#FEFECE" filter="url(#fs9je5i35zqv8)" height="36.3441" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="153" x="63.5" y="69"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="133" x="73.5" y="91.8281">Load config parameters</text><rect fill="#FEFECE" filter="url(#fs9je5i35zqv8)" height="36.3441" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="102" x="6" y="161"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="82" x="16" y="183.8281">Validate config</text><ellipse cx="139" cy="248" fill="none" filter="url(#fs9je5i35zqv8)" rx="10" ry="10" style="stroke: #000000; stroke-width: 1.0;"/><ellipse cx="139.5" cy="248.5" fill="#000000" rx="6" ry="6" style="stroke: none; stroke-width: 1.0;"/><rect fill="#FEFECE" filter="url(#fs9je5i35zqv8)" height="36.3441" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="92" x="177" y="161"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="72" x="187" y="183.8281">Handle error</text><!--MD5=[8ff308f9c50b5d02e957264130ffa4e0]
+link start to Load config parameters--><path d="M140,28.04 C140,37.16 140,51.61 140,63.8 " fill="none" id="start-&gt;Load config parameters" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="140,68.87,144,59.87,140,63.87,136,59.87,140,68.87" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[76023c81bccded00a964de813e45b6bf]
+link Load config parameters to Validate config--><path d="M124,105.35 C110.45,120.04 90.98,141.16 76.52,156.84 " fill="none" id="Load config parameters-&gt;Validate config" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="72.95,160.7,81.9918,156.7955,76.3396,157.0243,76.1108,151.3721,72.95,160.7" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[0fb5c02dcdc6a6893c30d63434aee089]
+link Validate config to end--><path d="M78.12,197.25 C93.81,210.07 114.62,227.08 127.4,237.52 " fill="none" id="Validate config-&gt;end" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="131.41,240.79,126.9632,232.0022,127.5351,237.63,121.9073,238.202,131.41,240.79" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[84f3c095d003590377ae3ff0dfcb1325]
+link Load config parameters to Handle error--><path d="M156,105.35 C169.55,120.04 189.02,141.16 203.48,156.84 " fill="none" id="Load config parameters-&gt;Handle error" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="207.05,160.7,203.8892,151.3721,203.6604,157.0243,198.0082,156.7955,207.05,160.7" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="47" x="187" y="137.7589">On error</text><!--MD5=[6828729156b1cd188d3ce13219602e3f]
+link Validate config to Handle error--><path d="M108.16,179 C128.36,179 151.52,179 171.73,179 " fill="none" id="Validate config-&gt;Handle error" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="176.8,179,167.8,175,171.8,179,167.8,183,176.8,179" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="47" x="119" y="172.7589">On error</text><!--MD5=[b874245209864ffbbc17c270085b52de]
+link Handle error to end--><path d="M201.37,197.25 C185.12,210.21 163.51,227.45 150.46,237.86 " fill="none" id="Handle error-&gt;end" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="146.38,241.11,155.9088,238.6197,150.2871,237.99,150.9169,232.3683,146.38,241.11" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[26db1bd382b4f1531b804b7bb774b912]
+@startuml ConfigLoader
+(*) - -> "Load config parameters"
+- -> "Validate config"
+- -> (*)
+
+"Load config parameters" - ->[On error] "Handle error"
+"Validate config" -right->[On error] "Handle error"
+
+"Handle error" - -> (*)
+@enduml
+
+PlantUML version 1.2020.10(Sun May 17 11:35:57 CEST 2020)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Java Version: 11.0.8+10-post-Ubuntu-0ubuntu120.04
+Operating System: Linux
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>
