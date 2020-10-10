@@ -85,6 +85,33 @@ public:
             const std::vector<const ConfigObjectNode *> &externalConfigs,
             EnvironmentVariables *environmentVariables) const;
 
+    /*!
+     * Read the specified config from JSON
+     *
+     * \param   configObject        Configuration data in JSON format
+     * \param   workingDir          Path to the working directory
+     * \param   sourceNodePath      Node path to the node that needs to be extracted from this
+     *                              configuration file (must be absolute node path)
+     * \param   destinationNodePath Node path to the destination node where the result needs to be
+     *                              stored (must be absolute node path)
+     * \param   externalConfigs     Configuration nodes provided by an external source
+     *
+     * \param[in,out]   environmentVariables    Environment variables
+     *
+     * \return  Configuration node instance or in case of failure a null pointer
+     *
+     * The externalConfigs items are used to provide an additional source for reference resolution.
+     * This is mostly useful for includes so that they can declare references to externally defined
+     * nodes in its own config file or its includes.
+     */
+    std::unique_ptr<ConfigObjectNode> read(
+            const QJsonObject &configObject,
+            const QDir &workingDir,
+            const ConfigNodePath &sourceNodePath,
+            const ConfigNodePath &destinationNodePath,
+            const std::vector<const ConfigObjectNode *> &externalConfigs,
+            EnvironmentVariables *environmentVariables) const;
+
     //! \copydoc    ConfigReaderBase::read()
     std::unique_ptr<ConfigObjectNode> read(
             const QDir &workingDir,
