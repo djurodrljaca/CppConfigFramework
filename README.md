@@ -45,13 +45,13 @@ $ cmake --build . --target install
 
 To use this module in a CMake project you need to have a built and deployed *CedarFramework* dependency. Then build and deploy CppConfigFramework and add this to your project's CMakeLists.txt:
 
-```
+```CMake
 find_package(CppConfigFramework REQUIRED)
 ```
 
 And link it to your target:
 
-```
+```CMake
 target_link_libraries(target_name PUBLIC CppConfigFramework::CppConfigFramework)
 ```
 
@@ -120,7 +120,7 @@ auto config = configReader.read("path/to/config/file",
                                 QDir("path/to/config/dir"),
                                 ConfigNodePath::ROOT_PATH,
                                 ConfigNodePath::ROOT_PATH,
-                                std::vector<const ConfigObjectNode *>(),
+                                {},
                                 &environmentVariables);
 
 ExampleConfig exampleConfig;
