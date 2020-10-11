@@ -450,7 +450,7 @@ bool ConfigLoader::loadRequiredConfigParameter(T *parameterValue,
     return loadRequiredConfigParameter(parameterValue,
                                        parameterName,
                                        config,
-                                       defaultConfigParameterValidator<T>);
+                                       { defaultConfigParameterValidator<T> });
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -502,7 +502,7 @@ bool ConfigLoader::loadOptionalConfigParameter(T *parameterValue,
     return loadOptionalConfigParameter(parameterValue,
                                        parameterName,
                                        config,
-                                       defaultConfigParameterValidator<T>,
+                                       { defaultConfigParameterValidator<T> },
                                        loaded);
 }
 
