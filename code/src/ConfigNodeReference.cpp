@@ -58,13 +58,6 @@ ConfigNode::Type ConfigNodeReference::type() const
 
 // -------------------------------------------------------------------------------------------------
 
-QVariant ConfigNodeReference::toSimplifiedVariant() const
-{
-    return m_reference.path();
-}
-
-// -------------------------------------------------------------------------------------------------
-
 ConfigNodePath ConfigNodeReference::reference() const
 {
     return m_reference;

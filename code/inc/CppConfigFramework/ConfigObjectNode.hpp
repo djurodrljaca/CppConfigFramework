@@ -18,8 +18,7 @@
  * Contains a class for the Object configuration node
  */
 
-#ifndef CPPCONFIGFRAMEWORK_CONFIGOBJECTNODE_HPP
-#define CPPCONFIGFRAMEWORK_CONFIGOBJECTNODE_HPP
+#pragma once
 
 // C++ Config Framework includes
 #include <CppConfigFramework/ConfigNode.hpp>
@@ -27,7 +26,7 @@
 // Qt includes
 
 // System includes
-#include <unordered_map>
+#include <map>
 
 // Forward declarations
 
@@ -77,9 +76,6 @@ public:
 
     //! \copydoc    ConfigNode::type()
     Type type() const override;
-
-    //! \copydoc    ConfigNode::toSimplifiedVariant()
-    QVariant toSimplifiedVariant() const override;
 
     /*!
      * Gets the number of members in this node
@@ -137,7 +133,7 @@ public:
      *
      * \note    When the node is stored its parent is updated to point to this node
      */
-    bool setMember(const QString &name, std::unique_ptr<ConfigNode> &&node);
+    bool setMember(const QString &name, std::unique_ptr<ConfigNode> node);
 
     //! \copydoc    ConfigObjectNode::setMember()
     bool setMember(const QString &name, const ConfigNode &node);
@@ -168,10 +164,12 @@ public:
 
 private:
     //! Configuration node members
-    std::unordered_map<QString, std::unique_ptr<ConfigNode>> m_members;
+    std::map<QString, std::unique_ptr<ConfigNode>> m_members;
 };
 
 } // namespace CppConfigFramework
+
+// -------------------------------------------------------------------------------------------------
 
 /*!
  * Global "equal to" operator for CppConfigFramework::ConfigObjectNode
@@ -185,6 +183,8 @@ private:
 CPPCONFIGFRAMEWORK_EXPORT bool operator==(const CppConfigFramework::ConfigObjectNode &left,
                                           const CppConfigFramework::ConfigObjectNode &right);
 
+// -------------------------------------------------------------------------------------------------
+
 /*!
  * Global "not equal to" operator for CppConfigFramework::ConfigObjectNode
  *
@@ -197,4 +197,3 @@ CPPCONFIGFRAMEWORK_EXPORT bool operator==(const CppConfigFramework::ConfigObject
 CPPCONFIGFRAMEWORK_EXPORT bool operator!=(const CppConfigFramework::ConfigObjectNode &left,
                                           const CppConfigFramework::ConfigObjectNode &right);
 
-#endif // CPPCONFIGFRAMEWORK_CONFIGOBJECTNODE_HPP

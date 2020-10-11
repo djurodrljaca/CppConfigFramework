@@ -15,18 +15,20 @@
 /*!
  * \file
  *
- * Contains a base class for the loading configuration nodes to actual configuration parameters
+ * Contains a base class for loading configuration nodes to actual configuration parameters
  */
 
-#ifndef CPPCONFIGFRAMEWORK_CONFIGLOADER_HPP
-#define CPPCONFIGFRAMEWORK_CONFIGLOADER_HPP
+#pragma once
 
 // C++ Config Framework includes
 #include <CppConfigFramework/ConfigContainerHelper.hpp>
-#include <CppConfigFramework/ConfigNode.hpp>
-#include <CppConfigFramework/ConfigObjectNode.hpp>
-#include <CppConfigFramework/ConfigParameterLoader.hpp>
 #include <CppConfigFramework/ConfigParameterValidator.hpp>
+#include <CppConfigFramework/ConfigObjectNode.hpp>
+#include <CppConfigFramework/ConfigValueNode.hpp>
+#include <CppConfigFramework/ConfigWriter.hpp>
+
+// Cedar Framework includes
+#include <CedarFramework/Deserialization.hpp>
 
 // Qt includes
 
@@ -41,7 +43,8 @@
 namespace CppConfigFramework
 {
 
-//! This class holds the base class for a configuration class
+//! This class holds the base class for loading configuration nodes to actual configuration
+//! parameters
 class CPPCONFIGFRAMEWORK_EXPORT ConfigLoader
 {
 public:
@@ -80,12 +83,12 @@ public:
     /*!
      * Loads configuration parameters for this configuration structure
      *
-     * \param   node    Configuration node from which this configuration structure should be loaded
+     * \param   config  Configuration node from which this configuration structure should be loaded
      *
      * \retval  true    Success
      * \retval  false   Failure
      */
-    bool loadConfig(const ConfigNode &node);
+    bool loadConfig(const ConfigObjectNode &config);
 
     /*!
      * Loads configuration parameters for this configuration structure
@@ -447,7 +450,7 @@ bool ConfigLoader::loadRequiredConfigParameter(T *parameterValue,
     return loadRequiredConfigParameter(parameterValue,
                                        parameterName,
                                        config,
-                                       defaultConfigParameterValidator<T>);
+                                       { defaultConfigParameterValidator<T> });
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -499,7 +502,7 @@ bool ConfigLoader::loadOptionalConfigParameter(T *parameterValue,
     return loadOptionalConfigParameter(parameterValue,
                                        parameterName,
                                        config,
-                                       defaultConfigParameterValidator<T>,
+                                       { defaultConfigParameterValidator<T> },
                                        loaded);
 }
 
@@ -681,20 +684,48 @@ bool ConfigLoader::loadConfigParameterFromNode(T *parameterValue,
                                                const ConfigNode &node,
                                                ConfigParameterValidator<T> validator)
 {
-    if (!node.isValue())
+    // Load the node value to the parameter
+    QJsonValue nodeJsonValue;
+
+    switch (node.type())
     {
-        const QString errorString = QString("Configuration parameter node [%1] is not a Value "
-                                            "node!").arg(node.nodePath().path());
-        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
-        handleError(errorString);
-        return false;
+        case ConfigNode::Type::Value:
+        {
+            nodeJsonValue = node.toValue().value();
+            break;
+        }
+
+        case ConfigNode::Type::Object:
+        {
+            nodeJsonValue = ConfigWriter::convertToJsonValue(node.toObject());
+
+            if (nodeJsonValue.isUndefined())
+            {
+                const QString errorString = QString("Configuration parameter node [%1] has "
+                                                    "unresolved references!")
+                                            .arg(node.nodePath().path());
+                qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
+                handleError(errorString);
+                return false;
+            }
+            break;
+        }
+
+        default:
+        {
+            const QString errorString = QString("Configuration parameter node [%1] is neither a "
+                                                "Value nor an Object node!")
+                                        .arg(node.nodePath().path());
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
+            handleError(errorString);
+            return false;
+        }
     }
 
-    // Load the node value to the parameter
-    if (!ConfigParameterLoader::load(node.toValue().value(), parameterValue))
+    if (!CedarFramework::deserialize(nodeJsonValue, parameterValue))
     {
-        const QString errorString = QString("Failed to load configuration parameter's value [%1]")
-                                    .arg(node.nodePath().path());
+        const QString errorString = QString("Failed to load configuration parameter's value at "
+                                            "node path [%1]").arg(node.nodePath().path());
         qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
         handleError(errorString);
         return false;
@@ -741,7 +772,16 @@ bool ConfigLoader::loadConfigContainerFromNode(
         const auto *itemNode = nodeObject.member(itemName);
         Q_ASSERT(itemNode != nullptr);
 
-        if (!item.loadConfig(*itemNode))
+        if (!itemNode->isObject())
+        {
+            const QString errorString = QString("Configuration node [%1] is not an Object node!")
+                                        .arg(itemNode->nodePath().path());
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
+            handleError(errorString);
+            return false;
+        }
+
+        if (!item.loadConfig(itemNode->toObject()))
         {
             return false;
         }
@@ -754,5 +794,3 @@ bool ConfigLoader::loadConfigContainerFromNode(
 }
 
 } // namespace CppConfigFramework
-
-#endif // CPPCONFIGFRAMEWORK_CONFIGLOADER_HPP

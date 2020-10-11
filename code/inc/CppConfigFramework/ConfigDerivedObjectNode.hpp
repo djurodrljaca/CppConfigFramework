@@ -18,8 +18,7 @@
  * Contains a class for the DerivedObject configuration node
  */
 
-#ifndef CPPCONFIGFRAMEWORK_CONFIGDERIVEDOBJECTNODE_HPP
-#define CPPCONFIGFRAMEWORK_CONFIGDERIVEDOBJECTNODE_HPP
+#pragma once
 
 // C++ Config Framework includes
 #include <CppConfigFramework/ConfigObjectNode.hpp>
@@ -73,9 +72,6 @@ public:
     //! \copydoc    ConfigNode::type()
     Type type() const override;
 
-    //! \copydoc    ConfigNode::toSimplifiedVariant()
-    QVariant toSimplifiedVariant() const override;
-
     /*!
      * Gets the bases for deriving the Object configuration node
      *
@@ -114,6 +110,8 @@ private:
 
 } // namespace CppConfigFramework
 
+// -------------------------------------------------------------------------------------------------
+
 /*!
  * Global "equal to" operator for CppConfigFramework::ConfigDerivedObjectNode
  *
@@ -125,6 +123,8 @@ private:
  */
 CPPCONFIGFRAMEWORK_EXPORT bool operator==(const CppConfigFramework::ConfigDerivedObjectNode &left,
                                           const CppConfigFramework::ConfigDerivedObjectNode &right);
+
+// -------------------------------------------------------------------------------------------------
 
 /*!
  * Global "not equal to" operator for CppConfigFramework::ConfigDerivedObjectNode
@@ -138,4 +138,3 @@ CPPCONFIGFRAMEWORK_EXPORT bool operator==(const CppConfigFramework::ConfigDerive
 CPPCONFIGFRAMEWORK_EXPORT bool operator!=(const CppConfigFramework::ConfigDerivedObjectNode &left,
                                           const CppConfigFramework::ConfigDerivedObjectNode &right);
 
-#endif // CPPCONFIGFRAMEWORK_CONFIGDERIVEDOBJECTNODE_HPP

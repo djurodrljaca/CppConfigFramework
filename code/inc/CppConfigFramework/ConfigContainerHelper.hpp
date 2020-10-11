@@ -18,8 +18,7 @@
  * Contains types to make it easier to work with config containers
  */
 
-#ifndef CPPCONFIGFRAMEWORK_CONFIGCONTAINERHELPER_HPP
-#define CPPCONFIGFRAMEWORK_CONFIGCONTAINERHELPER_HPP
+#pragma once
 
 // C++ Config Framework includes
 #include <CppConfigFramework/CppConfigFrameworkExport.hpp>
@@ -203,5 +202,3 @@ struct ConfigContainerHelper<std::unordered_map<QString, CI>>
 
 
 } // namespace CppConfigFramework
-
-#endif // CPPCONFIGFRAMEWORK_CONFIGCONTAINERHELPER_HPP

@@ -18,15 +18,13 @@
  * Contains a base class for reading configurations
  */
 
-#ifndef CPPCONFIGFRAMEWORK_CONFIGREADERBASE_HPP
-#define CPPCONFIGFRAMEWORK_CONFIGREADERBASE_HPP
+#pragma once
 
 // C++ Config Framework includes
 #include <CppConfigFramework/ConfigNode.hpp>
 #include <CppConfigFramework/EnvironmentVariables.hpp>
 
 // Qt includes
-#include <QtCore/QString>
 #include <QtCore/QDir>
 
 // System includes
@@ -96,7 +94,7 @@ public:
     virtual std::unique_ptr<ConfigObjectNode> read(
             const QDir &workingDir,
             const ConfigNodePath &destinationNodePath,
-            const QVariantMap &otherParameters,
+            const QJsonObject &otherParameters,
             const std::vector<const ConfigObjectNode *> &externalConfigs,
             EnvironmentVariables *environmentVariables) const = 0;
 
@@ -221,7 +219,7 @@ protected:
      * \return  Configuration node instance or in case of failure a null pointer
      */
     static std::unique_ptr<ConfigObjectNode> transformConfig(
-            std::unique_ptr<ConfigObjectNode> &&config,
+            std::unique_ptr<ConfigObjectNode> config,
             const ConfigNodePath &sourceNodePath,
             const ConfigNodePath &destinationNodePath);
 
@@ -234,5 +232,3 @@ private:
 };
 
 } // namespace CppConfigFramework
-
-#endif // CPPCONFIGFRAMEWORK_CONFIGREADERBASE_HPP

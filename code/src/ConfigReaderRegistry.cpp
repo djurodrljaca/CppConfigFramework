@@ -15,11 +15,11 @@
 /*!
  * \file
  *
- * Contains the factory for classes that can read different type of configuration files
+ * Contains the registry for classes that can read different type of configuration files
  */
 
 // Own header
-#include <CppConfigFramework/ConfigReaderFactory.hpp>
+#include <CppConfigFramework/ConfigReaderRegistry.hpp>
 
 // C++ Config Framework includes
 #include <CppConfigFramework/ConfigObjectNode.hpp>
@@ -27,7 +27,6 @@
 #include <CppConfigFramework/LoggingCategories.hpp>
 
 // Qt includes
-#include <QtCore/QStringBuilder>
 
 // System includes
 
@@ -40,17 +39,17 @@
 namespace CppConfigFramework
 {
 
-ConfigReaderFactory *ConfigReaderFactory::instance()
+ConfigReaderRegistry *ConfigReaderRegistry::instance()
 {
-    static ConfigReaderFactory factory;
+    static ConfigReaderRegistry factory;
 
     return &factory;
 }
 
 // -------------------------------------------------------------------------------------------------
 
-bool ConfigReaderFactory::registerConfigReader(const QString &type,
-                                               std::unique_ptr<ConfigReaderBase> &&configReader)
+bool ConfigReaderRegistry::registerConfigReader(const QString &type,
+                                                std::unique_ptr<ConfigReaderBase> configReader)
 {
     if (type.isEmpty() || (!configReader))
     {
@@ -63,11 +62,11 @@ bool ConfigReaderFactory::registerConfigReader(const QString &type,
 
 // -------------------------------------------------------------------------------------------------
 
-std::unique_ptr<ConfigObjectNode> ConfigReaderFactory::readConfig(
+std::unique_ptr<ConfigObjectNode> ConfigReaderRegistry::readConfig(
         const QString &type,
         const QDir &workingDir,
         const ConfigNodePath &destinationNodePath,
-        const QVariantMap &otherParameters,
+        const QJsonObject &otherParameters,
         const std::vector<const ConfigObjectNode *> &externalConfigs,
         EnvironmentVariables *environmentVariables) const
 {
@@ -93,7 +92,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReaderFactory::readConfig(
 
 // -------------------------------------------------------------------------------------------------
 
-ConfigReaderFactory::ConfigReaderFactory()
+ConfigReaderRegistry::ConfigReaderRegistry()
 {
     registerConfigReader(QStringLiteral("CppConfigFramework"), std::make_unique<ConfigReader>());
 }

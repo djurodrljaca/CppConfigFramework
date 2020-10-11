@@ -3,9 +3,9 @@
     {
         "TEST_DATA_DIR": "value set in the test has higher priority",
         "IncludeDir": "${TEST_DATA_DIR}/includes",
-        "TestValue1": true,
-        "TestValue2": false,
-        "TestValue3": 1
+        "TestValue1": "1",
+        "TestValue2": "0",
+        "TestValue3": "1"
     },
     
     "includes":

@@ -18,8 +18,7 @@
  * Contains a class for the NodeReference configuration node
  */
 
-#ifndef CPPCONFIGFRAMEWORK_CONFIGNODEREFERENCE_HPP
-#define CPPCONFIGFRAMEWORK_CONFIGNODEREFERENCE_HPP
+#pragma once
 
 // C++ Config Framework includes
 #include <CppConfigFramework/ConfigNode.hpp>
@@ -71,9 +70,6 @@ public:
     //! \copydoc    ConfigNode::type()
     Type type() const override;
 
-    //! \copydoc    ConfigNode::toSimplifiedVariant()
-    QVariant toSimplifiedVariant() const override;
-
     /*!
      * Gets the reference to a configuration node
      *
@@ -95,6 +91,8 @@ private:
 
 } // namespace CppConfigFramework
 
+// -------------------------------------------------------------------------------------------------
+
 /*!
  * Global "equal to" operator for CppConfigFramework::ConfigNodeReference
  *
@@ -106,6 +104,8 @@ private:
  */
 CPPCONFIGFRAMEWORK_EXPORT bool operator==(const CppConfigFramework::ConfigNodeReference &left,
                                           const CppConfigFramework::ConfigNodeReference &right);
+
+// -------------------------------------------------------------------------------------------------
 
 /*!
  * Global "not equal to" operator for CppConfigFramework::ConfigNodeReference
@@ -119,4 +119,3 @@ CPPCONFIGFRAMEWORK_EXPORT bool operator==(const CppConfigFramework::ConfigNodeRe
 CPPCONFIGFRAMEWORK_EXPORT bool operator!=(const CppConfigFramework::ConfigNodeReference &left,
                                           const CppConfigFramework::ConfigNodeReference &right);
 
-#endif // CPPCONFIGFRAMEWORK_CONFIGNODEREFERENCE_HPP

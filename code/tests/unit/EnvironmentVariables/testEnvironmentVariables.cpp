@@ -86,7 +86,7 @@ void TestEnvironmentVariables::testLoadFromProcess()
     // Add a test environment variable to the process
     qputenv("TEST_VAR1", "test1");
     QProcessEnvironment systemEnvironment = QProcessEnvironment::systemEnvironment();
-    QCOMPARE(systemEnvironment.value("TEST_VAR1"), "test1");
+    QCOMPARE(systemEnvironment.value("TEST_VAR1"), QString("test1"));
 
     // Load environment variables from the process
     auto environmentVariables = EnvironmentVariables::loadFromProcess();
@@ -95,8 +95,13 @@ void TestEnvironmentVariables::testLoadFromProcess()
     auto environmentVariablesNames = environmentVariables.names();
     auto systemEnvironmentKeys = systemEnvironment.keys();
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
+    QCOMPARE(QSet<QString>::fromList(environmentVariablesNames),
+             QSet<QString>::fromList(systemEnvironmentKeys));
+#else
     QCOMPARE(QSet<QString>(environmentVariablesNames.begin(), environmentVariablesNames.end()),
              QSet<QString>(systemEnvironmentKeys.begin(), systemEnvironmentKeys.end()));
+#endif
 
     for (const QString &name : environmentVariables.names())
     {
@@ -106,7 +111,7 @@ void TestEnvironmentVariables::testLoadFromProcess()
     // Add another environment variable to the process and make sure it is not also set in the
     // already loaded instance
     qputenv("TEST_VAR2", "test2");
-    QCOMPARE(QProcessEnvironment::systemEnvironment().value("TEST_VAR2"), "test2");
+    QCOMPARE(QProcessEnvironment::systemEnvironment().value("TEST_VAR2"), QString("test2"));
 
     QVERIFY(!environmentVariables.contains("TEST_VAR2"));
 }

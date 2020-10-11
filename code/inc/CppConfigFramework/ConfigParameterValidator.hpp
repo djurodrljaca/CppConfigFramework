@@ -18,8 +18,7 @@
  * Contains classes used for validation of configuration parameters
  */
 
-#ifndef CPPCONFIGFRAMEWORK_CONFIGPARAMETERVALIDATOR_HPP
-#define CPPCONFIGFRAMEWORK_CONFIGPARAMETERVALIDATOR_HPP
+#pragma once
 
 // C++ Config Framework includes
 #include <CppConfigFramework/LoggingCategories.hpp>
@@ -222,5 +221,3 @@ ConfigParameterValidator<T> makeConfigParameterListValidator(const QList<T> &val
 }
 
 } // namespace CppConfigFramework
-
-#endif // CPPCONFIGFRAMEWORK_CONFIGPARAMETERVALIDATOR_HPP

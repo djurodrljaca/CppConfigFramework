@@ -27,6 +27,7 @@
 #include <CppConfigFramework/ConfigValueNode.hpp>
 
 // Qt includes
+#include <QtCore/QJsonObject>
 #include <QtCore/QStringBuilder>
 
 // System includes
@@ -47,7 +48,7 @@ ConfigObjectNode::ConfigObjectNode(ConfigObjectNode *parent)
 
 // -------------------------------------------------------------------------------------------------
 
-ConfigObjectNode::ConfigObjectNode(std::initializer_list<std::pair<QString, ConfigNode &&> > args)
+ConfigObjectNode::ConfigObjectNode(std::initializer_list<std::pair<QString, ConfigNode &&>> args)
     : ConfigNode(nullptr)
 {
     for (auto it = args.begin(); it != args.end(); it++)
@@ -107,45 +108,6 @@ std::unique_ptr<ConfigNode> ConfigObjectNode::clone() const
 ConfigNode::Type ConfigObjectNode::type() const
 {
     return ConfigNode::Type::Object;
-}
-
-// -------------------------------------------------------------------------------------------------
-
-QVariant ConfigObjectNode::toSimplifiedVariant() const
-{
-    QVariantMap data;
-
-    for (const auto &member : m_members)
-    {
-        switch (member.second->type())
-        {
-            case ConfigNode::Type::Value:
-            {
-                data.insert(QChar('#') % member.first, member.second->toSimplifiedVariant());
-                break;
-            }
-
-            case ConfigNode::Type::Object:
-            {
-                data.insert(member.first, member.second->toSimplifiedVariant());
-                break;
-            }
-
-            case ConfigNode::Type::NodeReference:
-            case ConfigNode::Type::DerivedObject:
-            {
-                data.insert(QChar('&') % member.first, member.second->toSimplifiedVariant());
-                break;
-            }
-
-            default:
-            {
-                return {};
-            }
-        }
-    }
-
-    return data;
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -221,7 +183,7 @@ ConfigNode *ConfigObjectNode::member(const QString &name)
 
 // -------------------------------------------------------------------------------------------------
 
-bool ConfigObjectNode::setMember(const QString &name, std::unique_ptr<ConfigNode> &&node)
+bool ConfigObjectNode::setMember(const QString &name, std::unique_ptr<ConfigNode> node)
 {
     // Make sure that name and node are both valid
     if ((!ConfigNodePath::validateNodeName(name)) || (!node))
@@ -339,6 +301,7 @@ bool operator==(const CppConfigFramework::ConfigObjectNode &left,
 
         if (rightMemberNode == nullptr)
         {
+            // Member with the specified name was not found
             return false;
         }
 
@@ -360,7 +323,7 @@ bool operator==(const CppConfigFramework::ConfigObjectNode &left,
 
             case CppConfigFramework::ConfigNode::Type::Object:
             {
-                if (leftMemberNode->toObject() == rightMemberNode->toObject())
+                if (leftMemberNode->toObject() != rightMemberNode->toObject())
                 {
                     return false;
                 }
@@ -369,7 +332,7 @@ bool operator==(const CppConfigFramework::ConfigObjectNode &left,
 
             case CppConfigFramework::ConfigNode::Type::NodeReference:
             {
-                if (leftMemberNode->toNodeReference() == rightMemberNode->toNodeReference())
+                if (leftMemberNode->toNodeReference() != rightMemberNode->toNodeReference())
                 {
                     return false;
                 }
@@ -378,7 +341,7 @@ bool operator==(const CppConfigFramework::ConfigObjectNode &left,
 
             case CppConfigFramework::ConfigNode::Type::DerivedObject:
             {
-                if (leftMemberNode->toDerivedObject() == rightMemberNode->toDerivedObject())
+                if (leftMemberNode->toDerivedObject() != rightMemberNode->toDerivedObject())
                 {
                     return false;
                 }

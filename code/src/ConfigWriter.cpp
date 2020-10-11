@@ -31,7 +31,6 @@
 #include <QtCore/QFile>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
-#include <QtCore/QJsonValue>
 #include <QtCore/QStringBuilder>
 
 // System includes
@@ -48,22 +47,129 @@ namespace CppConfigFramework
 namespace ConfigWriter
 {
 
-QJsonDocument writeToJson(const ConfigObjectNode &node)
+namespace Internal
+{
+
+QJsonValue toJsonConfig(const ConfigValueNode &valueNode);
+QJsonValue toJsonConfig(const ConfigObjectNode &objectNode);
+QJsonValue toJsonConfig(const ConfigNodeReference &nodeReference);
+QJsonValue toJsonConfig(const ConfigDerivedObjectNode &derivedObjectNode);
+
+// -------------------------------------------------------------------------------------------------
+
+QJsonValue toJsonConfig(const ConfigValueNode &valueNode)
+{
+    return valueNode.value();
+}
+
+// -------------------------------------------------------------------------------------------------
+
+QJsonValue toJsonConfig(const ConfigObjectNode &objectNode)
+{
+    QJsonObject data;
+
+    for (const auto &memberName : objectNode.names())
+    {
+        const auto *member = objectNode.member(memberName);
+
+        switch (member->type())
+        {
+            case ConfigNode::Type::Value:
+            {
+                data.insert(QChar('#') % memberName, Internal::toJsonConfig(member->toValue()));
+                break;
+            }
+
+            case ConfigNode::Type::Object:
+            {
+                data.insert(memberName, Internal::toJsonConfig(member->toObject()));
+                break;
+            }
+
+            case ConfigNode::Type::NodeReference:
+            {
+                data.insert(QChar('&') % memberName,
+                            Internal::toJsonConfig(member->toNodeReference()));
+                break;
+            }
+
+            case ConfigNode::Type::DerivedObject:
+            {
+                data.insert(QChar('&') % memberName,
+                            Internal::toJsonConfig(member->toDerivedObject()));
+                break;
+            }
+
+            default:
+            {
+                return {};
+            }
+        }
+    }
+
+    return data;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+QJsonValue toJsonConfig(const ConfigNodeReference &nodeReference)
+{
+    return nodeReference.reference().path();
+}
+
+// -------------------------------------------------------------------------------------------------
+
+QJsonValue toJsonConfig(const ConfigDerivedObjectNode &derivedObjectNode)
+{
+    QJsonObject data;
+
+    // Base member
+    QStringList bases;
+
+    for (const auto &base : derivedObjectNode.bases())
+    {
+        bases.append(base.path());
+    }
+
+    if (bases.isEmpty())
+    {
+        // The "base" member is not needed
+    }
+    else if (bases.size() == 1)
+    {
+        // Add the single base as a string
+        data.insert(QStringLiteral("base"), bases.first());
+    }
+    else
+    {
+        // Add the array of bases
+        data.insert(QStringLiteral("base"), QJsonArray::fromStringList(bases));
+    }
+
+    // Config member
+    data.insert(QStringLiteral("config"), Internal::toJsonConfig(derivedObjectNode.config()));
+
+    return data;
+}
+
+} // namespace Internal
+
+// -------------------------------------------------------------------------------------------------
+
+QJsonDocument writeToJsonConfig(const ConfigObjectNode &node)
 {
     // Convert the configuration node to JSON
-    const QJsonObject root {
-        { QStringLiteral("config"), QJsonValue::fromVariant(node.toSimplifiedVariant()) }
-    };
+    const QJsonObject root { { QStringLiteral("config"), Internal::toJsonConfig(node) } };
 
     return QJsonDocument(root);
 }
 
 // -------------------------------------------------------------------------------------------------
 
-bool writeToFile(const ConfigObjectNode &node, const QString &filePath)
+bool writeToJsonConfigFile(const ConfigObjectNode &node, const QString &filePath)
 {
     // Convert the configuration node to JSON
-    const auto doc = writeToJson(node);
+    const auto doc = writeToJsonConfig(node);
 
     if (doc.isEmpty())
     {
@@ -98,6 +204,42 @@ bool writeToFile(const ConfigObjectNode &node, const QString &filePath)
     }
 
     return true;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+QJsonValue convertToJsonValue(const ConfigObjectNode &node)
+{
+    QJsonObject data;
+
+    for (const auto &memberName : node.names())
+    {
+        const auto *member = node.member(memberName);
+
+        switch (member->type())
+        {
+            case ConfigNode::Type::Value:
+            {
+                data.insert(memberName, member->toValue().value());
+                break;
+            }
+
+            case ConfigNode::Type::Object:
+            {
+                data.insert(memberName, convertToJsonValue(member->toObject()));
+                break;
+            }
+
+            case ConfigNode::Type::NodeReference:
+            case ConfigNode::Type::DerivedObject:
+            default:
+            {
+                return QJsonValue::Undefined;
+            }
+        }
+    }
+
+    return data;
 }
 
 } // namespace ConfigWriter

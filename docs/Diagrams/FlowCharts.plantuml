@@ -1,0 +1,26 @@
+@startuml ConfigReader
+(*) --> "Read config file"
+--> "Parse config file"
+--> "Extract environment
+     variables from config file"
+--> "Extract includes from config file"
+--> "Update current directory
+     environment variable"
+--> "Extract config overrides
+     from config file"
+--> "Apply config overrides
+     to config from includes"
+--> "Transform config"
+--> (*)
+@enduml
+
+@startuml ConfigLoader
+(*) --> "Load config parameters"
+--> "Validate config"
+--> (*)
+
+"Load config parameters" -->[On error] "Handle error"
+"Validate config" -right->[On error] "Handle error"
+
+"Handle error" --> (*)
+@enduml

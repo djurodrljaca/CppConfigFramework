@@ -18,14 +18,12 @@
  * Contains methods for writing configuration files
  */
 
-#ifndef CPPCONFIGFRAMEWORK_CONFIGWRITER_HPP
-#define CPPCONFIGFRAMEWORK_CONFIGWRITER_HPP
+#pragma once
 
 // C++ Config Framework includes
 #include <CppConfigFramework/ConfigObjectNode.hpp>
 
 // Qt includes
-#include <QtCore/QVariant>
 
 // System includes
 
@@ -42,27 +40,43 @@ namespace ConfigWriter
 {
 
 /*!
- * Writes the Object node to the specified file
+ * Writes the Object node to the C++ Config Framework JSON format
  *
- * \param   node        Configuration node
+ * \param   node    Configuration node
  *
  * \return  JSON document
  */
-CPPCONFIGFRAMEWORK_EXPORT QJsonDocument writeToJson(const ConfigObjectNode &node);
+CPPCONFIGFRAMEWORK_EXPORT QJsonDocument writeToJsonConfig(const ConfigObjectNode &node);
+
+// -------------------------------------------------------------------------------------------------
 
 /*!
- * Writes the Object node to the specified file
+ * Writes the Object node to the specified JSON config file
  *
  * \param   node        Configuration node
- * \param   filePath    Path to the output file
+ * \param   filePath    Path to the output JSON config file
  *
  * \retval  true    Success
  * \retval  false   Failure
  */
-CPPCONFIGFRAMEWORK_EXPORT bool writeToFile(const ConfigObjectNode &node, const QString &filePath);
+CPPCONFIGFRAMEWORK_EXPORT bool writeToJsonConfigFile(const ConfigObjectNode &node,
+                                                     const QString &filePath);
+
+// -------------------------------------------------------------------------------------------------
+
+/*!
+ * Converts the Object node (with fully resolved references) to a JSON value
+ *
+ * \param   node    Configuration node
+ *
+ * \return  JSON object wrapped in a JSON value or "undefined" in case of failure
+ *
+ * This function produces a valid output only when sub-nodes of this Object node contain only Object
+ * and Value nodes. The output will be a direct representation of the whole data structure without
+ * any C++ Config Framework syntax (no "decorator" prefixes in the member names).
+ */
+CPPCONFIGFRAMEWORK_EXPORT QJsonValue convertToJsonValue(const ConfigObjectNode &node);
 
 } // namespace ConfigWriter
 
 } // namespace CppConfigFramework
-
-#endif // CPPCONFIGFRAMEWORK_CONFIGWRITER_HPP

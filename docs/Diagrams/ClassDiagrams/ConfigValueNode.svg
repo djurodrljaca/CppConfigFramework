@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="234px" preserveAspectRatio="none" style="width:146px;height:234px;" version="1.1" viewBox="0 0 146 234" width="146px" zoomAndPan="magnify"><defs><filter height="300%" id="fnn019bmypbzh" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><!--MD5=[a7a276926f9c52ae47a6f83d030a5f62]
+class ConfigNode--><rect fill="#FEFECE" filter="url(#fnn019bmypbzh)" height="48" id="ConfigNode" style="stroke: #A80036; stroke-width: 1.5;" width="95" x="23" y="8"/><ellipse cx="38" cy="24" fill="#A9DCDF" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M33.1719,29.75 L36.5156,17.5625 L39.6563,17.5625 L43.0313,29.75 L40.5625,29.75 L39.8281,26.7344 L36.3125,26.7344 L35.5625,29.75 L33.1719,29.75 Z M37.5781,21.7031 L36.8281,24.7031 L39.3438,24.7031 L38.625,21.7031 Q38.4844,21.125 38.3594,20.5781 Q38.2344,20.0156 38.0938,19.4375 Q37.9844,20.0156 37.8438,20.5781 Q37.7031,21.125 37.5781,21.7031 Z "/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="63" x="52" y="28.656">ConfigNode</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="24" x2="117" y1="40" y2="40"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="24" x2="117" y1="48" y2="48"/><!--MD5=[575426ad72e9f3f108a63f8dae908128]
+class ConfigValueNode--><rect fill="#FEFECE" filter="url(#fnn019bmypbzh)" height="107.9276" id="ConfigValueNode" style="stroke: #A80036; stroke-width: 1.5;" width="129" x="6" y="116"/><ellipse cx="21" cy="132" fill="#ADD1B2" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M20.4688,138.9219 Q18.7188,138.9219 17.5781,138.1875 Q16.4531,137.4375 15.8906,136.0938 Q15.3438,134.7344 15.3438,132.9375 Q15.3438,130.9063 16,129.4531 Q16.6563,128 17.9375,127.2188 Q19.2188,126.4375 21.0938,126.4375 Q21.9844,126.4375 22.6563,126.625 Q23.3281,126.7969 24.0156,127.1406 L23.2031,129.1563 Q22.5781,128.8438 22.0313,128.7188 Q21.5,128.5938 21.0156,128.5938 Q19.8438,128.5938 19.1406,129.125 Q18.4375,129.6563 18.1406,130.6094 Q17.8438,131.5625 17.8438,132.8281 Q17.8438,134.8438 18.5625,135.8125 Q19.2813,136.7656 20.875,136.7656 Q21.4688,136.7656 22.0938,136.6094 Q22.7188,136.4531 23.5469,136.0781 L23.5469,138.2969 Q22.8125,138.6094 22.0156,138.7656 Q21.2344,138.9219 20.4688,138.9219 Z "/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="97" x="35" y="136.656">ConfigValueNode</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="7" x2="134" y1="148" y2="148"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="7" x2="134" y1="156" y2="156"/><ellipse cx="17" cy="167" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="31" x="26" y="171.7589">clone()</text><ellipse cx="17" cy="181.9819" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="26" x="26" y="186.7408">type()</text><ellipse cx="17" cy="196.9638" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="34" x="26" y="201.7227">value()</text><ellipse cx="17" cy="211.9457" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="78" x="26" y="216.7046">setValue(value)</text><!--MD5=[9973ed0a6358e9ebd09e48a43a30127b]
+reverse link ConfigNode to ConfigValueNode--><path d="M70.5,76.24 C70.5,88.82 70.5,102.71 70.5,115.82 " fill="none" id="ConfigNode&lt;-ConfigValueNode" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="none" points="63.5,76.07,70.5,56.07,77.5,76.07,63.5,76.07" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[22e22ed0afdacd14f078b480ed5faf2a]
+@startuml ConfigValueNode
+ConfigNode <|- - ConfigValueNode
+
+abstract class ConfigNode
+
+class ConfigValueNode {
+    {abstract} +clone()
+    {abstract} +type() 
+    +value()
+    +setValue(value)
+}
+@enduml
+
+PlantUML version 1.2020.10(Sun May 17 11:35:57 CEST 2020)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Java Version: 11.0.8+10-post-Ubuntu-0ubuntu120.04
+Operating System: Linux
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>

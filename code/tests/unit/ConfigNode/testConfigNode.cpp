@@ -40,6 +40,16 @@
 
 // Test class declaration --------------------------------------------------------------------------
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
+template<>
+struct std::hash<QString> {
+    std::size_t operator()(const QString &v) const noexcept
+    {
+        return qHash(v);
+    }
+};
+#endif
+
 using namespace CppConfigFramework;
 using ConfigNodePtr = std::shared_ptr<ConfigNode>;
 
@@ -78,24 +88,17 @@ private slots:
     void testCloneNodeReference();
     void testCloneDerivedObject();
 
-    void testValueNodeToSimplifiedVariant();
-    void testValueNodeToSimplifiedVariant_data();
-
-    void testObjectNodeToSimplifiedVariant();
-    void testObjectNodeToSimplifiedVariant_data();
-
-    void testNodeReferenceToSimplifiedVariant();
-    void testNodeReferenceToSimplifiedVariant_data();
-
-    void testDerivedObjectNodeToSimplifiedVariant();
-    void testDerivedObjectNodeToSimplifiedVariant_data();
-
     void testNodePath();
 
     void testObjectNode();
     void testApplyObject();
 
     void testDerivedObjectNode();
+
+    void testEqualityOperatorsValue();
+    void testEqualityOperatorsObject();
+    void testEqualityOperatorsNodeReference();
+    void testEqualityOperatorsDerivedObject();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -152,10 +155,10 @@ void TestConfigNode::testConstructorValue()
     QVERIFY(node1.isRoot());
     QCOMPARE(node1.rootNode(), nullptr);
     QCOMPARE(node1.parent(), nullptr);
-    QCOMPARE(node1.value(), 1);
+    QCOMPARE(node1.value(), QJsonValue(1));
 
     ConfigObjectNode root;
-    ConfigValueNode node2(QVariant("str"), &root);
+    ConfigValueNode node2("str", &root);
     QCOMPARE(node2.type(), ConfigNode::Type::Value);
     QVERIFY(node2.isValue());
     QVERIFY(!node2.isObject());
@@ -164,7 +167,7 @@ void TestConfigNode::testConstructorValue()
     QVERIFY(!node2.isRoot());
     QCOMPARE(node2.rootNode(), &root);
     QCOMPARE(node2.parent(), &root);
-    QCOMPARE(node2.value(), QVariant("str"));
+    QCOMPARE(node2.value(), QJsonValue("str"));
 }
 
 void TestConfigNode::testConstructorObject()
@@ -271,7 +274,7 @@ void TestConfigNode::testMoveValue()
         ConfigValueNode movedNode(std::move(node));
         QVERIFY(movedNode.isValue());
         QCOMPARE(movedNode.parent(), &parentNode1);
-        QCOMPARE(movedNode.value(), 123);
+        QCOMPARE(movedNode.value(), QJsonValue(123));
     }
 
     // Move assignment operator
@@ -282,13 +285,13 @@ void TestConfigNode::testMoveValue()
         movedNode = std::move(node);
         QVERIFY(movedNode.isValue());
         QCOMPARE(movedNode.parent(), &parentNode2);
-        QCOMPARE(movedNode.value(), 456);
+        QCOMPARE(movedNode.value(), QJsonValue(456));
 
         // Self assignment
         movedNode = std::move(movedNode);
         QVERIFY(movedNode.isValue());
         QCOMPARE(movedNode.parent(), &parentNode2);
-        QCOMPARE(movedNode.value(), 456);
+        QCOMPARE(movedNode.value(), QJsonValue(456));
     }
 }
 
@@ -439,7 +442,7 @@ void TestConfigNode::testCloneValue()
     auto clonedNode = node.clone();
     QVERIFY(clonedNode->isValue());
     QCOMPARE(clonedNode->parent(), nullptr);
-    QCOMPARE(clonedNode->toValue().value(), 123);
+    QCOMPARE(clonedNode->toValue().value(), QJsonValue(123));
 
     // Clone with parent
     ConfigObjectNode parentNode;
@@ -449,7 +452,7 @@ void TestConfigNode::testCloneValue()
     clonedNode = node.clone();
     QVERIFY(clonedNode->isValue());
     QCOMPARE(clonedNode->parent(), nullptr);
-    QCOMPARE(clonedNode->toValue().value(), 456);
+    QCOMPARE(clonedNode->toValue().value(), QJsonValue(456));
 }
 
 void TestConfigNode::testCloneObject()
@@ -466,11 +469,11 @@ void TestConfigNode::testCloneObject()
 
     QCOMPARE(clonedNode->toObject().member("item1")->type(), ConfigNode::Type::Value);
     QCOMPARE(clonedNode->toObject().member("item1")->parent(), clonedNode.get());
-    QCOMPARE(clonedNode->toObject().member("item1")->toValue().value(), 1);
+    QCOMPARE(clonedNode->toObject().member("item1")->toValue().value(), QJsonValue(1));
 
     QCOMPARE(clonedNode->toObject().member("item2")->type(), ConfigNode::Type::Value);
     QCOMPARE(clonedNode->toObject().member("item2")->parent(), clonedNode.get());
-    QCOMPARE(clonedNode->toObject().member("item2")->toValue().value(), QVariant("str"));
+    QCOMPARE(clonedNode->toObject().member("item2")->toValue().value(), QJsonValue("str"));
 
     // Clone with parent
     ConfigObjectNode parentNode;
@@ -486,11 +489,11 @@ void TestConfigNode::testCloneObject()
 
     QCOMPARE(clonedNode->toObject().member("item1")->type(), ConfigNode::Type::Value);
     QCOMPARE(clonedNode->toObject().member("item1")->parent(), clonedNode.get());
-    QCOMPARE(clonedNode->toObject().member("item1")->toValue().value(), 2);
+    QCOMPARE(clonedNode->toObject().member("item1")->toValue().value(), QJsonValue(2));
 
     QCOMPARE(clonedNode->toObject().member("item2")->type(), ConfigNode::Type::Value);
     QCOMPARE(clonedNode->toObject().member("item2")->parent(), clonedNode.get());
-    QCOMPARE(clonedNode->toObject().member("item2")->toValue().value(), QVariant("asd"));
+    QCOMPARE(clonedNode->toObject().member("item2")->toValue().value(), QJsonValue("asd"));
 }
 
 void TestConfigNode::testCloneNodeReference()
@@ -547,744 +550,6 @@ void TestConfigNode::testCloneDerivedObject()
     QVERIFY(clonedNode->toDerivedObject().config().member("null")->isValue());
 }
 
-// Test: ConfigValueNode::toSimplifiedVariant() method ---------------------------------------------
-
-void TestConfigNode::testValueNodeToSimplifiedVariant()
-{
-    QFETCH(ConfigNodePtr, node);
-    QFETCH(QVariant, expectedResult);
-
-    auto actualValue = node->toSimplifiedVariant();
-    QCOMPARE(actualValue, expectedResult);
-}
-
-void TestConfigNode::testValueNodeToSimplifiedVariant_data()
-{
-    QTest::addColumn<ConfigNodePtr>("node");
-    QTest::addColumn<QVariant>("expectedResult");
-
-    {
-        ConfigValueNode node(true);
-        const QVariant expectedResult(true);
-
-        QTest::newRow("ConfigValueNode: bool: true")
-                << ConfigNodePtr(node.clone())
-                << expectedResult;
-    }
-
-    {
-        ConfigValueNode node(false);
-        const QVariant expectedResult(false);
-
-        QTest::newRow("ConfigValueNode: bool: false")
-                << ConfigNodePtr(node.clone())
-                << expectedResult;
-    }
-
-    {
-        ConfigValueNode node(QVariant::fromValue(std::numeric_limits<int64_t>::min()));
-        const QVariant expectedResult(QString("-9223372036854775808"));
-
-        QTest::newRow("ConfigValueNode: int: min")
-                << ConfigNodePtr(node.clone())
-                << expectedResult;
-    }
-
-    {
-        ConfigValueNode node(-9007199254740993LL);
-        const QVariant expectedResult(QString("-9007199254740993"));
-
-        QTest::newRow("ConfigValueNode: int: min string")
-                << ConfigNodePtr(node.clone())
-                << expectedResult;
-    }
-
-    {
-        ConfigValueNode node(-9007199254740992LL);
-        const QVariant expectedResult(-9007199254740992.0);
-
-        QTest::newRow("ConfigValueNode: int: min double")
-                << ConfigNodePtr(node.clone())
-                << expectedResult;
-    }
-
-    {
-        ConfigValueNode node(0);
-        const QVariant expectedResult(0.0);
-
-        QTest::newRow("ConfigValueNode: int: zero")
-                << ConfigNodePtr(node.clone())
-                << expectedResult;
-    }
-
-    {
-        ConfigValueNode node(9007199254740992LL);
-        const QVariant expectedResult(9007199254740992.0);
-
-        QTest::newRow("ConfigValueNode: int: max double")
-                << ConfigNodePtr(node.clone())
-                << expectedResult;
-    }
-
-    {
-        ConfigValueNode node(9007199254740993LL);
-        const QVariant expectedResult(QString("9007199254740993"));
-
-        QTest::newRow("ConfigValueNode: int: max string")
-                << ConfigNodePtr(node.clone())
-                << expectedResult;
-    }
-
-    {
-        ConfigValueNode node(QVariant::fromValue(std::numeric_limits<int64_t>::max()));
-        const QVariant expectedResult(QString("9223372036854775807"));
-
-        QTest::newRow("ConfigValueNode: int: max")
-                << ConfigNodePtr(node.clone())
-                << expectedResult;
-    }
-
-    {
-        ConfigValueNode node(0U);
-        const QVariant expectedResult(0.0);
-
-        QTest::newRow("ConfigValueNode: uint: zero")
-                << ConfigNodePtr(node.clone())
-                << expectedResult;
-    }
-
-    {
-        ConfigValueNode node(9007199254740992ULL);
-        const QVariant expectedResult(9007199254740992.0);
-
-        QTest::newRow("ConfigValueNode: uint: max double")
-                << ConfigNodePtr(node.clone())
-                << expectedResult;
-    }
-
-    {
-        ConfigValueNode node(9007199254740993ULL);
-        const QVariant expectedResult(QString("9007199254740993"));
-
-        QTest::newRow("ConfigValueNode: uint: max string")
-                << ConfigNodePtr(node.clone())
-                << expectedResult;
-    }
-
-    {
-        ConfigValueNode node(QVariant::fromValue(std::numeric_limits<uint64_t>::max()));
-        const QVariant expectedResult(QString("18446744073709551615"));
-
-        QTest::newRow("ConfigValueNode: uint: max")
-                << ConfigNodePtr(node.clone())
-                << expectedResult;
-    }
-
-    {
-        const double value = -std::numeric_limits<double>::max();
-        ConfigValueNode node(value);
-        const QVariant expectedResult(value);
-
-        QTest::newRow("ConfigValueNode: double: min")
-                << ConfigNodePtr(node.clone())
-                << expectedResult;
-    }
-
-    {
-        const double value = 0.0;
-        ConfigValueNode node(value);
-        const QVariant expectedResult(value);
-
-        QTest::newRow("ConfigValueNode: double: zero")
-                << ConfigNodePtr(node.clone())
-                << expectedResult;
-    }
-
-    {
-        const double value = std::numeric_limits<double>::max();
-        ConfigValueNode node(value);
-        const QVariant expectedResult(value);
-
-        QTest::newRow("ConfigValueNode: double: max")
-                << ConfigNodePtr(node.clone())
-                << expectedResult;
-    }
-
-    {
-        const QTime value(1, 2, 3, 456);
-        ConfigValueNode node(value);
-        const QVariant expectedResult("01:02:03.456");
-
-        QTest::newRow("ConfigValueNode: QTime: 1")
-                << ConfigNodePtr(node.clone())
-                << expectedResult;
-    }
-
-    {
-        const QTime value(12, 0);
-        ConfigValueNode node(value);
-        const QVariant expectedResult("12:00:00.000");
-
-        QTest::newRow("ConfigValueNode: QTime: 2")
-                << ConfigNodePtr(node.clone())
-                << expectedResult;
-    }
-
-    {
-        const QTime value(23, 45, 6, 789);
-        ConfigValueNode node(value);
-        const QVariant expectedResult("23:45:06.789");
-
-        QTest::newRow("ConfigValueNode: QTime: 3")
-                << ConfigNodePtr(node.clone())
-                << expectedResult;
-    }
-
-    {
-        const QDate value(2019, 12, 24);
-        ConfigValueNode node(value);
-        const QVariant expectedResult("2019-12-24");
-
-        QTest::newRow("ConfigValueNode: QDate")
-                << ConfigNodePtr(node.clone())
-                << expectedResult;
-    }
-
-    {
-        const QDateTime value(QDate(2019, 12, 24), QTime(12, 0), Qt::OffsetFromUTC, -3600 * 2);
-        ConfigValueNode node(value);
-        const QVariant expectedResult("2019-12-24T12:00:00.000-02:00");
-
-        QTest::newRow("ConfigValueNode: QDateTime: negative UTC offset")
-                << ConfigNodePtr(node.clone())
-                << expectedResult;
-    }
-
-    {
-        const QDateTime value(QDate(2019, 12, 24), QTime(12, 0), Qt::UTC);
-        ConfigValueNode node(value);
-        const QVariant expectedResult("2019-12-24T12:00:00.000Z");
-
-        QTest::newRow("ConfigValueNode: QDateTime: UTC")
-                << ConfigNodePtr(node.clone())
-                << expectedResult;
-    }
-
-    {
-        const QDateTime value(QDate(2019, 12, 24), QTime(12, 0), Qt::OffsetFromUTC, 3600 * 3);
-        ConfigValueNode node(value);
-        const QVariant expectedResult("2019-12-24T12:00:00.000+03:00");
-
-        QTest::newRow("ConfigValueNode: QDateTime: positive UTC offset")
-                << ConfigNodePtr(node.clone())
-                << expectedResult;
-    }
-
-    {
-        const QSize value(100, 200);
-        ConfigValueNode node(value);
-        const QVariantMap expectedResult
-        {
-            { "width",  100 },
-            { "height", 200 }
-        };
-
-        QTest::newRow("ConfigValueNode: QSize: 1")
-                << ConfigNodePtr(node.clone())
-                << QVariant(expectedResult);
-    }
-
-    {
-        const QSize value(-100, 0);
-        ConfigValueNode node(value);
-        const QVariantMap expectedResult
-        {
-            { "width",  -100 },
-            { "height",    0 }
-        };
-
-        QTest::newRow("ConfigValueNode: QSize: 2")
-                << ConfigNodePtr(node.clone())
-                << QVariant(expectedResult);
-    }
-
-    {
-        const QSizeF value(100.0, 200.5);
-        ConfigValueNode node(value);
-        const QVariantMap expectedResult
-        {
-            { "width",  100.0 },
-            { "height", 200.5 }
-        };
-
-        QTest::newRow("ConfigValueNode: QSizeF: 1")
-                << ConfigNodePtr(node.clone())
-                << QVariant(expectedResult);
-    }
-
-    {
-        const QSizeF value(-100.5, 0.0);
-        ConfigValueNode node(value);
-        const QVariantMap expectedResult
-        {
-            { "width",  -100.5 },
-            { "height",    0.0 }
-        };
-
-        QTest::newRow("ConfigValueNode: QSizeF: 2")
-                << ConfigNodePtr(node.clone())
-                << QVariant(expectedResult);
-    }
-
-    {
-        const QPoint value(100, 200);
-        ConfigValueNode node(value);
-        const QVariantMap expectedResult
-        {
-            { "x", 100 },
-            { "y", 200 }
-        };
-
-        QTest::newRow("ConfigValueNode: QPoint: 1")
-                << ConfigNodePtr(node.clone())
-                << QVariant(expectedResult);
-    }
-
-    {
-        const QPoint value(-100, 0);
-        ConfigValueNode node(value);
-        const QVariantMap expectedResult
-        {
-            { "x", -100 },
-            { "y",    0 }
-        };
-
-        QTest::newRow("ConfigValueNode: QPoint: 2")
-                << ConfigNodePtr(node.clone())
-                << QVariant(expectedResult);
-    }
-
-    {
-        const QPointF value(100.0, 200.5);
-        ConfigValueNode node(value);
-        const QVariantMap expectedResult
-        {
-            { "x", 100.0 },
-            { "y", 200.5 }
-        };
-
-        QTest::newRow("ConfigValueNode: QPointF: 1")
-                << ConfigNodePtr(node.clone())
-                << QVariant(expectedResult);
-    }
-
-    {
-        const QPointF value(-100.5, 0.0);
-        ConfigValueNode node(value);
-        const QVariantMap expectedResult
-        {
-            { "x", -100.5 },
-            { "y",    0.0 }
-        };
-
-        QTest::newRow("ConfigValueNode: QPointF: 2")
-                << ConfigNodePtr(node.clone())
-                << QVariant(expectedResult);
-    }
-
-    {
-        const QLine value(100, 200, -100, 0);
-        ConfigValueNode node(value);
-        const QVariantMap expectedResult
-        {
-            { "x1",  100 },
-            { "y1",  200 },
-            { "x2", -100 },
-            { "y2",    0 }
-        };
-
-        QTest::newRow("ConfigValueNode: QLine")
-                << ConfigNodePtr(node.clone())
-                << QVariant(expectedResult);
-    }
-
-    {
-        const QLineF value(100.0, 200.5, -100.5, 0.0);
-        ConfigValueNode node(value);
-        const QVariantMap expectedResult
-        {
-            { "x1",  100.0 },
-            { "y1",  200.5 },
-            { "x2", -100.5 },
-            { "y2",    0.0 }
-        };
-
-        QTest::newRow("ConfigValueNode: QLineF")
-                << ConfigNodePtr(node.clone())
-                << QVariant(expectedResult);
-    }
-
-    {
-        const QRect value(100, 200, 300, 400);
-        ConfigValueNode node(value);
-        const QVariantMap expectedResult
-        {
-            { "x",      100 },
-            { "y",      200 },
-            { "width",  300 },
-            { "height", 400 }
-        };
-
-        QTest::newRow("ConfigValueNode: QRect: 1")
-                << ConfigNodePtr(node.clone())
-                << QVariant(expectedResult);
-    }
-
-    {
-        const QRect value(-100, 0, 300, 400);
-        ConfigValueNode node(value);
-        const QVariantMap expectedResult
-        {
-            { "x",      -100 },
-            { "y",         0 },
-            { "width",   300 },
-            { "height",  400 }
-        };
-
-        QTest::newRow("ConfigValueNode: QRect: 2")
-                << ConfigNodePtr(node.clone())
-                << QVariant(expectedResult);
-    }
-
-    {
-        const QRectF value(100.0, 200.5, 300.0, 400.5);
-        ConfigValueNode node(value);
-        const QVariantMap expectedResult
-        {
-            { "x",      100.0 },
-            { "y",      200.5 },
-            { "width",  300.0 },
-            { "height", 400.5 }
-        };
-
-        QTest::newRow("ConfigValueNode: QRectF: 1")
-                << ConfigNodePtr(node.clone())
-                << QVariant(expectedResult);
-    }
-
-    {
-        const QRectF value(-100.5, 0.0, 300.5, 400.0);
-        ConfigValueNode node(value);
-        const QVariantMap expectedResult
-        {
-            { "x",      -100.5 },
-            { "y",         0.0 },
-            { "width",   300.5 },
-            { "height",  400.0 }
-        };
-
-        QTest::newRow("ConfigValueNode: QRectF: 2")
-                << ConfigNodePtr(node.clone())
-                << QVariant(expectedResult);
-    }
-
-    {
-        const QList<int> listValue { -100, 0, 300, 400 };
-        const QMap<QDate, int> mapValue
-        {
-            { QDate(2019, 12, 1), 1 },
-            { QDate(2019, 12, 2), 2 },
-            { QDate(2019, 12, 3), 3 }
-        };
-        const QVariantList value =
-        {
-            QVariant::fromValue(listValue),
-            QVariant::fromValue(mapValue),
-            QChar('X'),
-            QString("asd"),
-            QByteArray("fgh"),
-            QUrl("http://www.example.com"),
-            QUuid("{12345678-1234-1234-1234-123456789012}")
-        };
-        ConfigValueNode node(value);
-        const QVariantList expectedResult =
-        {
-            QVariantList { -100, 0, 300, 400 },
-            QVariantMap
-            {
-                { QString("2019-12-01"), 1 },
-                { QString("2019-12-02"), 2 },
-                { QString("2019-12-03"), 3 }
-            },
-            QString("X"),
-            QString("asd"),
-            QString("fgh"),
-            QString("http://www.example.com"),
-            QString("{12345678-1234-1234-1234-123456789012}")
-        };
-
-        QTest::newRow("ConfigValueNode: QVariant")
-                << ConfigNodePtr(node.clone())
-                << QVariant(expectedResult);
-    }
-
-    {
-        const QList<int> value { -100, 0, 300, 400 };
-        ConfigValueNode node(QVariant::fromValue(value));
-        const QVariantList expectedResult { -100, 0, 300, 400 };
-
-        QTest::newRow("ConfigValueNode: list")
-                << ConfigNodePtr(node.clone())
-                << QVariant(expectedResult);
-    }
-
-    {
-        const QMap<QVariant, int> value
-        {
-            { 1, 1 },
-            { QVariant(false), 2 },
-            { 1234.5, 3 },
-            { QDate(2019, 12, 4), 4 },
-            { QVariant(), 5 }
-        };
-        ConfigValueNode node(QVariant::fromValue(value));
-        const QVariantMap expectedResult
-        {
-            { QString("1"), 1 },
-            { QString("false"), 2 },
-            { QString("1234.5"), 3 },
-            { QString("2019-12-04"), 4 },
-            { QString(""), 5 }
-        };
-
-        QTest::newRow("ConfigValueNode: map")
-                << ConfigNodePtr(node.clone())
-                << QVariant(expectedResult);
-    }
-}
-
-// Test: ConfigObjectNode::toSimplifiedVariant() method --------------------------------------------
-
-void TestConfigNode::testObjectNodeToSimplifiedVariant()
-{
-    QFETCH(ConfigNodePtr, node);
-    QFETCH(QVariant, expectedResult);
-
-    auto actualValue = node->toSimplifiedVariant();
-    QCOMPARE(actualValue, expectedResult);
-}
-
-void TestConfigNode::testObjectNodeToSimplifiedVariant_data()
-{
-    QTest::addColumn<ConfigNodePtr>("node");
-    QTest::addColumn<QVariant>("expectedResult");
-
-    {
-        ConfigObjectNode node;
-        const QVariantMap expectedResult;
-
-        QTest::newRow("ConfigObjectNode: empty")
-                << ConfigNodePtr(node.clone())
-                << QVariant(expectedResult);
-    }
-
-    {
-        ConfigObjectNode node;
-        node.setMember("param", ConfigValueNode(123));
-        const QVariantMap expectedResult { { "#param", 123 } };
-
-        QTest::newRow("ConfigObjectNode: value node param")
-                << ConfigNodePtr(node.clone())
-                << QVariant(expectedResult);
-    }
-
-    {
-        ConfigObjectNode param;
-        param.setMember("value", ConfigValueNode(123));
-
-        ConfigObjectNode node;
-        node.setMember("param", param);
-
-        const QVariantMap expectedResult
-        {
-            {
-                "param", QVariantMap
-                {
-                    { "#value", 123 }
-                }
-            }
-        };
-
-        QTest::newRow("ConfigObjectNode: object node param")
-                << ConfigNodePtr(node.clone())
-                << QVariant(expectedResult);
-    }
-
-    {
-        const ConfigNodePath reference("node/path");
-        ConfigObjectNode node;
-        node.setMember("param", ConfigNodeReference(reference));
-        const QVariantMap expectedResult { { "&param", reference.path() } };
-
-        QTest::newRow("ConfigObjectNode: node ref param")
-                << ConfigNodePtr(node.clone())
-                << QVariant(expectedResult);
-    }
-
-    {
-        const QList<ConfigNodePath> bases = { ConfigNodePath("node/path") };
-
-        ConfigObjectNode config;
-        config.setMember("value", ConfigValueNode(123));
-
-        const ConfigDerivedObjectNode param(bases, config);
-
-        ConfigObjectNode node;
-        node.setMember("param", param);
-        const QVariantMap expectedResult
-        {
-            {
-                "&param", QVariantMap
-                {
-                    { "base", QString("node/path") },
-                    {
-                        "config", QVariantMap
-                        {
-                            { "#value", 123 }
-                        }
-                    }
-                }
-            }
-        };
-
-        QTest::newRow("ConfigObjectNode: derived object node param")
-                << ConfigNodePtr(node.clone())
-                << QVariant(expectedResult);
-    }
-}
-
-// Test: ConfigNodeReference::toSimplifiedVariant() method -----------------------------------------
-
-void TestConfigNode::testNodeReferenceToSimplifiedVariant()
-{
-    QFETCH(ConfigNodePtr, node);
-    QFETCH(QVariant, expectedResult);
-
-    auto actualValue = node->toSimplifiedVariant();
-    QCOMPARE(actualValue, expectedResult);
-}
-
-void TestConfigNode::testNodeReferenceToSimplifiedVariant_data()
-{
-    QTest::addColumn<ConfigNodePtr>("node");
-    QTest::addColumn<QVariant>("expectedResult");
-
-    {
-        const ConfigNodePath reference("node/path");
-        const ConfigNodeReference node(reference);
-        const QVariant expectedResult(reference.path());
-
-        QTest::newRow("ConfigNodeReference") << ConfigNodePtr(node.clone()) << expectedResult;
-    }
-}
-
-// Test: ConfigDerivedObjectNode::toSimplifiedVariant() method -------------------------------------
-
-void TestConfigNode::testDerivedObjectNodeToSimplifiedVariant()
-{
-    QFETCH(ConfigNodePtr, node);
-    QFETCH(QVariant, expectedResult);
-
-    auto actualValue = node->toSimplifiedVariant();
-    QCOMPARE(actualValue, expectedResult);
-}
-
-void TestConfigNode::testDerivedObjectNodeToSimplifiedVariant_data()
-{
-    QTest::addColumn<ConfigNodePtr>("node");
-    QTest::addColumn<QVariant>("expectedResult");
-
-    {
-        const ConfigDerivedObjectNode node;
-        const QVariant expectedResult = QVariantMap { { "config", QVariantMap() } };
-
-        QTest::newRow("ConfigDerivedObjectNode: no base, empty config")
-                << ConfigNodePtr(node.clone())
-                << expectedResult;
-    }
-
-    {
-        ConfigObjectNode config;
-        config.setMember("param", ConfigValueNode(123));
-
-        const ConfigDerivedObjectNode node({}, config);
-        const QVariantMap expectedResult
-        {
-            {
-                "config",
-                QVariantMap
-                {
-                    { "#param", 123 }
-                }
-            }
-        };
-
-        QTest::newRow("ConfigDerivedObjectNode: no base, non-empty config")
-                << ConfigNodePtr(node.clone())
-                << QVariant(expectedResult);
-    }
-
-    {
-        const QList<ConfigNodePath> bases = { ConfigNodePath("node/path") };
-
-        ConfigObjectNode config;
-        config.setMember("param", ConfigValueNode(123));
-
-        const ConfigDerivedObjectNode node(bases, config);
-        const QVariantMap expectedResult
-        {
-            { "base", QString("node/path") },
-            {
-                "config", QVariantMap
-                {
-                    { "#param", 123 }
-                }
-            }
-        };
-
-        QTest::newRow("ConfigDerivedObjectNode: single base, non-empty config")
-                << ConfigNodePtr(node.clone())
-                << QVariant(expectedResult);
-    }
-
-    {
-        const QList<ConfigNodePath> bases =
-        {
-            ConfigNodePath("node1"),
-            ConfigNodePath("node2")
-        };
-
-        ConfigObjectNode config;
-        config.setMember("param", ConfigValueNode(123));
-
-        const ConfigDerivedObjectNode node(bases, config);
-        const QVariantMap expectedResult
-        {
-            { "base", QStringList { "node1", "node2" } },
-            {
-                "config", QVariantMap
-                {
-                    { "#param", 123 }
-                }
-            }
-        };
-
-        QTest::newRow("ConfigDerivedObjectNode: multiple bases, non-empty config")
-                << ConfigNodePtr(node.clone())
-                << QVariant(expectedResult);
-    }
-}
-
 // Test: nodePath() method -------------------------------------------------------------------------
 
 void TestConfigNode::testNodePath()
@@ -1329,7 +594,7 @@ void TestConfigNode::testNodePath()
     ConfigNode *level3Item1 = level3->toObject().member("item1");
     QVERIFY(level3Item1 != nullptr);
     QVERIFY(level3Item1->isValue());
-    QCOMPARE(level3Item1->toValue().value(), 1);
+    QCOMPARE(level3Item1->toValue().value(), QJsonValue(1));
     QCOMPARE(level3Item1->rootNode(), &rootNode);
     QCOMPARE(level3Item1->nodePath(), ConfigNodePath("/level1/level2/level3/item1"));
     QCOMPARE(rootNode.nodeAtPath(ConfigNodePath("/level1/level2/level3/item1")), level3Item1);
@@ -1338,7 +603,7 @@ void TestConfigNode::testNodePath()
     ConfigNode *level3Item2 = level3->toObject().member("item2");
     QVERIFY(level3Item2 != nullptr);
     QVERIFY(level3Item2->isValue());
-    QCOMPARE(level3Item2->toValue().value(), QVariant("str"));
+    QCOMPARE(level3Item2->toValue().value(), QJsonValue("str"));
     QCOMPARE(level3Item2->rootNode(), &rootNode);
     QCOMPARE(level3Item2->nodePath(), ConfigNodePath("/level1/level2/level3/item2"));
     QCOMPARE(rootNode.nodeAtPath(ConfigNodePath("/level1/level2/level3/item2")), level3Item2);
@@ -1400,13 +665,18 @@ void TestConfigNode::testObjectNode()
     QVERIFY(!object.setMember("0item", ConfigValueNode()));
 
     QCOMPARE(object.count(), 3);
+#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
+    QCOMPARE(QSet<QString>::fromList(object.names()),
+             QSet<QString>({"item1", "item2", "item3"}));
+#else
     auto objectNames = object.names();
     QCOMPARE(QSet<QString>(objectNames.begin(), objectNames.end()),
              QSet<QString>({"item1", "item2", "item3"}));
+#endif
     QVERIFY(object.member("item1")->isValue());
-    QCOMPARE(object.member("item1")->toValue().value(), true);
+    QCOMPARE(object.member("item1")->toValue().value(), QJsonValue(true));
     QVERIFY(object.member("item2")->isValue());
-    QCOMPARE(object.member("item2")->toValue().value(), 123);
+    QCOMPARE(object.member("item2")->toValue().value(), QJsonValue(123));
     QVERIFY(object.member("item3")->isObject());
 
     QCOMPARE(object.member("item1"), objectConst.member("item1"));
@@ -1415,15 +685,20 @@ void TestConfigNode::testObjectNode()
     QCOMPARE(objectConst.member("item9"), nullptr);
 
     object.setMember("item2", ConfigValueNode("str"));
-    QCOMPARE(object.member("item2")->toValue().value(), QVariant("str"));
+    QCOMPARE(object.member("item2")->toValue().value(), QJsonValue("str"));
 
     QVERIFY(object.remove("item2"));
     QVERIFY(!object.remove("item9"));
 
     QCOMPARE(object.count(), 2);
+#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
+    QCOMPARE(QSet<QString>::fromList(object.names()),
+             QSet<QString>({"item1", "item3"}));
+#else
     objectNames = object.names();
     QCOMPARE(QSet<QString>(objectNames.begin(), objectNames.end()),
              QSet<QString>({"item1", "item3"}));
+#endif
     QVERIFY(object.member("item1")->isValue());
     QVERIFY(object.member("item3")->isObject());
 
@@ -1470,11 +745,11 @@ void TestConfigNode::testApplyObject()
 
     QVERIFY(node.contains("null"));
     QVERIFY(node.member("null")->isValue());
-    QCOMPARE(node.member("null")->toValue().value(), QVariant());
+    QCOMPARE(node.member("null")->toValue().value(), QJsonValue());
 
     QVERIFY(node.contains("value"));
     QVERIFY(node.member("value")->isValue());
-    QCOMPARE(node.member("value")->toValue().value(), 123);
+    QCOMPARE(node.member("value")->toValue().value(), QJsonValue(123));
 
     QVERIFY(node.contains("valueToObject"));
     QVERIFY(node.member("valueToObject")->isObject());
@@ -1485,10 +760,10 @@ void TestConfigNode::testApplyObject()
 
     QVERIFY(node.member("level1")->toObject().contains("null"));
     QVERIFY(node.nodeAtPath("level1/null")->isValue());
-    QCOMPARE(node.nodeAtPath("level1/null")->toValue().value(), QVariant());
+    QCOMPARE(node.nodeAtPath("level1/null")->toValue().value(), QJsonValue());
 
     QVERIFY(node.nodeAtPath("level1/value")->isValue());
-    QCOMPARE(node.nodeAtPath("level1/value")->toValue().value(), 456);
+    QCOMPARE(node.nodeAtPath("level1/value")->toValue().value(), QJsonValue(456));
 
     // Check the level 2
     QVERIFY(node.member("level1")->toObject().contains("level2"));
@@ -1496,11 +771,11 @@ void TestConfigNode::testApplyObject()
 
     QVERIFY(node.nodeAtPath("level1/level2")->toObject().contains("null"));
     QVERIFY(node.nodeAtPath("level1/level2/null")->isValue());
-    QCOMPARE(node.nodeAtPath("level1/level2/null")->toValue().value(), QVariant());
+    QCOMPARE(node.nodeAtPath("level1/level2/null")->toValue().value(), QJsonValue());
 
     QVERIFY(node.nodeAtPath("level1/level2")->toObject().contains("value"));
     QVERIFY(node.nodeAtPath("level1/level2/value")->isValue());
-    QCOMPARE(node.nodeAtPath("level1/level2/value")->toValue().value(), 789);
+    QCOMPARE(node.nodeAtPath("level1/level2/value")->toValue().value(), QJsonValue(789));
 }
 
 // Test: DerivedObject node ------------------------------------------------------------------------
@@ -1529,11 +804,294 @@ void TestConfigNode::testDerivedObjectNode()
 
     QVERIFY(derivedObject.config().contains("a"));
     QVERIFY(derivedObject.config().member("a")->isValue());
-    QCOMPARE(derivedObject.config().member("a")->toValue().value(), 1);
+    QCOMPARE(derivedObject.config().member("a")->toValue().value(), QJsonValue(1));
 
     QVERIFY(derivedObject.config().contains("b"));
     QVERIFY(derivedObject.config().member("b")->isValue());
-    QCOMPARE(derivedObject.config().member("b")->toValue().value(), QVariant("str"));
+    QCOMPARE(derivedObject.config().member("b")->toValue().value(), QJsonValue("str"));
+}
+
+// Test: Equality operators for Value node ---------------------------------------------------------
+
+void TestConfigNode::testEqualityOperatorsValue()
+{
+    // Test with no parent
+    const ConfigValueNode node1(123);
+    const ConfigValueNode node2(123);
+    const ConfigValueNode node3(100);
+
+    QVERIFY(node1 == node2);
+    QVERIFY(!(node1 != node2));
+
+    QVERIFY(node1 != node3);
+    QVERIFY(!(node1 == node3));
+
+    // Test with same node path
+    ConfigObjectNode root1;
+    root1.setMember("test", node1.clone());
+
+    ConfigObjectNode root2;
+    root2.setMember("test", node2.clone());
+
+    ConfigObjectNode root3;
+    root3.setMember("test", node3.clone());
+
+    QVERIFY(root1.member("test")->toValue() == root2.member("test")->toValue());
+    QVERIFY(!(root1.member("test")->toValue() != root2.member("test")->toValue()));
+
+    QVERIFY(root1.member("test")->toValue() != root3.member("test")->toValue());
+    QVERIFY(!(root1.member("test")->toValue() == root3.member("test")->toValue()));
+
+    // Test with other node path
+    root2.setMember("other", node2.clone());
+    root3.setMember("other", node3.clone());
+
+    QVERIFY(root1.member("test")->toValue() != root2.member("other")->toValue());
+    QVERIFY(!(root1.member("test")->toValue() == root2.member("other")->toValue()));
+
+    QVERIFY(root1.member("test")->toValue() != root3.member("other")->toValue());
+    QVERIFY(!(root1.member("test")->toValue() == root3.member("other")->toValue()));
+}
+
+// Test: Equality operators for Object node --------------------------------------------------------
+
+void TestConfigNode::testEqualityOperatorsObject()
+{
+    // Test with no parent
+    ConfigValueNode childValueNode1(123);
+    ConfigValueNode childValueNode2(100);
+
+    ConfigObjectNode childObjectNode1;
+    childObjectNode1.setMember("value", ConfigValueNode(123));
+
+    ConfigObjectNode childObjectNode2;
+    childObjectNode2.setMember("value", ConfigValueNode(100));
+
+    ConfigNodeReference childNodeReference1(ConfigNodePath("/ref1"));
+    ConfigNodeReference childNodeReference2(ConfigNodePath("/ref2"));
+
+    ConfigDerivedObjectNode childDerivedObjectNode1({}, childObjectNode1);
+    ConfigDerivedObjectNode childDerivedObjectNode2({}, childObjectNode2);
+
+    ConfigObjectNode node11;
+    node11.setMember("value", childValueNode1.clone());
+
+    ConfigObjectNode node12;
+    node12.setMember("value", childValueNode1.clone());
+
+    ConfigObjectNode node13;
+    node13.setMember("value", childValueNode2.clone());
+
+    ConfigObjectNode node14;
+
+    ConfigObjectNode node15;
+    node15.setMember("value", childObjectNode1.clone());
+
+    ConfigObjectNode node16;
+    node16.setMember("xyz", childValueNode1.clone());
+
+    ConfigObjectNode node17;
+    node17.setMember("value", childValueNode1.clone());
+    node17.setMember("xyz", childValueNode1.clone());
+
+    ConfigObjectNode node21;
+    node21.setMember("object", childObjectNode1.clone());
+
+    ConfigObjectNode node22;
+    node22.setMember("object", childObjectNode1.clone());
+
+    ConfigObjectNode node23;
+    node23.setMember("object", childObjectNode2.clone());
+
+    ConfigObjectNode node31;
+    node31.setMember("ref", childNodeReference1.clone());
+
+    ConfigObjectNode node32;
+    node32.setMember("ref", childNodeReference1.clone());
+
+    ConfigObjectNode node33;
+    node33.setMember("ref", childNodeReference2.clone());
+
+    ConfigObjectNode node41;
+    node41.setMember("derived", childDerivedObjectNode1.clone());
+
+    ConfigObjectNode node42;
+    node42.setMember("derived", childDerivedObjectNode1.clone());
+
+    ConfigObjectNode node43;
+    node43.setMember("derived", childDerivedObjectNode2.clone());
+
+    QVERIFY(node11 == node12);
+    QVERIFY(!(node11 != node12));
+
+    QVERIFY(node11 != node13);
+    QVERIFY(!(node11 == node13));
+
+    QVERIFY(node11 != node14);
+    QVERIFY(!(node11 == node14));
+
+    QVERIFY(node11 != node15);
+    QVERIFY(!(node11 == node15));
+
+    QVERIFY(node11 != node16);
+    QVERIFY(!(node11 == node16));
+
+    QVERIFY(node11 != node17);
+    QVERIFY(!(node11 == node17));
+
+    QVERIFY(node21 == node22);
+    QVERIFY(!(node21 != node22));
+
+    QVERIFY(node21 != node23);
+    QVERIFY(!(node21 == node23));
+
+    QVERIFY(node31 == node32);
+    QVERIFY(!(node31 != node32));
+
+    QVERIFY(node31 != node33);
+    QVERIFY(!(node31 == node33));
+
+    QVERIFY(node41 == node42);
+    QVERIFY(!(node41 != node42));
+
+    QVERIFY(node41 != node43);
+    QVERIFY(!(node41 == node43));
+
+    // Test with same node path
+    ConfigObjectNode root1;
+    root1.setMember("test", node11.clone());
+
+    ConfigObjectNode root2;
+    root2.setMember("test", node12.clone());
+
+    ConfigObjectNode root3;
+    root3.setMember("test", node13.clone());
+
+    QVERIFY(root1.member("test")->toObject() == root2.member("test")->toObject());
+    QVERIFY(!(root1.member("test")->toObject() != root2.member("test")->toObject()));
+
+    QVERIFY(root1.member("test")->toObject() != root3.member("test")->toObject());
+    QVERIFY(!(root1.member("test")->toObject() == root3.member("test")->toObject()));
+
+    // Test with other node path
+    root2.setMember("other", node12.clone());
+    root3.setMember("other", node13.clone());
+
+    QVERIFY(root1.member("test")->toObject() != root2.member("other")->toObject());
+    QVERIFY(!(root1.member("test")->toObject() == root2.member("other")->toObject()));
+
+    QVERIFY(root1.member("test")->toObject() != root3.member("other")->toObject());
+    QVERIFY(!(root1.member("test")->toObject() == root3.member("other")->toObject()));
+}
+
+// Test: Equality operators for NodeReference node -------------------------------------------------
+
+void TestConfigNode::testEqualityOperatorsNodeReference()
+{
+    // Test with no parent
+    const ConfigNodeReference node1(ConfigNodePath("/refA"));
+    const ConfigNodeReference node2(ConfigNodePath("/refA"));
+    const ConfigNodeReference node3(ConfigNodePath("/refB"));
+
+    QVERIFY(node1 == node2);
+    QVERIFY(!(node1 != node2));
+
+    QVERIFY(node1 != node3);
+    QVERIFY(!(node1 == node3));
+
+    // Test with same node path
+    ConfigObjectNode root1;
+    root1.setMember("test", node1.clone());
+
+    ConfigObjectNode root2;
+    root2.setMember("test", node2.clone());
+
+    ConfigObjectNode root3;
+    root3.setMember("test", node3.clone());
+
+    QVERIFY(root1.member("test")->toNodeReference() == root2.member("test")->toNodeReference());
+    QVERIFY(!(root1.member("test")->toNodeReference() != root2.member("test")->toNodeReference()));
+
+    QVERIFY(root1.member("test")->toNodeReference() != root3.member("test")->toNodeReference());
+    QVERIFY(!(root1.member("test")->toNodeReference() == root3.member("test")->toNodeReference()));
+
+    // Test with other node path
+    root2.setMember("other", node2.clone());
+    root3.setMember("other", node3.clone());
+
+    QVERIFY(root1.member("test")->toNodeReference() != root2.member("other")->toNodeReference());
+    QVERIFY(!(root1.member("test")->toNodeReference() == root2.member("other")->toNodeReference()));
+
+    QVERIFY(root1.member("test")->toNodeReference() != root3.member("other")->toNodeReference());
+    QVERIFY(!(root1.member("test")->toNodeReference() == root3.member("other")->toNodeReference()));
+}
+
+// Test: Equality operators for DerivedObject node -------------------------------------------------
+
+void TestConfigNode::testEqualityOperatorsDerivedObject()
+{
+    // Test with no parent
+    ConfigObjectNode childObjectNode1;
+    childObjectNode1.setMember("value", ConfigValueNode(123));
+
+    ConfigObjectNode childObjectNode2;
+    childObjectNode2.setMember("value", ConfigValueNode(100));
+
+    ConfigDerivedObjectNode node11({ConfigNodePath("/base")});
+    ConfigDerivedObjectNode node12({ConfigNodePath("/base")});
+    ConfigDerivedObjectNode node13({ConfigNodePath("/xyz")});
+
+    ConfigDerivedObjectNode node21({}, childObjectNode1);
+    ConfigDerivedObjectNode node22({}, childObjectNode1);
+    ConfigDerivedObjectNode node23({}, childObjectNode2);
+
+    ConfigDerivedObjectNode node31({ConfigNodePath("/base")}, childObjectNode1);
+    ConfigDerivedObjectNode node32({ConfigNodePath("/base")}, childObjectNode1);
+    ConfigDerivedObjectNode node33({ConfigNodePath("/xyz")}, childObjectNode2);
+
+    QVERIFY(node11 == node12);
+    QVERIFY(!(node11 != node12));
+
+    QVERIFY(node11 != node13);
+    QVERIFY(!(node11 == node13));
+
+    QVERIFY(node21 == node22);
+    QVERIFY(!(node21 != node22));
+
+    QVERIFY(node21 != node23);
+    QVERIFY(!(node21 == node23));
+
+    QVERIFY(node31 == node32);
+    QVERIFY(!(node31 != node32));
+
+    QVERIFY(node31 != node33);
+    QVERIFY(!(node31 == node33));
+
+    // Test with same node path
+    ConfigObjectNode root1;
+    root1.setMember("test", node11.clone());
+
+    ConfigObjectNode root2;
+    root2.setMember("test", node12.clone());
+
+    ConfigObjectNode root3;
+    root3.setMember("test", node13.clone());
+
+    QVERIFY(root1.member("test")->toDerivedObject() == root2.member("test")->toDerivedObject());
+    QVERIFY(!(root1.member("test")->toDerivedObject() != root2.member("test")->toDerivedObject()));
+
+    QVERIFY(root1.member("test")->toDerivedObject() != root3.member("test")->toDerivedObject());
+    QVERIFY(!(root1.member("test")->toDerivedObject() == root3.member("test")->toDerivedObject()));
+
+    // Test with other node path
+    root2.setMember("other", node12.clone());
+    root3.setMember("other", node13.clone());
+
+    QVERIFY(root1.member("test")->toDerivedObject() != root2.member("other")->toDerivedObject());
+    QVERIFY(!(root1.member("test")->toDerivedObject() == root2.member("other")->toDerivedObject()));
+
+    QVERIFY(root1.member("test")->toDerivedObject() != root3.member("other")->toDerivedObject());
+    QVERIFY(!(root1.member("test")->toDerivedObject() == root3.member("other")->toDerivedObject()));
 }
 
 // Main function -----------------------------------------------------------------------------------

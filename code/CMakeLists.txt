@@ -11,13 +11,37 @@
 # You should have received a copy of the GNU Lesser General Public License along with C++ Config
 # Framework. If not, see <http://www.gnu.org/licenses/>.
 
-cmake_minimum_required(VERSION 3.3.0)
+cmake_minimum_required(VERSION 3.5.0)
 
 project(CppConfigFramework VERSION 1.0.0)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt5 COMPONENTS Core REQUIRED)
+find_package(CedarFramework REQUIRED)
+
+# --------------------------------------------------------------------------------------------------
+# Code Coverage
+# --------------------------------------------------------------------------------------------------
+option(CppConfigFramework_CodeCoverage "C++ Config Framework Code Coverage" OFF)
+
+if (CppConfigFramework_CodeCoverage MATCHES ON)
+    include(cmake/CodeCoverage.cmake)
+    APPEND_COVERAGE_COMPILER_FLAGS()
+
+    set(excludes_cmake_prefix_path)
+    foreach(item ${CMAKE_PREFIX_PATH})
+        get_filename_component(item ${item} ABSOLUTE)
+        list(APPEND excludes_cmake_prefix_path "'${item}/*'")
+    endforeach()
+
+    set(CppConfigFramework_CodeCoverage_EXCLUDES
+            "'/opt/*'"
+            "'/usr/*'"
+            ${excludes_cmake_prefix_path}
+            "'${CMAKE_SOURCE_DIR}/tests/*'"
+            "'${CMAKE_BINARY_DIR}/*'"
+        )
+endif()
 
 # --------------------------------------------------------------------------------------------------
 # CppConfigFramework library
@@ -30,11 +54,10 @@ add_library(CppConfigFramework SHARED
         inc/CppConfigFramework/ConfigNodePath.hpp
         inc/CppConfigFramework/ConfigNodeReference.hpp
         inc/CppConfigFramework/ConfigObjectNode.hpp
-        inc/CppConfigFramework/ConfigParameterLoader.hpp
         inc/CppConfigFramework/ConfigParameterValidator.hpp
         inc/CppConfigFramework/ConfigReader.hpp
         inc/CppConfigFramework/ConfigReaderBase.hpp
-        inc/CppConfigFramework/ConfigReaderFactory.hpp
+        inc/CppConfigFramework/ConfigReaderRegistry.hpp
         inc/CppConfigFramework/ConfigValueNode.hpp
         inc/CppConfigFramework/ConfigWriter.hpp
         inc/CppConfigFramework/EnvironmentVariables.hpp
@@ -46,15 +69,18 @@ add_library(CppConfigFramework SHARED
         src/ConfigNodePath.cpp
         src/ConfigNodeReference.cpp
         src/ConfigObjectNode.cpp
-        src/ConfigParameterLoader.cpp
         src/ConfigReader.cpp
         src/ConfigReaderBase.cpp
-        src/ConfigReaderFactory.cpp
+        src/ConfigReaderRegistry.cpp
         src/ConfigValueNode.cpp
         src/ConfigWriter.cpp
         src/EnvironmentVariables.cpp
         src/LoggingCategories.cpp
     )
+
+set_target_properties(CppConfigFramework PROPERTIES
+    VERSION ${PROJECT_VERSION}
+    SOVERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
 
 include(GenerateExportHeader)
 generate_export_header(CppConfigFramework
@@ -67,7 +93,7 @@ target_include_directories(CppConfigFramework PUBLIC
     )
 
 target_link_libraries(CppConfigFramework PUBLIC
-        Qt5::Core
+        CedarFramework::CedarFramework
     )
 
 set_target_properties(CppConfigFramework PROPERTIES
@@ -133,30 +159,6 @@ install(
         DESTINATION ${ConfigPackageLocation}
         COMPONENT   Devel
     )
-
-# --------------------------------------------------------------------------------------------------
-# Code Coverage
-# --------------------------------------------------------------------------------------------------
-option(CppConfigFramework_CodeCoverage "C++ Config Framework Code Coverage" OFF)
-
-if (CppConfigFramework_CodeCoverage MATCHES ON)
-    include(cmake/CodeCoverage.cmake)
-    APPEND_COVERAGE_COMPILER_FLAGS()
-
-    set(excludes_cmake_prefix_path)
-    foreach(item ${CMAKE_PREFIX_PATH})
-        get_filename_component(item ${item} ABSOLUTE)
-        list(APPEND excludes_cmake_prefix_path "'${item}/*'")
-    endforeach()
-
-    set(CppConfigFramework_CodeCoverage_EXCLUDES
-            "'/opt/*'"
-            "'/usr/*'"
-            ${excludes_cmake_prefix_path}
-            "'${CMAKE_SOURCE_DIR}/tests/*'"
-            "'${CMAKE_BINARY_DIR}/*'"
-        )
-endif()
 
 # --------------------------------------------------------------------------------------------------
 # Tests

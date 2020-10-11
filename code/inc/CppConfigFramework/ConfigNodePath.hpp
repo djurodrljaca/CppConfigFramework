@@ -18,11 +18,13 @@
  * Contains a class for the configuration node path
  */
 
-#ifndef CPPCONFIGFRAMEWORK_CONFIGNODEPATH_HPP
-#define CPPCONFIGFRAMEWORK_CONFIGNODEPATH_HPP
+#pragma once
 
 // C++ Config Framework includes
 #include <CppConfigFramework/CppConfigFrameworkExport.hpp>
+
+// Cedar Framework includes
+#include <CedarFramework/Deserialization.hpp>
 
 // Qt includes
 #include <QtCore/QStringList>
@@ -221,6 +223,8 @@ private:
 
 } // namespace CppConfigFramework
 
+// -------------------------------------------------------------------------------------------------
+
 /*!
  * Global "equal to" operator for CppConfigFramework::ConfigNodePath
  *
@@ -232,6 +236,8 @@ private:
  */
 CPPCONFIGFRAMEWORK_EXPORT bool operator==(const CppConfigFramework::ConfigNodePath &left,
                                           const CppConfigFramework::ConfigNodePath &right);
+
+// -------------------------------------------------------------------------------------------------
 
 /*!
  * Global "not equal to" operator for CppConfigFramework::ConfigNodePath
@@ -245,4 +251,14 @@ CPPCONFIGFRAMEWORK_EXPORT bool operator==(const CppConfigFramework::ConfigNodePa
 CPPCONFIGFRAMEWORK_EXPORT bool operator!=(const CppConfigFramework::ConfigNodePath &left,
                                           const CppConfigFramework::ConfigNodePath &right);
 
-#endif // CPPCONFIGFRAMEWORK_CONFIGNODEPATH_HPP
+// -------------------------------------------------------------------------------------------------
+
+namespace CedarFramework
+{
+
+//! \copydoc    CedarFramework::serialize()
+template<>
+CPPCONFIGFRAMEWORK_EXPORT bool deserialize(const QJsonValue &json,
+                                           CppConfigFramework::ConfigNodePath *value);
+
+} // namespace CedarFramework

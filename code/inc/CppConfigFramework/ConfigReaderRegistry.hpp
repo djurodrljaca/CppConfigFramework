@@ -15,18 +15,15 @@
 /*!
  * \file
  *
- * Contains the factory for classes that can read different type of configuration files
+ * Contains the registry for classes that can read different type of configuration files
  */
 
-#ifndef CPPCONFIGFRAMEWORK_CONFIGREADERFACTORY_HPP
-#define CPPCONFIGFRAMEWORK_CONFIGREADERFACTORY_HPP
+#pragma once
 
 // C++ Config Framework includes
 #include <CppConfigFramework/ConfigReaderBase.hpp>
 
 // Qt includes
-#include <QtCore/QString>
-#include <QtCore/QDir>
 
 // System includes
 #include <unordered_map>
@@ -40,19 +37,19 @@
 namespace CppConfigFramework
 {
 
-//! This is a base class for reading configurations
-class CPPCONFIGFRAMEWORK_EXPORT ConfigReaderFactory
+//! This is a class for registering configuration readers
+class CPPCONFIGFRAMEWORK_EXPORT ConfigReaderRegistry
 {
 public:
     //! Destructor
-    ~ConfigReaderFactory() = default;
+    ~ConfigReaderRegistry() = default;
 
     /*!
      * Gets the factory instance
      *
      * \return  Factory instance
      */
-    static ConfigReaderFactory *instance();
+    static ConfigReaderRegistry *instance();
 
     /*!
      * Registers a configuration reader type
@@ -64,7 +61,7 @@ public:
      * \retval  false   Failure
      */
     bool registerConfigReader(const QString &type,
-                              std::unique_ptr<ConfigReaderBase> &&configReader);
+                              std::unique_ptr<ConfigReaderBase> configReader);
 
     /*!
      * Read the specified configuration
@@ -88,19 +85,17 @@ public:
             const QString &type,
             const QDir &workingDir,
             const ConfigNodePath &destinationNodePath,
-            const QVariantMap &otherParameters,
+            const QJsonObject &otherParameters,
             const std::vector<const ConfigObjectNode *> &externalConfigs,
             EnvironmentVariables *environmentVariables) const;
 
 private:
     //! Constructor
-    ConfigReaderFactory();
+    ConfigReaderRegistry();
 
 private:
     //! Holds the
-    std::unordered_map<QString, std::unique_ptr<ConfigReaderBase>> m_configReaders;
+    std::map<QString, std::unique_ptr<ConfigReaderBase>> m_configReaders;
 };
 
 } // namespace CppConfigFramework
-
-#endif // CPPCONFIGFRAMEWORK_CONFIGREADERFACTORY_HPP
