@@ -21,7 +21,7 @@ For building the following requirements are needed:
 
 * CMake v3.5 or later
 * C++14 compliant compiler
-* Qt5 framework (only Core and Test modules)
+* Qt v5.9 or later (only Core and Test modules)
 * [Cedar Framework](https://github.com/djurodrljaca/CedarFramework)
 
 If the library needs to be deployed to a custom location you need to set the `CMAKE_INSTALL_PREFIX` variable or if you need to use a custom Qt installation and/or *CedarFramework* is not deployed to one of the standard locations you need to set the `CMAKE_PREFIX_PATH` variable.

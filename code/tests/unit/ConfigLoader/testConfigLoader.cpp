@@ -35,6 +35,16 @@
 
 // Test config classes -----------------------------------------------------------------------------
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
+template<>
+struct std::hash<QString> {
+    std::size_t operator()(const QString &v) const noexcept
+    {
+        return qHash(v);
+    }
+};
+#endif
+
 using namespace CppConfigFramework;
 
 class TestRequiredConfigParameter : public ConfigLoader
@@ -624,8 +634,8 @@ void TestConfigLoader::testLoadConfigContainer()
         QCOMPARE(required.loadConfig("actualConfig", *config), true);
         QCOMPARE(optional.loadConfig("actualConfig", *config), true);
 
-        QCOMPARE(required.container.size(), 3);
-        QCOMPARE(optional.container.size(), 3);
+        QCOMPARE(required.container.size(), static_cast<size_t>(3));
+        QCOMPARE(optional.container.size(), static_cast<size_t>(3));
 
         auto itRequired = required.container.begin();
         auto itOptional = optional.container.begin();
@@ -642,8 +652,8 @@ void TestConfigLoader::testLoadConfigContainer()
         QCOMPARE(required.loadConfig("actualConfig", *config), true);
         QCOMPARE(optional.loadConfig("actualConfig", *config), true);
 
-        QCOMPARE(required.container.size(), 3);
-        QCOMPARE(optional.container.size(), 3);
+        QCOMPARE(required.container.size(), static_cast<size_t>(3));
+        QCOMPARE(optional.container.size(), static_cast<size_t>(3));
 
         auto itRequired = required.container.begin();
         auto itOptional = optional.container.begin();
@@ -660,8 +670,8 @@ void TestConfigLoader::testLoadConfigContainer()
         QCOMPARE(required.loadConfig("actualConfig", *config), true);
         QCOMPARE(optional.loadConfig("actualConfig", *config), true);
 
-        QCOMPARE(required.container.size(), 3);
-        QCOMPARE(optional.container.size(), 3);
+        QCOMPARE(required.container.size(), static_cast<size_t>(3));
+        QCOMPARE(optional.container.size(), static_cast<size_t>(3));
 
         auto itRequired = required.container.begin();
         auto itOptional = optional.container.begin();
@@ -678,8 +688,8 @@ void TestConfigLoader::testLoadConfigContainer()
         QCOMPARE(required.loadConfig("actualConfig", *config), true);
         QCOMPARE(optional.loadConfig("actualConfig", *config), true);
 
-        QCOMPARE(required.container.size(), 3);
-        QCOMPARE(optional.container.size(), 3);
+        QCOMPARE(required.container.size(), static_cast<size_t>(3));
+        QCOMPARE(optional.container.size(), static_cast<size_t>(3));
 
         auto itRequired = required.container.begin();
         auto itOptional = optional.container.begin();

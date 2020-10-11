@@ -52,7 +52,11 @@ public:
     ConfigValueNode(const ConfigValueNode &) = delete;
 
     //! Move constructor
+#if QT_VERSION < QT_VERSION_CHECK(5, 10, 0)
+    ConfigValueNode(ConfigValueNode &&) = default;
+#else
     ConfigValueNode(ConfigValueNode &&) noexcept = default;
+#endif
 
     //! Destructor
     ~ConfigValueNode() override = default;
@@ -61,7 +65,11 @@ public:
     ConfigValueNode &operator=(const ConfigValueNode &) = delete;
 
     //! Move assignment operator
+#if QT_VERSION < QT_VERSION_CHECK(5, 10, 0)
+    ConfigValueNode &operator=(ConfigValueNode &&) = default;
+#else
     ConfigValueNode &operator=(ConfigValueNode &&) noexcept = default;
+#endif
 
     //! \copydoc    ConfigNode::clone()
     std::unique_ptr<ConfigNode> clone() const override;
