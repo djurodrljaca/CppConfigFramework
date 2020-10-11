@@ -180,7 +180,7 @@ void TestConfigWriter::testConvertToJsonValue()
         }
     };
 
-    QCOMPARE(ConfigWriter::convertToJsonValue(node1), expectedJson);
+    QCOMPARE(ConfigWriter::convertToJsonValue(node1), QJsonValue(expectedJson));
 
     // Negative tests
     ConfigObjectNode node2

@@ -100,7 +100,7 @@ void TestConfigReader::testReadValidConfig()
                                     QDir::current(),
                                     ConfigNodePath::ROOT_PATH,
                                     ConfigNodePath::ROOT_PATH,
-                                    std::vector<const ConfigObjectNode *>(),
+                                    {},
                                     &environmentVariables);
     QVERIFY(config);
 
@@ -133,13 +133,13 @@ void TestConfigReader::testReadValidConfig()
                 QVERIFY(subNode1->toObject().contains("bool_param"));
                 const auto *boolParam = subNode1->toObject().member("bool_param");
                 QVERIFY(boolParam->isValue());
-                QCOMPARE(boolParam->toValue().value(), true);
+                QCOMPARE(boolParam->toValue().value(), QJsonValue(true));
 
                 // Check "/root_node/sub_node/sub_node1/array_param"
                 QVERIFY(subNode1->toObject().contains("array_param"));
                 const auto *arrayParam = subNode1->toObject().member("array_param");
                 QVERIFY(arrayParam->isValue());
-                QCOMPARE(arrayParam->toValue().value(), QJsonArray({5, 6, 7}));
+                QCOMPARE(arrayParam->toValue().value(), QJsonValue(QJsonArray({5, 6, 7})));
             }
 
             // Check "/root_node/sub_node/sub_node2"
@@ -153,7 +153,7 @@ void TestConfigReader::testReadValidConfig()
                 QVERIFY(subNode2->toObject().contains("int_param"));
                 const auto *intParam = subNode2->toObject().member("int_param");
                 QVERIFY(intParam->isValue());
-                QCOMPARE(intParam->toValue().value(), 1);
+                QCOMPARE(intParam->toValue().value(), QJsonValue(1));
             }
         }
     }
@@ -172,7 +172,7 @@ void TestConfigReader::testReadConfigWithNodeReference()
                                     QDir::current(),
                                     ConfigNodePath::ROOT_PATH,
                                     ConfigNodePath::ROOT_PATH,
-                                    std::vector<const ConfigObjectNode *>(),
+                                    {},
                                     &environmentVariables);
     QVERIFY(config);
 
@@ -186,7 +186,7 @@ void TestConfigReader::testReadConfigWithNodeReference()
         const auto *ref_value1 = config->nodeAtPath("/root_node2/ref_value1");
         QVERIFY(ref_value1 != nullptr);
         QVERIFY(ref_value1->isValue());
-        QCOMPARE(ref_value1->toValue().value(), 1);
+        QCOMPARE(ref_value1->toValue().value(), QJsonValue(1));
     }
 
     // Check "/root_node2/ref_value2
@@ -211,7 +211,7 @@ void TestConfigReader::testReadConfigWithNodeReference()
         const auto *ref_value3 = config->nodeAtPath("/root_node2/ref_value3");
         QVERIFY(ref_value3 != nullptr);
         QVERIFY(ref_value3->isValue());
-        QCOMPARE(ref_value3->toValue().value(), QJsonArray({1, 2, 3}));
+        QCOMPARE(ref_value3->toValue().value(), QJsonValue(QJsonArray({1, 2, 3})));
     }
 }
 
@@ -228,7 +228,7 @@ void TestConfigReader::testReadConfigWithDerivedObject()
                                     QDir::current(),
                                     ConfigNodePath::ROOT_PATH,
                                     ConfigNodePath::ROOT_PATH,
-                                    std::vector<const ConfigObjectNode *>(),
+                                    {},
                                     &environmentVariables);
     QVERIFY(config);
 
@@ -244,7 +244,7 @@ void TestConfigReader::testReadConfigWithDerivedObject()
             QVERIFY(derived_object1->toObject().contains("value"));
             const auto *value = derived_object1->toObject().member("value");
             QVERIFY(value->isValue());
-            QCOMPARE(value->toValue().value(), 1);
+            QCOMPARE(value->toValue().value(), QJsonValue(1));
         }
 
         // Check "/derived_object1/sub_node
@@ -275,7 +275,7 @@ void TestConfigReader::testReadConfigWithDerivedObject()
             QVERIFY(derived_object2->toObject().contains("value"));
             const auto *value = derived_object2->toObject().member("value");
             QVERIFY(value->isValue());
-            QCOMPARE(value->toValue().value(), QJsonArray({1, 2, 3}));
+            QCOMPARE(value->toValue().value(), QJsonValue(QJsonArray({1, 2, 3})));
         }
 
         // Check "/derived_object2/sub_node
@@ -306,7 +306,7 @@ void TestConfigReader::testReadConfigWithDerivedObject()
             QVERIFY(derived_object3->toObject().contains("value"));
             const auto *value = derived_object3->toObject().member("value");
             QVERIFY(value->isValue());
-            QCOMPARE(value->toValue().value(), 1);
+            QCOMPARE(value->toValue().value(), QJsonValue(1));
         }
 
         // Check "/derived_object3/sub_node
@@ -339,7 +339,7 @@ void TestConfigReader::testReadConfigWithIncludes()
                                     QDir::current(),
                                     ConfigNodePath::ROOT_PATH,
                                     ConfigNodePath::ROOT_PATH,
-                                    std::vector<const ConfigObjectNode *>(),
+                                    {},
                                     &environmentVariables);
     QVERIFY(config);
     QVERIFY(config->isObject());
@@ -357,7 +357,7 @@ void TestConfigReader::testReadConfigWithIncludes()
             QVERIFY(included_config1->toObject().contains("value"));
             const auto *value = included_config1->toObject().member("value");
             QVERIFY(value->isValue());
-            QCOMPARE(value->toValue().value(), 99);
+            QCOMPARE(value->toValue().value(), QJsonValue(99));
         }
 
         // Check "/included_config1/new_item
@@ -381,7 +381,7 @@ void TestConfigReader::testReadConfigWithIncludes()
             QVERIFY(included_config2_subnode->toObject().contains("value"));
             const auto *value = included_config2_subnode->toObject().member("value");
             QVERIFY(value->isValue());
-            QCOMPARE(value->toValue().value(), 2);
+            QCOMPARE(value->toValue().value(), QJsonValue(2));
         }
 
         // Check "/included_config2_subnode/included_value1
@@ -390,7 +390,7 @@ void TestConfigReader::testReadConfigWithIncludes()
             const auto *included_value1 =
                     included_config2_subnode->toObject().member("included_value1");
             QVERIFY(included_value1->isValue());
-            QCOMPARE(included_value1->toValue().value(), 1);
+            QCOMPARE(included_value1->toValue().value(), QJsonValue(1));
         }
     }
 
@@ -413,7 +413,7 @@ void TestConfigReader::testReadConfigWithIncludes()
                 QVERIFY(sub_node->toObject().contains("value"));
                 const auto *value = sub_node->toObject().member("value");
                 QVERIFY(value->isValue());
-                QCOMPARE(value->toValue().value(), 3);
+                QCOMPARE(value->toValue().value(), QJsonValue(3));
             }
         }
     }
@@ -433,7 +433,7 @@ void TestConfigReader::testReadConfigWithIncludesAndEnv()
                                     QDir::current(),
                                     ConfigNodePath::ROOT_PATH,
                                     ConfigNodePath::ROOT_PATH,
-                                    std::vector<const ConfigObjectNode *>(),
+                                    {},
                                     &environmentVariables);
     QVERIFY(config);
     QVERIFY(config->isObject());
@@ -444,7 +444,7 @@ void TestConfigReader::testReadConfigWithIncludesAndEnv()
         const auto *included_value1 = config->member("included_value1");
         QVERIFY(included_value1 != nullptr);
         QVERIFY(included_value1->isValue());
-        QCOMPARE(included_value1->toValue().value(), 1);
+        QCOMPARE(included_value1->toValue().value(), QJsonValue(1));
     }
 
     // Check "/included_value2"
@@ -452,7 +452,7 @@ void TestConfigReader::testReadConfigWithIncludesAndEnv()
         const auto *included_value2 = config->member("included_value2");
         QVERIFY(included_value2 != nullptr);
         QVERIFY(included_value2->isValue());
-        QCOMPARE(included_value2->toValue().value(), 2);
+        QCOMPARE(included_value2->toValue().value(), QJsonValue(2));
     }
 
     // Check "/value"
@@ -460,7 +460,7 @@ void TestConfigReader::testReadConfigWithIncludesAndEnv()
         const auto *value = config->member("value");
         QVERIFY(value != nullptr);
         QVERIFY(value->isValue());
-        QCOMPARE(value->toValue().value(), "Value 1");
+        QCOMPARE(value->toValue().value(), QJsonValue("Value 1"));
     }
 
     // Check "/array"
@@ -473,7 +473,7 @@ void TestConfigReader::testReadConfigWithIncludesAndEnv()
             { QJsonObject { { "k1", "v1" } } },
             { QJsonObject { { "k0", "v0" } } }
         };
-        QCOMPARE(array->toValue().value(), expected);
+        QCOMPARE(array->toValue().value(), QJsonValue(expected));
     }
 
     // Check "/object"
@@ -486,7 +486,7 @@ void TestConfigReader::testReadConfigWithIncludesAndEnv()
             { "value1", "v1" },
             { "value2", "v0" }
         };
-        QCOMPARE(object->toValue().value(), expected);
+        QCOMPARE(object->toValue().value(), QJsonValue(expected));
     }
 }
 
@@ -503,7 +503,7 @@ void TestConfigReader::testReadConfigWithOnlyIncludes()
                                     QDir::current(),
                                     ConfigNodePath::ROOT_PATH,
                                     ConfigNodePath::ROOT_PATH,
-                                    std::vector<const ConfigObjectNode *>(),
+                                    {},
                                     &environmentVariables);
     QVERIFY(config);
     QVERIFY(config->isObject());
@@ -521,7 +521,7 @@ void TestConfigReader::testReadConfigWithOnlyIncludes()
             QVERIFY(included_config1->toObject().contains("value"));
             const auto *value = included_config1->toObject().member("value");
             QVERIFY(value->isValue());
-            QCOMPARE(value->toValue().value(), 1);
+            QCOMPARE(value->toValue().value(), QJsonValue(1));
         }
     }
 }
@@ -540,7 +540,7 @@ void TestConfigReader::testReadConfigWithExternalConfigReferences()
                                     QDir::current(),
                                     ConfigNodePath::ROOT_PATH,
                                     ConfigNodePath::ROOT_PATH,
-                                    std::vector<const ConfigObjectNode *>(),
+                                    {},
                                     &environmentVariables);
     QVERIFY(config);
     QVERIFY(config->isObject());
@@ -558,7 +558,7 @@ void TestConfigReader::testReadConfigWithExternalConfigReferences()
             QVERIFY(included_config1->toObject().contains("value"));
             const auto *value = included_config1->toObject().member("value");
             QVERIFY(value->isValue());
-            QCOMPARE(value->toValue().value(), 1);
+            QCOMPARE(value->toValue().value(), QJsonValue(1));
         }
     }
 
@@ -566,14 +566,14 @@ void TestConfigReader::testReadConfigWithExternalConfigReferences()
     {
         const auto *value = config->nodeAtPath("/ref_absolute_path");
         QVERIFY(value->isValue());
-        QCOMPARE(value->toValue().value(), 1);
+        QCOMPARE(value->toValue().value(), QJsonValue(1));
     }
 
     // Check "/ref_relative_path"
     {
         const auto *value = config->nodeAtPath("/ref_relative_path");
         QVERIFY(value->isValue());
-        QCOMPARE(value->toValue().value(), 1);
+        QCOMPARE(value->toValue().value(), QJsonValue(1));
     }
 }
 
@@ -594,7 +594,7 @@ void TestConfigReader::testReadInvalidPathParameters()
                                     QDir::current(),
                                     ConfigNodePath(sourceNodePath),
                                     ConfigNodePath(destinationNodePath),
-                                    std::vector<const ConfigObjectNode *>(),
+                                    {},
                                     &environmentVariables);
     QVERIFY(!config);
 }
@@ -647,7 +647,7 @@ void TestConfigReader::testReadInvalidConfigFile()
                                     QDir::current(),
                                     ConfigNodePath::ROOT_PATH,
                                     ConfigNodePath::ROOT_PATH,
-                                    std::vector<const ConfigObjectNode *>(),
+                                    {},
                                     &environmentVariables);
     QVERIFY(!config);
 }
@@ -720,7 +720,7 @@ void TestConfigReader::testCurrentDirectoryEnvironmentVariable()
                                     QDir::current(),
                                     ConfigNodePath::ROOT_PATH,
                                     ConfigNodePath::ROOT_PATH,
-                                    std::vector<const ConfigObjectNode *>(),
+                                    {},
                                     &environmentVariables);
     QVERIFY(config);
 
@@ -733,7 +733,7 @@ void TestConfigReader::testCurrentDirectoryEnvironmentVariable()
         QVERIFY(config->contains("current_dir"));
         const auto *currentDir = config->member("current_dir");
         QVERIFY(currentDir->isValue());
-        QCOMPARE(currentDir->toValue().value(), QStringLiteral(":/TestData"));
+        QCOMPARE(currentDir->toValue().value(), QJsonValue(":/TestData"));
     }
 
     // Check "/include/current_dir"
@@ -741,7 +741,7 @@ void TestConfigReader::testCurrentDirectoryEnvironmentVariable()
         const auto *currentDir = config->nodeAtPath("/include/current_dir");
         QVERIFY(currentDir != nullptr);
         QVERIFY(currentDir->isValue());
-        QCOMPARE(currentDir->toValue().value(), QStringLiteral(":/TestData/includes"));
+        QCOMPARE(currentDir->toValue().value(), QJsonValue(":/TestData/includes"));
     }
 }
 
@@ -755,7 +755,7 @@ void TestConfigReader::testReadConfigNullEnvironmentVariables()
                                     QDir::current(),
                                     ConfigNodePath::ROOT_PATH,
                                     ConfigNodePath::ROOT_PATH,
-                                    std::vector<const ConfigObjectNode *>(),
+                                    {},
                                     environmentVariables);
     QVERIFY(!config);
 }

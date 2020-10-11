@@ -40,6 +40,16 @@
 
 // Test class declaration --------------------------------------------------------------------------
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
+template<>
+struct std::hash<QString> {
+    std::size_t operator()(const QString &v) const noexcept
+    {
+        return qHash(v);
+    }
+};
+#endif
+
 using namespace CppConfigFramework;
 using ConfigNodePtr = std::shared_ptr<ConfigNode>;
 
@@ -145,7 +155,7 @@ void TestConfigNode::testConstructorValue()
     QVERIFY(node1.isRoot());
     QCOMPARE(node1.rootNode(), nullptr);
     QCOMPARE(node1.parent(), nullptr);
-    QCOMPARE(node1.value(), 1);
+    QCOMPARE(node1.value(), QJsonValue(1));
 
     ConfigObjectNode root;
     ConfigValueNode node2("str", &root);
@@ -264,7 +274,7 @@ void TestConfigNode::testMoveValue()
         ConfigValueNode movedNode(std::move(node));
         QVERIFY(movedNode.isValue());
         QCOMPARE(movedNode.parent(), &parentNode1);
-        QCOMPARE(movedNode.value(), 123);
+        QCOMPARE(movedNode.value(), QJsonValue(123));
     }
 
     // Move assignment operator
@@ -275,13 +285,13 @@ void TestConfigNode::testMoveValue()
         movedNode = std::move(node);
         QVERIFY(movedNode.isValue());
         QCOMPARE(movedNode.parent(), &parentNode2);
-        QCOMPARE(movedNode.value(), 456);
+        QCOMPARE(movedNode.value(), QJsonValue(456));
 
         // Self assignment
         movedNode = std::move(movedNode);
         QVERIFY(movedNode.isValue());
         QCOMPARE(movedNode.parent(), &parentNode2);
-        QCOMPARE(movedNode.value(), 456);
+        QCOMPARE(movedNode.value(), QJsonValue(456));
     }
 }
 
@@ -432,7 +442,7 @@ void TestConfigNode::testCloneValue()
     auto clonedNode = node.clone();
     QVERIFY(clonedNode->isValue());
     QCOMPARE(clonedNode->parent(), nullptr);
-    QCOMPARE(clonedNode->toValue().value(), 123);
+    QCOMPARE(clonedNode->toValue().value(), QJsonValue(123));
 
     // Clone with parent
     ConfigObjectNode parentNode;
@@ -442,7 +452,7 @@ void TestConfigNode::testCloneValue()
     clonedNode = node.clone();
     QVERIFY(clonedNode->isValue());
     QCOMPARE(clonedNode->parent(), nullptr);
-    QCOMPARE(clonedNode->toValue().value(), 456);
+    QCOMPARE(clonedNode->toValue().value(), QJsonValue(456));
 }
 
 void TestConfigNode::testCloneObject()
@@ -459,7 +469,7 @@ void TestConfigNode::testCloneObject()
 
     QCOMPARE(clonedNode->toObject().member("item1")->type(), ConfigNode::Type::Value);
     QCOMPARE(clonedNode->toObject().member("item1")->parent(), clonedNode.get());
-    QCOMPARE(clonedNode->toObject().member("item1")->toValue().value(), 1);
+    QCOMPARE(clonedNode->toObject().member("item1")->toValue().value(), QJsonValue(1));
 
     QCOMPARE(clonedNode->toObject().member("item2")->type(), ConfigNode::Type::Value);
     QCOMPARE(clonedNode->toObject().member("item2")->parent(), clonedNode.get());
@@ -479,7 +489,7 @@ void TestConfigNode::testCloneObject()
 
     QCOMPARE(clonedNode->toObject().member("item1")->type(), ConfigNode::Type::Value);
     QCOMPARE(clonedNode->toObject().member("item1")->parent(), clonedNode.get());
-    QCOMPARE(clonedNode->toObject().member("item1")->toValue().value(), 2);
+    QCOMPARE(clonedNode->toObject().member("item1")->toValue().value(), QJsonValue(2));
 
     QCOMPARE(clonedNode->toObject().member("item2")->type(), ConfigNode::Type::Value);
     QCOMPARE(clonedNode->toObject().member("item2")->parent(), clonedNode.get());
@@ -584,7 +594,7 @@ void TestConfigNode::testNodePath()
     ConfigNode *level3Item1 = level3->toObject().member("item1");
     QVERIFY(level3Item1 != nullptr);
     QVERIFY(level3Item1->isValue());
-    QCOMPARE(level3Item1->toValue().value(), 1);
+    QCOMPARE(level3Item1->toValue().value(), QJsonValue(1));
     QCOMPARE(level3Item1->rootNode(), &rootNode);
     QCOMPARE(level3Item1->nodePath(), ConfigNodePath("/level1/level2/level3/item1"));
     QCOMPARE(rootNode.nodeAtPath(ConfigNodePath("/level1/level2/level3/item1")), level3Item1);
@@ -655,13 +665,18 @@ void TestConfigNode::testObjectNode()
     QVERIFY(!object.setMember("0item", ConfigValueNode()));
 
     QCOMPARE(object.count(), 3);
+#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
+    QCOMPARE(QSet<QString>::fromList(object.names()),
+             QSet<QString>({"item1", "item2", "item3"}));
+#else
     auto objectNames = object.names();
     QCOMPARE(QSet<QString>(objectNames.begin(), objectNames.end()),
              QSet<QString>({"item1", "item2", "item3"}));
+#endif
     QVERIFY(object.member("item1")->isValue());
-    QCOMPARE(object.member("item1")->toValue().value(), true);
+    QCOMPARE(object.member("item1")->toValue().value(), QJsonValue(true));
     QVERIFY(object.member("item2")->isValue());
-    QCOMPARE(object.member("item2")->toValue().value(), 123);
+    QCOMPARE(object.member("item2")->toValue().value(), QJsonValue(123));
     QVERIFY(object.member("item3")->isObject());
 
     QCOMPARE(object.member("item1"), objectConst.member("item1"));
@@ -676,9 +691,14 @@ void TestConfigNode::testObjectNode()
     QVERIFY(!object.remove("item9"));
 
     QCOMPARE(object.count(), 2);
+#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
+    QCOMPARE(QSet<QString>::fromList(object.names()),
+             QSet<QString>({"item1", "item3"}));
+#else
     objectNames = object.names();
     QCOMPARE(QSet<QString>(objectNames.begin(), objectNames.end()),
              QSet<QString>({"item1", "item3"}));
+#endif
     QVERIFY(object.member("item1")->isValue());
     QVERIFY(object.member("item3")->isObject());
 
@@ -729,7 +749,7 @@ void TestConfigNode::testApplyObject()
 
     QVERIFY(node.contains("value"));
     QVERIFY(node.member("value")->isValue());
-    QCOMPARE(node.member("value")->toValue().value(), 123);
+    QCOMPARE(node.member("value")->toValue().value(), QJsonValue(123));
 
     QVERIFY(node.contains("valueToObject"));
     QVERIFY(node.member("valueToObject")->isObject());
@@ -743,7 +763,7 @@ void TestConfigNode::testApplyObject()
     QCOMPARE(node.nodeAtPath("level1/null")->toValue().value(), QJsonValue());
 
     QVERIFY(node.nodeAtPath("level1/value")->isValue());
-    QCOMPARE(node.nodeAtPath("level1/value")->toValue().value(), 456);
+    QCOMPARE(node.nodeAtPath("level1/value")->toValue().value(), QJsonValue(456));
 
     // Check the level 2
     QVERIFY(node.member("level1")->toObject().contains("level2"));
@@ -755,7 +775,7 @@ void TestConfigNode::testApplyObject()
 
     QVERIFY(node.nodeAtPath("level1/level2")->toObject().contains("value"));
     QVERIFY(node.nodeAtPath("level1/level2/value")->isValue());
-    QCOMPARE(node.nodeAtPath("level1/level2/value")->toValue().value(), 789);
+    QCOMPARE(node.nodeAtPath("level1/level2/value")->toValue().value(), QJsonValue(789));
 }
 
 // Test: DerivedObject node ------------------------------------------------------------------------
@@ -784,7 +804,7 @@ void TestConfigNode::testDerivedObjectNode()
 
     QVERIFY(derivedObject.config().contains("a"));
     QVERIFY(derivedObject.config().member("a")->isValue());
-    QCOMPARE(derivedObject.config().member("a")->toValue().value(), 1);
+    QCOMPARE(derivedObject.config().member("a")->toValue().value(), QJsonValue(1));
 
     QVERIFY(derivedObject.config().contains("b"));
     QVERIFY(derivedObject.config().member("b")->isValue());
