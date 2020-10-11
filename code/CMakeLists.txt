@@ -93,7 +93,6 @@ target_include_directories(CppConfigFramework PUBLIC
     )
 
 target_link_libraries(CppConfigFramework PUBLIC
-        Qt5::Core
         CedarFramework::CedarFramework
     )
 
