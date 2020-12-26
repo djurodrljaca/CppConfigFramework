@@ -586,11 +586,10 @@ void TestConfigReader::testReadInvalidPathParameters()
     QFETCH(QString, destinationNodePath);
 
     // Read config file
-    const QString configFilePath(filePath);
     auto environmentVariables = EnvironmentVariables::loadFromProcess();
     ConfigReader configReader;
 
-    auto config = configReader.read(configFilePath,
+    auto config = configReader.read(filePath,
                                     QDir::current(),
                                     ConfigNodePath(sourceNodePath),
                                     ConfigNodePath(destinationNodePath),

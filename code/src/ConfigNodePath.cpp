@@ -40,11 +40,11 @@ namespace CppConfigFramework
 {
 
 // Constants
-QString ConfigNodePath::ROOT_PATH_VALUE = QStringLiteral("/");
-ConfigNodePath ConfigNodePath::ROOT_PATH = ConfigNodePath(ConfigNodePath::ROOT_PATH_VALUE);
+const QString ConfigNodePath::ROOT_PATH_VALUE = QStringLiteral("/");
+const ConfigNodePath ConfigNodePath::ROOT_PATH = ConfigNodePath(ConfigNodePath::ROOT_PATH_VALUE);
 
-QString ConfigNodePath::PARENT_PATH_VALUE = QStringLiteral("..");
-ConfigNodePath ConfigNodePath::PARENT_PATH = ConfigNodePath(ConfigNodePath::PARENT_PATH_VALUE);
+const QString ConfigNodePath::PARENT_PATH_VALUE = QStringLiteral("..");
+const ConfigNodePath ConfigNodePath::PARENT_PATH = ConfigNodePath(ConfigNodePath::PARENT_PATH_VALUE);
 
 static QChar NODE_PATH_SEPARATOR = QChar('/');
 

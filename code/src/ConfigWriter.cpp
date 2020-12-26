@@ -190,7 +190,7 @@ bool writeToJsonConfigFile(const ConfigObjectNode &node, const QString &filePath
     }
 
     const qint64 writtenSize = file.write(jsonData);
-    const qint64 jsonDataSize = static_cast<qint64>(jsonData.size());
+    const auto jsonDataSize = static_cast<qint64>(jsonData.size());
 
     if (writtenSize != jsonDataSize)
     {

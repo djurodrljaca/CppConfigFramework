@@ -344,7 +344,7 @@ bool ConfigReader::readEnvironmentVariablesMember(const QJsonObject &rootObject,
     {
         // Extract the name
         static const QRegularExpression regex("^\\w+$");
-        const QString name = it.key();
+        const QString &name = it.key();
 
         if (!regex.match(name).hasMatch())
         {
@@ -394,7 +394,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readIncludesMember(
 
     for (int i = 0; i < includes.size(); i++)
     {
-        const auto includeObject = includes.at(i);
+        const auto &includeObject = includes.at(i);
 
         // Extract configuration file type
         QString type = QStringLiteral("CppConfigFramework");

@@ -205,16 +205,16 @@ public:
 
 public:
     //! Root node path value
-    static QString ROOT_PATH_VALUE;
+    static const QString ROOT_PATH_VALUE;
 
     //! Root node path
-    static ConfigNodePath ROOT_PATH;
+    static const ConfigNodePath ROOT_PATH;
 
     //! Parent node path value
-    static QString PARENT_PATH_VALUE;
+    static const QString PARENT_PATH_VALUE;
 
     //! Parent node path
-    static ConfigNodePath PARENT_PATH;
+    static const ConfigNodePath PARENT_PATH;
 
 private:
     //! Node path's value

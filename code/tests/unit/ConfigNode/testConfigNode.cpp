@@ -636,7 +636,7 @@ void TestConfigNode::testNodePath()
     QCOMPARE(level3->nodeAtPath("item1/error"), nullptr);
 
     // Test non-Object "root" nodes
-    std::unique_ptr<ConfigNode> nonObjectRootNodes[] =
+    std::array<std::unique_ptr<ConfigNode>, 3> nonObjectRootNodes =
     {
         ConfigValueNode().clone(),
         ConfigNodeReference().clone(),

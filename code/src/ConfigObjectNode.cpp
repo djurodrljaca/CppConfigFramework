@@ -51,9 +51,9 @@ ConfigObjectNode::ConfigObjectNode(ConfigObjectNode *parent)
 ConfigObjectNode::ConfigObjectNode(std::initializer_list<std::pair<QString, ConfigNode &&>> args)
     : ConfigNode(nullptr)
 {
-    for (auto it = args.begin(); it != args.end(); it++)
+    for (const auto &arg : args)
     {
-        setMember(it->first, it->second);
+        setMember(arg.first, arg.second);
     }
 }
 
