@@ -74,7 +74,7 @@ private:
     bool loadConfigParameters(
         const CppConfigFramework::ConfigObjectNode &config) override
     {
-        return loadRequiredConfigParameter(&name, "name", config));
+        return loadRequiredConfigParameter(&name, "name", config);
     }
 };
 
@@ -113,18 +113,26 @@ private:
 To load the configuration you need to do something like this:
 
 ```c++
-CppConfigFramework::ConfigReader configReader;
-CppConfigFramework::EnvironmentVariables environmentVariables;
+#include <CppConfigFramework/ConfigReader.hpp>
+#include <CppConfigFramework/ConfigNodePath.hpp>
 
-auto config = configReader.read("path/to/config/file",
-                                QDir("path/to/config/dir"),
-                                ConfigNodePath::ROOT_PATH,
-                                ConfigNodePath::ROOT_PATH,
-                                {},
-                                &environmentVariables);
+int main()
+{
+    using namespace CppConfigFramework;
+    
+    ConfigReader configReader;
+    EnvironmentVariables environmentVariables;
 
-ExampleConfig exampleConfig;
-exampleConfig.loadConfig(*config);
+    auto config = configReader.read("path/to/config/file",
+                                    QDir("path/to/config/dir"),
+                                    ConfigNodePath::ROOT_PATH,
+                                    ConfigNodePath::ROOT_PATH,
+                                    {},
+                                    &environmentVariables);
+
+    ExampleConfig exampleConfig;
+    exampleConfig.loadConfig(*config);
+}
 ```
 
 For this example the following configuration file will be used:
