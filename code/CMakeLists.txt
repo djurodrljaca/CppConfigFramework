@@ -49,7 +49,7 @@ endif()
 add_library(CppConfigFramework SHARED
         inc/CppConfigFramework/ConfigContainerHelper.hpp
         inc/CppConfigFramework/ConfigDerivedObjectNode.hpp
-        inc/CppConfigFramework/ConfigLoader.hpp
+        inc/CppConfigFramework/ConfigItem.hpp
         inc/CppConfigFramework/ConfigNode.hpp
         inc/CppConfigFramework/ConfigNodePath.hpp
         inc/CppConfigFramework/ConfigNodeReference.hpp
@@ -64,7 +64,7 @@ add_library(CppConfigFramework SHARED
         inc/CppConfigFramework/LoggingCategories.hpp
 
         src/ConfigDerivedObjectNode.cpp
-        src/ConfigLoader.cpp
+        src/ConfigItem.cpp
         src/ConfigNode.cpp
         src/ConfigNodePath.cpp
         src/ConfigNodeReference.cpp

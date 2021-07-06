@@ -15,7 +15,8 @@
 /*!
  * \file
  *
- * Contains a base class for loading configuration nodes to actual configuration parameters
+ * Contains a base class for loading configuration nodes to actual configuration parameters and
+ * storing actual configuration parameters to configuration nodes
  */
 
 #pragma once
@@ -43,42 +44,44 @@
 namespace CppConfigFramework
 {
 
-//! This class holds the base class for loading configuration nodes to actual configuration
-//! parameters
-class CPPCONFIGFRAMEWORK_EXPORT ConfigLoader
+/*!
+ * This class holds the base class for loading configuration nodes to actual configuration
+ * parameters and storing actual configuration parameters to configuration nodes
+ */
+class CPPCONFIGFRAMEWORK_EXPORT ConfigItem
 {
 public:
     /*!
      * Type alias for container item creator
      *
      * \tparam  T   Data type of an item in the container to load (needs to be derived from
-     *              ConfigLoader class)
+     *              ConfigItem class)
      *
      * \param   name    Item name
      *
      * \return  Container item instance
      */
-    template<typename T, std::enable_if_t<std::is_base_of<ConfigLoader, T>::value, bool> = true>
+    template<typename T, std::enable_if_t<std::is_base_of<ConfigItem, T>::value, bool> = true>
     using ContainerItemCreator = std::function<T(const QString &name)>;
 
 public:
     //! Constructor
-    ConfigLoader() = default;
+    ConfigItem() = default;
 
     //! Copy constructor
-    ConfigLoader(const ConfigLoader &) = default;
+    ConfigItem(const ConfigItem &) = default;
 
     //! Move constructor
-    ConfigLoader(ConfigLoader &&) = default;
+    ConfigItem(ConfigItem &&) = default;
 
     //! Destructor
-    virtual ~ConfigLoader() = default;
+    virtual ~ConfigItem() = default;
 
     //! Copy assignment operator
-    ConfigLoader &operator=(const ConfigLoader &) = default;
+    ConfigItem &operator=(const ConfigItem &) = default;
 
     //! Move assignment operator
-    ConfigLoader &operator=(ConfigLoader &&) = default;
+    ConfigItem &operator=(ConfigItem &&) = default;
 
     /*!
      * Loads configuration parameters for this configuration structure
@@ -131,7 +134,7 @@ public:
      */
     bool loadConfigAtPath(const ConfigNodePath &path, const ConfigObjectNode &config);
 
-    //! \copydoc    ConfigLoader::loadConfigAtPath()
+    //! \copydoc    ConfigItem::loadConfigAtPath()
     bool loadConfigAtPath(const QString &path, const ConfigObjectNode &config);
 
     /*!
@@ -149,7 +152,7 @@ public:
                                   const ConfigObjectNode &config,
                                   bool *loaded = nullptr);
 
-    //! \copydoc    ConfigLoader::loadOptionalConfigAtPath()
+    //! \copydoc    ConfigItem::loadOptionalConfigAtPath()
     bool loadOptionalConfigAtPath(const QString &path,
                                   const ConfigObjectNode &config,
                                   bool *loaded = nullptr);
@@ -245,7 +248,7 @@ protected:
      * Loads the required configuration container from the configuration node
      *
      * \tparam  T   Data type of the container to load (its value type needs to be derived from
-     *              ConfigLoader class)
+     *              ConfigItem class)
      *
      * \param[out]  container   Output for the configuration container
      *
@@ -265,7 +268,7 @@ protected:
      * Loads the required configuration container from the configuration node
      *
      * \tparam  T   Data type of the container to load (its value type needs to be derived from
-     *              ConfigLoader class)
+     *              ConfigItem class)
      *
      * \param[out]  container   Output for the configuration container
      *
@@ -288,7 +291,7 @@ protected:
      * Loads the optional configuration container from the configuration node
      *
      * \tparam  T   Data type of the container to load (its value type needs to be derived from
-     *              ConfigLoader class)
+     *              ConfigItem class)
      *
      * \param[out]  container   Output for the configuration container
      *
@@ -311,7 +314,7 @@ protected:
      * Loads the optional configuration container from the configuration node
      *
      * \tparam  T   Data type of the container to load (its value type needs to be derived from
-     *              ConfigLoader class)
+     *              ConfigItem class)
      *
      * \param[out]  container   Output for the configuration container
      *
@@ -373,7 +376,7 @@ private:
      * Loads the configuration container from the configuration node
      *
      * \tparam  T   Data type of the container to load (its value type needs to be derived from
-     *              ConfigLoader class)
+     *              ConfigItem class)
      *
      * \param[out]  container   Output for the configuration container
      *
@@ -394,7 +397,7 @@ private:
      * Default container item creator
      *
      * \tparam  T   Data type of an item in the container to load (needs to be derived from
-     *              ConfigLoader class)
+     *              ConfigItem class)
      *
      * \return  Default constructed item instance
      */
@@ -443,7 +446,7 @@ private:
 // -------------------------------------------------------------------------------------------------
 
 template<typename T>
-bool ConfigLoader::loadRequiredConfigParameter(T *parameterValue,
+bool ConfigItem::loadRequiredConfigParameter(T *parameterValue,
                                                const QString &parameterName,
                                                const ConfigObjectNode &config)
 {
@@ -456,7 +459,7 @@ bool ConfigLoader::loadRequiredConfigParameter(T *parameterValue,
 // -------------------------------------------------------------------------------------------------
 
 template<typename T>
-bool ConfigLoader::loadRequiredConfigParameter(T *parameterValue,
+bool ConfigItem::loadRequiredConfigParameter(T *parameterValue,
                                                const QString &parameterName,
                                                const ConfigObjectNode &config,
                                                ConfigParameterValidator<T> validator)
@@ -469,7 +472,7 @@ bool ConfigLoader::loadRequiredConfigParameter(T *parameterValue,
         const QString errorString = QString("Configuration parameter name [%1] is not valid "
                                             "(configuration node [%2])!")
                                     .arg(parameterName, config.nodePath().path());
-        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigItem) << errorString;
         handleError(errorString);
         return false;
     }
@@ -482,7 +485,7 @@ bool ConfigLoader::loadRequiredConfigParameter(T *parameterValue,
         const QString errorString = QString("Configuration parameter node with name [%1] was not "
                                             "found in configuration node [%2]!")
                                     .arg(parameterName, config.nodePath().path());
-        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigItem) << errorString;
         handleError(errorString);
         return false;
     }
@@ -494,7 +497,7 @@ bool ConfigLoader::loadRequiredConfigParameter(T *parameterValue,
 // -------------------------------------------------------------------------------------------------
 
 template<typename T>
-bool ConfigLoader::loadOptionalConfigParameter(T *parameterValue,
+bool ConfigItem::loadOptionalConfigParameter(T *parameterValue,
                                                const QString &parameterName,
                                                const ConfigObjectNode &config,
                                                bool *loaded)
@@ -509,7 +512,7 @@ bool ConfigLoader::loadOptionalConfigParameter(T *parameterValue,
 // -------------------------------------------------------------------------------------------------
 
 template<typename T>
-bool ConfigLoader::loadOptionalConfigParameter(T *parameterValue,
+bool ConfigItem::loadOptionalConfigParameter(T *parameterValue,
                                                const QString &parameterName,
                                                const ConfigObjectNode &config,
                                                ConfigParameterValidator<T> validator,
@@ -523,7 +526,7 @@ bool ConfigLoader::loadOptionalConfigParameter(T *parameterValue,
         const QString errorString = QString("Configuration parameter name [%1] is not valid "
                                             "(configuration node [%2])!")
                                     .arg(parameterName, config.nodePath().path());
-        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigItem) << errorString;
         handleError(errorString);
 
         if (loaded != nullptr)
@@ -559,7 +562,7 @@ bool ConfigLoader::loadOptionalConfigParameter(T *parameterValue,
 // -------------------------------------------------------------------------------------------------
 
 template<typename T>
-bool ConfigLoader::loadRequiredConfigContainer(T *container,
+bool ConfigItem::loadRequiredConfigContainer(T *container,
                                                const QString &parameterName,
                                                const ConfigObjectNode &config)
 {
@@ -568,13 +571,13 @@ bool ConfigLoader::loadRequiredConfigContainer(T *container,
     return loadRequiredConfigContainer(container,
                                        parameterName,
                                        config,
-                                       ConfigLoader::defaultContainerItemCreator<ItemType>());
+                                       ConfigItem::defaultContainerItemCreator<ItemType>());
 }
 
 // -------------------------------------------------------------------------------------------------
 
 template<typename T>
-bool ConfigLoader::loadRequiredConfigContainer(
+bool ConfigItem::loadRequiredConfigContainer(
         T *container,
         const QString &parameterName,
         const ConfigObjectNode &config,
@@ -590,7 +593,7 @@ bool ConfigLoader::loadRequiredConfigContainer(
         const QString errorString = QString("Configuration parameter name [%1] is not valid "
                                             "(configuration node [%2])!")
                                     .arg(parameterName, config.nodePath().path());
-        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigItem) << errorString;
         handleError(errorString);
         return false;
     }
@@ -603,7 +606,7 @@ bool ConfigLoader::loadRequiredConfigContainer(
         const QString errorString = QString("Configuration parameter node with name [%1] was not "
                                             "found in configuration node [%2]!")
                                     .arg(parameterName, config.nodePath().path());
-        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigItem) << errorString;
         handleError(errorString);
         return false;
     }
@@ -615,7 +618,7 @@ bool ConfigLoader::loadRequiredConfigContainer(
 // -------------------------------------------------------------------------------------------------
 
 template<typename T>
-bool ConfigLoader::loadOptionalConfigContainer(T *container,
+bool ConfigItem::loadOptionalConfigContainer(T *container,
                                                const QString &parameterName,
                                                const ConfigObjectNode &config,
                                                bool *loaded)
@@ -625,14 +628,14 @@ bool ConfigLoader::loadOptionalConfigContainer(T *container,
     return loadOptionalConfigContainer(container,
                                        parameterName,
                                        config,
-                                       ConfigLoader::defaultContainerItemCreator<ItemType>(),
+                                       ConfigItem::defaultContainerItemCreator<ItemType>(),
                                        loaded);
 }
 
 // -------------------------------------------------------------------------------------------------
 
 template<typename T>
-bool ConfigLoader::loadOptionalConfigContainer(
+bool ConfigItem::loadOptionalConfigContainer(
         T *container,
         const QString &parameterName,
         const ConfigObjectNode &config,
@@ -649,7 +652,7 @@ bool ConfigLoader::loadOptionalConfigContainer(
         const QString errorString = QString("Configuration parameter name [%1] is not valid "
                                             "(configuration node [%2])!")
                                     .arg(parameterName, config.nodePath().path());
-        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigItem) << errorString;
         handleError(errorString);
         return false;
     }
@@ -680,7 +683,7 @@ bool ConfigLoader::loadOptionalConfigContainer(
 // -------------------------------------------------------------------------------------------------
 
 template<typename T>
-bool ConfigLoader::loadConfigParameterFromNode(T *parameterValue,
+bool ConfigItem::loadConfigParameterFromNode(T *parameterValue,
                                                const ConfigNode &node,
                                                ConfigParameterValidator<T> validator)
 {
@@ -704,7 +707,7 @@ bool ConfigLoader::loadConfigParameterFromNode(T *parameterValue,
                 const QString errorString = QString("Configuration parameter node [%1] has "
                                                     "unresolved references!")
                                             .arg(node.nodePath().path());
-                qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
+                qCWarning(CppConfigFramework::LoggingCategory::ConfigItem) << errorString;
                 handleError(errorString);
                 return false;
             }
@@ -716,7 +719,7 @@ bool ConfigLoader::loadConfigParameterFromNode(T *parameterValue,
             const QString errorString = QString("Configuration parameter node [%1] is neither a "
                                                 "Value nor an Object node!")
                                         .arg(node.nodePath().path());
-            qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigItem) << errorString;
             handleError(errorString);
             return false;
         }
@@ -726,7 +729,7 @@ bool ConfigLoader::loadConfigParameterFromNode(T *parameterValue,
     {
         const QString errorString = QString("Failed to load configuration parameter's value at "
                                             "node path [%1]").arg(node.nodePath().path());
-        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigItem) << errorString;
         handleError(errorString);
         return false;
     }
@@ -736,7 +739,7 @@ bool ConfigLoader::loadConfigParameterFromNode(T *parameterValue,
     {
         const QString errorString = QString("Configuration parameter's value [%1] is not valid")
                                     .arg(node.nodePath().path());
-        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigItem) << errorString;
         handleError(errorString);
         return false;
     }
@@ -748,7 +751,7 @@ bool ConfigLoader::loadConfigParameterFromNode(T *parameterValue,
 // -------------------------------------------------------------------------------------------------
 
 template<typename T>
-bool ConfigLoader::loadConfigContainerFromNode(
+bool ConfigItem::loadConfigContainerFromNode(
         T *container,
         const ConfigNode &node,
         ContainerItemCreator<typename ConfigContainerHelper<T>::ItemType> itemCreator)
@@ -757,7 +760,7 @@ bool ConfigLoader::loadConfigContainerFromNode(
     {
         const QString errorString = QString("Configuration container node [%1] is not an Object"
                                             "node!").arg(node.nodePath().path());
-        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigItem) << errorString;
         handleError(errorString);
         return false;
     }
@@ -776,7 +779,7 @@ bool ConfigLoader::loadConfigContainerFromNode(
         {
             const QString errorString = QString("Configuration node [%1] is not an Object node!")
                                         .arg(itemNode->nodePath().path());
-            qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
+            qCWarning(CppConfigFramework::LoggingCategory::ConfigItem) << errorString;
             handleError(errorString);
             return false;
         }

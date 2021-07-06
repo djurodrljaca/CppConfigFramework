@@ -11,4 +11,4 @@
 # You should have received a copy of the GNU Lesser General Public License along with C++ Config
 # Framework. If not, see <http://www.gnu.org/licenses/>.
 
-CppConfigFramework_AddUnitTest(TEST_NAME testConfigLoader ADDITIONAL_SOURCES TestData.qrc)
+CppConfigFramework_AddUnitTest(TEST_NAME testConfigItem ADDITIONAL_SOURCES TestData.qrc)

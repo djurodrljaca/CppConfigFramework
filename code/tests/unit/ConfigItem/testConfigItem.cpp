@@ -15,11 +15,11 @@
 /*!
  * \file
  *
- * Contains unit tests for ConfigLoader class
+ * Contains unit tests for ConfigItem class
  */
 
 // C++ Config Framework includes
-#include <CppConfigFramework/ConfigLoader.hpp>
+#include <CppConfigFramework/ConfigItem.hpp>
 #include <CppConfigFramework/ConfigReader.hpp>
 
 // Qt includes
@@ -47,7 +47,7 @@ struct std::hash<QString> {
 
 using namespace CppConfigFramework;
 
-class TestRequiredConfigParameter : public ConfigLoader
+class TestRequiredConfigParameter : public ConfigItem
 {
 public:
     int param = 0;
@@ -72,7 +72,7 @@ private:
     }
 };
 
-class TestRequiredConfigInvalidParameter : public ConfigLoader
+class TestRequiredConfigInvalidParameter : public ConfigItem
 {
 public:
     int param = 0;
@@ -84,7 +84,7 @@ private:
     }
 };
 
-class TestOptionalConfigParameter : public ConfigLoader
+class TestOptionalConfigParameter : public ConfigItem
 {
 public:
     int param = 0;
@@ -101,7 +101,7 @@ private:
     }
 };
 
-class TestOptionalConfigInvalidParameter : public ConfigLoader
+class TestOptionalConfigInvalidParameter : public ConfigItem
 {
 public:
     int param = 0;
@@ -114,7 +114,7 @@ private:
     }
 };
 
-class TestConfigContainerItem : public ConfigLoader
+class TestConfigContainerItem : public ConfigItem
 {
 public:
     TestConfigContainerItem(const QString &name = QString(), const int param = 0)
@@ -137,7 +137,7 @@ private:
 };
 
 template<typename T>
-class TestRequiredConfigContainer : public ConfigLoader
+class TestRequiredConfigContainer : public ConfigItem
 {
 public:
     T container;
@@ -158,7 +158,7 @@ private:
 };
 
 template<typename T>
-class TestOptionalConfigContainer : public ConfigLoader
+class TestOptionalConfigContainer : public ConfigItem
 {
 public:
     T container;
@@ -176,7 +176,7 @@ private:
     }
 };
 
-class TestRequiredConfigContainerInvalidParameter : public ConfigLoader
+class TestRequiredConfigContainerInvalidParameter : public ConfigItem
 {
 public:
     QList<TestConfigContainerItem> container;
@@ -188,7 +188,7 @@ private:
     }
 };
 
-class TestOptionalConfigContainerInvalidParameter : public ConfigLoader
+class TestOptionalConfigContainerInvalidParameter : public ConfigItem
 {
 public:
     QList<TestConfigContainerItem> container;
@@ -203,7 +203,7 @@ private:
 
 // Test class declaration --------------------------------------------------------------------------
 
-class TestConfigLoader : public QObject
+class TestConfigItem : public QObject
 {
     Q_OBJECT
 
@@ -236,27 +236,27 @@ private slots:
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
 
-void TestConfigLoader::initTestCase()
+void TestConfigItem::initTestCase()
 {
 }
 
-void TestConfigLoader::cleanupTestCase()
+void TestConfigItem::cleanupTestCase()
 {
 }
 
 // Test init/cleanup methods -----------------------------------------------------------------------
 
-void TestConfigLoader::init()
+void TestConfigItem::init()
 {
 }
 
-void TestConfigLoader::cleanup()
+void TestConfigItem::cleanup()
 {
 }
 
 // Test: loadConfigAtPath() method -----------------------------------------------------------------
 
-void TestConfigLoader::testLoadConfigAtPath()
+void TestConfigItem::testLoadConfigAtPath()
 {
     QFETCH(QString, path);
     QFETCH(bool, expectedResult);
@@ -280,7 +280,7 @@ void TestConfigLoader::testLoadConfigAtPath()
     QCOMPARE(configStructure.param, expectedResultValue);
 }
 
-void TestConfigLoader::testLoadConfigAtPath_data()
+void TestConfigItem::testLoadConfigAtPath_data()
 {
     QTest::addColumn<QString>("path");
     QTest::addColumn<bool>("expectedResult");
@@ -302,7 +302,7 @@ void TestConfigLoader::testLoadConfigAtPath_data()
 
 // Test: loadOptionalConfigAtPath() method ---------------------------------------------------------
 
-void TestConfigLoader::testLoadOptionalConfigAtPath()
+void TestConfigItem::testLoadOptionalConfigAtPath()
 {
     QFETCH(QString, path);
     QFETCH(bool, expectedResult);
@@ -329,7 +329,7 @@ void TestConfigLoader::testLoadOptionalConfigAtPath()
     QCOMPARE(configStructure.param, expectedResultValue);
 }
 
-void TestConfigLoader::testLoadOptionalConfigAtPath_data()
+void TestConfigItem::testLoadOptionalConfigAtPath_data()
 {
     QTest::addColumn<QString>("path");
     QTest::addColumn<bool>("expectedResult");
@@ -353,7 +353,7 @@ void TestConfigLoader::testLoadOptionalConfigAtPath_data()
 
 // Test: loadConfig() method -----------------------------------------------------------------------
 
-void TestConfigLoader::testLoadConfig()
+void TestConfigItem::testLoadConfig()
 {
     QFETCH(QString, parameterName);
     QFETCH(bool, expectedResult);
@@ -378,7 +378,7 @@ void TestConfigLoader::testLoadConfig()
     QCOMPARE(configStructure.param, expectedResultValue);
 }
 
-void TestConfigLoader::testLoadConfig_data()
+void TestConfigItem::testLoadConfig_data()
 {
     QTest::addColumn<QString>("parameterName");
     QTest::addColumn<bool>("expectedResult");
@@ -396,7 +396,7 @@ void TestConfigLoader::testLoadConfig_data()
 
 // Test: loadOptionalConfig() method ---------------------------------------------------------------
 
-void TestConfigLoader::testLoadOptionalConfig()
+void TestConfigItem::testLoadOptionalConfig()
 {
     QFETCH(QString, parameterName);
     QFETCH(bool, expectedResult);
@@ -423,7 +423,7 @@ void TestConfigLoader::testLoadOptionalConfig()
     QCOMPARE(configStructure.param, expectedResultValue);
 }
 
-void TestConfigLoader::testLoadOptionalConfig_data()
+void TestConfigItem::testLoadOptionalConfig_data()
 {
     QTest::addColumn<QString>("parameterName");
     QTest::addColumn<bool>("expectedResult");
@@ -440,7 +440,7 @@ void TestConfigLoader::testLoadOptionalConfig_data()
 
 // Test: loading of required and optional config parameters ----------------------------------------
 
-void TestConfigLoader::testLoadConfigParameter()
+void TestConfigItem::testLoadConfigParameter()
 {
     // Read config file
     const QString configFilePath(QStringLiteral(":/TestData/LoadConfigParameter.json"));
@@ -528,7 +528,7 @@ void TestConfigLoader::testLoadConfigParameter()
 
 // Test: loading of required and optional config containers ----------------------------------------
 
-void TestConfigLoader::testLoadConfigContainer()
+void TestConfigItem::testLoadConfigContainer()
 {
     // Read config file
     const QString configFilePath(QStringLiteral(":/TestData/LoadConfigContainer.json"));
@@ -781,5 +781,5 @@ void TestConfigLoader::testLoadConfigContainer()
 
 // Main function -----------------------------------------------------------------------------------
 
-QTEST_MAIN(TestConfigLoader)
-#include "testConfigLoader.moc"
+QTEST_MAIN(TestConfigItem)
+#include "testConfigItem.moc"

@@ -39,7 +39,7 @@
 // Forward declarations
 namespace CppConfigFramework
 {
-class ConfigLoader;
+class ConfigItem;
 }
 
 // Macros
@@ -50,7 +50,7 @@ namespace CppConfigFramework
 {
 
 template<typename T>
-using DerivedFromConfigLoader = std::enable_if_t<std::is_base_of<ConfigLoader, T>::value, T>;
+using DerivedFromConfigItem = std::enable_if_t<std::is_base_of<ConfigItem, T>::value, T>;
 
 // -------------------------------------------------------------------------------------------------
 
@@ -67,7 +67,7 @@ struct ConfigContainerHelper;
 template <typename CI>
 struct ConfigContainerHelper<QVector<CI>>
 {
-    using ItemType = DerivedFromConfigLoader<CI>;
+    using ItemType = DerivedFromConfigItem<CI>;
 
     static void addItem(QVector<CI> *container, const QString &key, const CI &item)
     {
@@ -81,7 +81,7 @@ struct ConfigContainerHelper<QVector<CI>>
 template <typename CI>
 struct ConfigContainerHelper<QList<CI>>
 {
-    using ItemType = DerivedFromConfigLoader<CI>;
+    using ItemType = DerivedFromConfigItem<CI>;
 
     static void addItem(QList<CI> *container, const QString &key, const CI &item)
     {
@@ -95,7 +95,7 @@ struct ConfigContainerHelper<QList<CI>>
 template <typename CI>
 struct ConfigContainerHelper<QMap<QString, CI>>
 {
-    using ItemType = DerivedFromConfigLoader<CI>;
+    using ItemType = DerivedFromConfigItem<CI>;
 
     static void addItem(QMap<QString, CI> *container, const QString &key, const CI &item)
     {
@@ -108,7 +108,7 @@ struct ConfigContainerHelper<QMap<QString, CI>>
 template <typename CI>
 struct ConfigContainerHelper<QHash<QString, CI>>
 {
-    using ItemType = DerivedFromConfigLoader<CI>;
+    using ItemType = DerivedFromConfigItem<CI>;
 
     static void addItem(QHash<QString, CI> *container, const QString &key, const CI &item)
     {
@@ -121,7 +121,7 @@ struct ConfigContainerHelper<QHash<QString, CI>>
 template <typename CI>
 struct ConfigContainerHelper<std::vector<CI>>
 {
-    using ItemType = DerivedFromConfigLoader<CI>;
+    using ItemType = DerivedFromConfigItem<CI>;
 
     static void addItem(std::vector<CI> *container, const QString &key, const CI &item)
     {
@@ -142,7 +142,7 @@ struct ConfigContainerHelper<std::vector<CI>>
 template <typename CI>
 struct ConfigContainerHelper<std::list<CI>>
 {
-    using ItemType = DerivedFromConfigLoader<CI>;
+    using ItemType = DerivedFromConfigItem<CI>;
 
     static void addItem(std::list<CI> *container, const QString &key, const CI &item)
     {
@@ -163,7 +163,7 @@ struct ConfigContainerHelper<std::list<CI>>
 template <typename CI>
 struct ConfigContainerHelper<std::map<QString, CI>>
 {
-    using ItemType = DerivedFromConfigLoader<CI>;
+    using ItemType = DerivedFromConfigItem<CI>;
 
     static void addItem(std::map<QString, CI> *container, const QString &key, const CI &item)
     {
@@ -182,7 +182,7 @@ struct ConfigContainerHelper<std::map<QString, CI>>
 template <typename CI>
 struct ConfigContainerHelper<std::unordered_map<QString, CI>>
 {
-    using ItemType = DerivedFromConfigLoader<CI>;
+    using ItemType = DerivedFromConfigItem<CI>;
 
     static void addItem(std::unordered_map<QString, CI> *container,
                         const QString &key,

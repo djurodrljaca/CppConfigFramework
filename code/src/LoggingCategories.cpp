@@ -39,7 +39,7 @@ namespace CppConfigFramework
 namespace LoggingCategory
 {
 
-const QLoggingCategory ConfigLoader("CppConfigFramework.ConfigLoader");
+const QLoggingCategory ConfigItem("CppConfigFramework.ConfigItem");
 const QLoggingCategory ConfigNodePath("CppConfigFramework.ConfigNodePath");
 const QLoggingCategory ConfigParameterValidator("CppConfigFramework.ConfigParameterValidator");
 const QLoggingCategory ConfigReader("CppConfigFramework.ConfigReader");

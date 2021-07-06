@@ -15,11 +15,12 @@
 /*!
  * \file
  *
- * Contains a base class for loading configuration nodes to actual configuration parameters
+ * Contains a base class for loading configuration nodes to actual configuration parameters and
+ * storing actual configuration parameters to configuration nodes
  */
 
 // Own header
-#include <CppConfigFramework/ConfigLoader.hpp>
+#include <CppConfigFramework/ConfigItem.hpp>
 
 // C++ Config Framework includes
 
@@ -36,13 +37,13 @@
 namespace CppConfigFramework
 {
 
-bool ConfigLoader::loadConfig(const ConfigObjectNode &config)
+bool ConfigItem::loadConfig(const ConfigObjectNode &config)
 {
     if (!loadConfigParameters(config))
     {
         const QString errorString = QString("Failed to load the configuration parameters [%1]!")
                                     .arg(config.nodePath().path());
-        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigItem) << errorString;
         handleError(errorString);
         return false;
     }
@@ -54,7 +55,7 @@ bool ConfigLoader::loadConfig(const ConfigObjectNode &config)
     {
         const QString errorString = QString("Configuration [%1] is not valid! Error: [%2]")
                                     .arg(config.nodePath().path(), validationError);
-        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigItem) << errorString;
         handleError(errorString);
         return false;
     }
@@ -64,12 +65,12 @@ bool ConfigLoader::loadConfig(const ConfigObjectNode &config)
 
 // -------------------------------------------------------------------------------------------------
 
-bool ConfigLoader::loadConfig(const QString &parameterName, const ConfigObjectNode &config)
+bool ConfigItem::loadConfig(const QString &parameterName, const ConfigObjectNode &config)
 {
     if (!ConfigNodePath::validateNodeName(parameterName))
     {
         const QString errorString = QString("Parameter name [%1] is not valid!").arg(parameterName);
-        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigItem) << errorString;
         handleError(errorString);
         return false;
     }
@@ -79,14 +80,14 @@ bool ConfigLoader::loadConfig(const QString &parameterName, const ConfigObjectNo
 
 // -------------------------------------------------------------------------------------------------
 
-bool ConfigLoader::loadOptionalConfig(const QString &parameterName,
+bool ConfigItem::loadOptionalConfig(const QString &parameterName,
                                       const ConfigObjectNode &config,
                                       bool *loaded)
 {
     if (!ConfigNodePath::validateNodeName(parameterName))
     {
         const QString errorString = QString("Parameter name [%1] is not valid!").arg(parameterName);
-        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigItem) << errorString;
         handleError(errorString);
         return false;
     }
@@ -96,7 +97,7 @@ bool ConfigLoader::loadOptionalConfig(const QString &parameterName,
 
 // -------------------------------------------------------------------------------------------------
 
-bool ConfigLoader::loadConfigAtPath(const ConfigNodePath &path,
+bool ConfigItem::loadConfigAtPath(const ConfigNodePath &path,
                                     const ConfigObjectNode &config)
 {
     // Validate node path
@@ -104,7 +105,7 @@ bool ConfigLoader::loadConfigAtPath(const ConfigNodePath &path,
     {
         const QString errorString = QString("Configuration node path [%1] is not valid!")
                                     .arg(path.path());
-        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigItem) << errorString;
         handleError(errorString);
         return false;
     }
@@ -116,7 +117,7 @@ bool ConfigLoader::loadConfigAtPath(const ConfigNodePath &path,
     {
         const QString errorString = QString("Configuration node [%1] was not found!")
                                     .arg(path.toAbsolute(config.nodePath()).path());
-        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigItem) << errorString;
         handleError(errorString);
         return false;
     }
@@ -125,7 +126,7 @@ bool ConfigLoader::loadConfigAtPath(const ConfigNodePath &path,
     {
         const QString errorString = QString("Configuration node [%1] is not an Object node!")
                                     .arg(node->nodePath().path());
-        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigItem) << errorString;
         handleError(errorString);
         return false;
     }
@@ -136,14 +137,14 @@ bool ConfigLoader::loadConfigAtPath(const ConfigNodePath &path,
 
 // -------------------------------------------------------------------------------------------------
 
-bool ConfigLoader::loadConfigAtPath(const QString &path, const ConfigObjectNode &config)
+bool ConfigItem::loadConfigAtPath(const QString &path, const ConfigObjectNode &config)
 {
     return loadConfigAtPath(ConfigNodePath(path), config);
 }
 
 // -------------------------------------------------------------------------------------------------
 
-bool ConfigLoader::loadOptionalConfigAtPath(const ConfigNodePath &path,
+bool ConfigItem::loadOptionalConfigAtPath(const ConfigNodePath &path,
                                             const ConfigObjectNode &config,
                                             bool *loaded)
 {
@@ -152,7 +153,7 @@ bool ConfigLoader::loadOptionalConfigAtPath(const ConfigNodePath &path,
     {
         const QString errorString = QString("Configuration node path [%1] is not valid!")
                                     .arg(path.path());
-        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigItem) << errorString;
         handleError(errorString);
 
         if (loaded != nullptr)
@@ -179,7 +180,7 @@ bool ConfigLoader::loadOptionalConfigAtPath(const ConfigNodePath &path,
     {
         const QString errorString = QString("Configuration node [%1] is not an Object node!")
                                     .arg(node->nodePath().path());
-        qCWarning(CppConfigFramework::LoggingCategory::ConfigLoader) << errorString;
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigItem) << errorString;
         handleError(errorString);
         return false;
     }
@@ -196,7 +197,7 @@ bool ConfigLoader::loadOptionalConfigAtPath(const ConfigNodePath &path,
 
 // -------------------------------------------------------------------------------------------------
 
-bool ConfigLoader::loadOptionalConfigAtPath(const QString &path,
+bool ConfigItem::loadOptionalConfigAtPath(const QString &path,
                                             const ConfigObjectNode &config,
                                             bool *loaded)
 {
@@ -205,14 +206,14 @@ bool ConfigLoader::loadOptionalConfigAtPath(const QString &path,
 
 // -------------------------------------------------------------------------------------------------
 
-QString ConfigLoader::validateConfig() const
+QString ConfigItem::validateConfig() const
 {
     return {};
 }
 
 // -------------------------------------------------------------------------------------------------
 
-void ConfigLoader::handleError(const QString &error)
+void ConfigItem::handleError(const QString &error)
 {
     Q_UNUSED(error);
 }

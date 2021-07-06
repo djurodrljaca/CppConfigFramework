@@ -40,8 +40,8 @@ namespace CppConfigFramework
 namespace LoggingCategory
 {
 
-//! Logging category for ConfigLoader
-CPPCONFIGFRAMEWORK_EXPORT extern const QLoggingCategory ConfigLoader;
+//! Logging category for ConfigItem
+CPPCONFIGFRAMEWORK_EXPORT extern const QLoggingCategory ConfigItem;
 
 //! Logging category for ConfigNodePath
 CPPCONFIGFRAMEWORK_EXPORT extern const QLoggingCategory ConfigNodePath;
