@@ -46,7 +46,7 @@ const ConfigNodePath ConfigNodePath::ROOT_PATH = ConfigNodePath(ConfigNodePath::
 const QString ConfigNodePath::PARENT_PATH_VALUE = QStringLiteral("..");
 const ConfigNodePath ConfigNodePath::PARENT_PATH = ConfigNodePath(ConfigNodePath::PARENT_PATH_VALUE);
 
-static QChar NODE_PATH_SEPARATOR = QChar('/');
+static const QChar NODE_PATH_SEPARATOR = QChar('/');
 
 // -------------------------------------------------------------------------------------------------
 
@@ -101,23 +101,25 @@ bool ConfigNodePath::isValid() const
     }
 
     // Use different algorithms for absolute and relative path validation
+    const auto nodeNameList = nodeNames();
+
     if (isAbsolute())
     {
         // Make sure that the individual node names are valid and that there is no attempt to access
         // the parent node of the root node
-        QStringList workingNodeNames;
+        unsigned int depth = 0;
 
-        for (const QString &nodeName : nodeNames())
+        for (const QString &nodeName : nodeNameList)
         {
             if (nodeName == PARENT_PATH_VALUE)
             {
-                if (workingNodeNames.isEmpty())
+                if (depth == 0)
                 {
                     // Error, the root node does not have a parent node
                     return false;
                 }
 
-                workingNodeNames.removeLast();
+                depth--;
                 continue;
             }
 
@@ -127,13 +129,13 @@ bool ConfigNodePath::isValid() const
                 return false;
             }
 
-            workingNodeNames.append(nodeName);
+            depth++;
         }
     }
     else
     {
         // Make sure that just the individual node names are valid
-        for (const QString &nodeName : nodeNames())
+        for (const QString &nodeName : nodeNameList)
         {
             if ((nodeName != PARENT_PATH_VALUE) && (!validateNodeName(nodeName)))
             {
@@ -181,13 +183,15 @@ bool ConfigNodePath::resolveReferences()
     }
 
     // Use different algorithms for absolute and relative path validation
+    const auto nodeNameList = nodeNames();
+
     if (isAbsolute())
     {
         // Make sure that the individual node names are valid and that there is no attempt to access
         // the parent node of the root node
         QStringList workingNodeNames;
 
-        for (const QString &nodeName : nodeNames())
+        for (const QString &nodeName : nodeNameList)
         {
             if (nodeName.isEmpty())
             {
@@ -224,7 +228,7 @@ bool ConfigNodePath::resolveReferences()
         // Make sure that just the individual node names are valid
         QStringList workingNodeNames;
 
-        for (const QString &nodeName : nodeNames())
+        for (const QString &nodeName : nodeNameList)
         {
             if (nodeName.isEmpty())
             {

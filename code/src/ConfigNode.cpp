@@ -260,7 +260,9 @@ const ConfigNode *ConfigNode::nodeAtPath(const ConfigNodePath &nodePath) const
         currentNode = this;
     }
 
-    for (const QString &nodeName : nodePath.nodeNames())
+    const auto nodeNameList = nodePath.nodeNames();
+
+    for (const QString &nodeName : nodeNameList)
     {
         // Check if parent node is referenced
         if (nodeName == ConfigNodePath::PARENT_PATH_VALUE)
