@@ -74,6 +74,28 @@ struct ConfigContainerHelper<QVector<CI>>
         Q_UNUSED(key)
         container->append(item);
     }
+
+    static std::map<QString, ConfigItem*> toMap(QVector<CI> &container)
+    {
+        if (container.isEmpty())
+        {
+            return {};
+        }
+
+        const int containerSize = container.size();
+        const int fieldWidth = QString::number(containerSize).size() - 1;
+        std::map<QString, ConfigItem*> map;
+
+        for (int i = 0; i < containerSize; i++)
+        {
+            const QString key = "Item" + QString::number(i).rightJustified(fieldWidth, '0');
+            ConfigItem *value = &container[i];
+
+            map.emplace(key, value);
+        }
+
+        return map;
+    }
 };
 
 // -------------------------------------------------------------------------------------------------
@@ -88,6 +110,28 @@ struct ConfigContainerHelper<QList<CI>>
         Q_UNUSED(key)
         container->append(item);
     }
+
+    static std::map<QString, ConfigItem*> toMap(QList<CI> &container)
+    {
+        if (container.isEmpty())
+        {
+            return {};
+        }
+
+        const int containerSize = container.size();
+        const int fieldWidth = QString::number(containerSize).size() - 1;
+        std::map<QString, ConfigItem*> map;
+
+        for (int i = 0; i < containerSize; i++)
+        {
+            const QString key = "Item" + QString::number(i).rightJustified(fieldWidth, '0');
+            ConfigItem *value = &container[i];
+
+            map.emplace(key, value);
+        }
+
+        return map;
+    }
 };
 
 // -------------------------------------------------------------------------------------------------
@@ -101,6 +145,23 @@ struct ConfigContainerHelper<QMap<QString, CI>>
     {
         container->insert(key, item);
     }
+
+    static std::map<QString, ConfigItem*> toMap(QMap<QString, CI> &container)
+    {
+        if (container.isEmpty())
+        {
+            return {};
+        }
+
+        std::map<QString, ConfigItem*> map;
+
+        for (auto it = container.begin(); it != container.end(); it++)
+        {
+            map.emplace(it.key(), &it.value());
+        }
+
+        return map;
+    }
 };
 
 // -------------------------------------------------------------------------------------------------
@@ -113,6 +174,23 @@ struct ConfigContainerHelper<QHash<QString, CI>>
     static void addItem(QHash<QString, CI> *container, const QString &key, const CI &item)
     {
         container->insert(key, item);
+    }
+
+    static std::map<QString, ConfigItem*> toMap(QHash<QString, CI> &container)
+    {
+        if (container.isEmpty())
+        {
+            return {};
+        }
+
+        std::map<QString, ConfigItem*> map;
+
+        for (auto it = container.begin(); it != container.end(); it++)
+        {
+            map.emplace(it.key(), &it.value());
+        }
+
+        return map;
     }
 };
 
@@ -130,10 +208,32 @@ struct ConfigContainerHelper<std::vector<CI>>
     }
 
     template<IsMovable<CI> = true>
-    static void addItem(std::vector<QString, CI> *container, const QString &key, CI &&item)
+    static void addItem(std::vector<CI> *container, const QString &key, CI &&item)
     {
         Q_UNUSED(key)
         container->emplace_back(std::move(item));
+    }
+
+    static std::map<QString, ConfigItem*> toMap(std::vector<CI> &container)
+    {
+        if (container.empty())
+        {
+            return {};
+        }
+
+        const int containerSize = container.size();
+        const int fieldWidth = QString::number(containerSize).size() - 1;
+        std::map<QString, ConfigItem*> map;
+
+        for (int i = 0; i < containerSize; i++)
+        {
+            const QString key = "Item" + QString::number(i).rightJustified(fieldWidth, '0');
+            ConfigItem *value = &container.at(i);
+
+            map.emplace(key, value);
+        }
+
+        return map;
     }
 };
 
@@ -151,10 +251,33 @@ struct ConfigContainerHelper<std::list<CI>>
     }
 
     template<IsMovable<CI> = true>
-    static void addItem(std::list<QString, CI> *container, const QString &key, CI &&item)
+    static void addItem(std::list<CI> *container, const QString &key, CI &&item)
     {
         Q_UNUSED(key)
         container->emplace_back(std::move(item));
+    }
+
+    static std::map<QString, ConfigItem*> toMap(std::list<CI> &container)
+    {
+        if (container.empty())
+        {
+            return {};
+        }
+
+        const int fieldWidth = QString::number(container.size()).size() - 1;
+        std::map<QString, ConfigItem*> map;
+        int i = 0;
+
+        for (ConfigItem &item : container)
+        {
+            const QString key = "Item" + QString::number(i).rightJustified(fieldWidth, '0');
+            ConfigItem *value = &item;
+
+            map.emplace(key, value);
+            i++;
+        }
+
+        return map;
     }
 };
 
@@ -174,6 +297,23 @@ struct ConfigContainerHelper<std::map<QString, CI>>
     static void addItem(std::map<QString, CI> *container, const QString &key, CI &&item)
     {
         container->emplace(key, std::move(item));
+    }
+
+    static std::map<QString, ConfigItem*> toMap(std::map<QString, CI> &container)
+    {
+        if (container.empty())
+        {
+            return {};
+        }
+
+        std::map<QString, ConfigItem*> map;
+
+        for (auto &item : container)
+        {
+            map.emplace(item.first, &item.second);
+        }
+
+        return map;
     }
 };
 
@@ -197,6 +337,23 @@ struct ConfigContainerHelper<std::unordered_map<QString, CI>>
                         CI &&item)
     {
         container->emplace(key, std::move(item));
+    }
+
+    static std::map<QString, ConfigItem*> toMap(std::unordered_map<QString, CI> &container)
+    {
+        if (container.empty())
+        {
+            return {};
+        }
+
+        std::map<QString, ConfigItem*> map;
+
+        for (auto &item : container)
+        {
+            map.emplace(item.first, &item.second);
+        }
+
+        return map;
     }
 };
 

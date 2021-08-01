@@ -30,6 +30,7 @@
 
 // Cedar Framework includes
 #include <CedarFramework/Deserialization.hpp>
+#include <CedarFramework/Serialization.hpp>
 
 // Qt includes
 
@@ -156,6 +157,47 @@ public:
     bool loadOptionalConfigAtPath(const QString &path,
                                   const ConfigObjectNode &config,
                                   bool *loaded = nullptr);
+
+    /*!
+     * Stores configuration parameters for this configuration structure
+     *
+     * \param[out]  config  Configuration node to which this configuration structure should be
+     *                      stored to
+     *
+     * \retval  true    Success
+     * \retval  false   Failure
+     */
+    bool storeConfig(ConfigObjectNode *config);
+
+    /*!
+     * Stores configuration parameters for this configuration structure
+     *
+     * \param   parameterName   Name of the parameter (member in 'config') for this configuration
+     *                          structure
+     *
+     * \param[out]  config  Configuration node to which this configuration structure should be
+     *                      stored to
+     *
+     * \retval  true    Success
+     * \retval  false   Failure
+     */
+    bool storeConfig(const QString &parameterName, ConfigObjectNode *config);
+
+    /*!
+     * Stores configuration parameters for this configuration structure
+     *
+     * \param   path    Node path to the configuration node for this configuration structure
+     *
+     * \param[out]  config  Configuration node to which this configuration structure should be
+     *                      stored to
+     *
+     * \retval  true    Success
+     * \retval  false   Failure
+     */
+    bool storeConfigAtPath(const ConfigNodePath &path, ConfigObjectNode *config);
+
+    //! \copydoc    ConfigItem::storeConfigAtPath()
+    bool storeConfigAtPath(const QString &path, ConfigObjectNode *config);
 
 protected:
     /*!
@@ -336,6 +378,54 @@ protected:
             ContainerItemCreator<typename ConfigContainerHelper<T>::ItemType> itemCreator,
             bool *loaded = nullptr);
 
+    /*!
+     * Loads the configuration parameter to the configuration node
+     *
+     * \tparam  T   Data type of the parameter to store
+     *
+     * \param   parameterValue  Configuration parameter value
+     * \param   parameterName   Name of the parameter (member name in the configuration node)
+     *
+     * \param[out]  config  Configuration node to which this configuration parameter should be
+     *                      stored to
+     *
+     * \retval  true    Success
+     * \retval  false   Failure
+     */
+    template<typename T>
+    bool storeConfigParameter(const T &parameterValue,
+                              const QString &parameterName,
+                              ConfigObjectNode *config);
+
+    /*!
+     * Stores the configuration container to the configuration node
+     *
+     * \tparam  T   Data type of the container to store (its value type needs to be derived from
+     *              ConfigItem class)
+     *
+     * \param   container       Configuration container
+     * \param   parameterName   Name of the parameter (member name in the configuration node)
+     *
+     * \param[out]  config  Configuration node to which this configuration parameter should be
+     *                      stored to
+     *
+     * \retval  true    Success
+     * \retval  false   Failure
+     */
+    template<typename T>
+    bool storeConfigContainer(T &container,
+                              const QString &parameterName,
+                              ConfigObjectNode *config);
+
+    /*!
+     * Converts a JSON value to a string in JSON format
+     *
+     * \param   value   JSON value
+     *
+     * \return  String representation of the JSON value
+     */
+    static QString jsonToString(const QJsonValue &value);
+
 private:
     /*!
      * Loads the configuration parameter from the configuration node with validation
@@ -421,6 +511,17 @@ private:
     virtual bool loadConfigParameters(const ConfigObjectNode &config) = 0;
 
     /*!
+     * Stores configuration parameters for this configuration structure
+     *
+     * \param[out]  config  Configuration node to which this configuration structure should be
+     *                      stored to
+     *
+     * \retval  true    Success
+     * \retval  false   Failure
+     */
+    virtual bool storeConfigParameters(ConfigObjectNode *config) = 0;
+
+    /*!
      * Validates the configuration structure
      *
      * \return  Empty string if the configuration structure is valid
@@ -447,8 +548,8 @@ private:
 
 template<typename T>
 bool ConfigItem::loadRequiredConfigParameter(T *parameterValue,
-                                               const QString &parameterName,
-                                               const ConfigObjectNode &config)
+                                             const QString &parameterName,
+                                             const ConfigObjectNode &config)
 {
     return loadRequiredConfigParameter(parameterValue,
                                        parameterName,
@@ -460,9 +561,9 @@ bool ConfigItem::loadRequiredConfigParameter(T *parameterValue,
 
 template<typename T>
 bool ConfigItem::loadRequiredConfigParameter(T *parameterValue,
-                                               const QString &parameterName,
-                                               const ConfigObjectNode &config,
-                                               ConfigParameterValidator<T> validator)
+                                             const QString &parameterName,
+                                             const ConfigObjectNode &config,
+                                             ConfigParameterValidator<T> validator)
 {
     // Validate parameters
     Q_ASSERT(parameterValue != nullptr);
@@ -498,9 +599,9 @@ bool ConfigItem::loadRequiredConfigParameter(T *parameterValue,
 
 template<typename T>
 bool ConfigItem::loadOptionalConfigParameter(T *parameterValue,
-                                               const QString &parameterName,
-                                               const ConfigObjectNode &config,
-                                               bool *loaded)
+                                             const QString &parameterName,
+                                             const ConfigObjectNode &config,
+                                             bool *loaded)
 {
     return loadOptionalConfigParameter(parameterValue,
                                        parameterName,
@@ -513,10 +614,10 @@ bool ConfigItem::loadOptionalConfigParameter(T *parameterValue,
 
 template<typename T>
 bool ConfigItem::loadOptionalConfigParameter(T *parameterValue,
-                                               const QString &parameterName,
-                                               const ConfigObjectNode &config,
-                                               ConfigParameterValidator<T> validator,
-                                               bool *loaded)
+                                             const QString &parameterName,
+                                             const ConfigObjectNode &config,
+                                             ConfigParameterValidator<T> validator,
+                                             bool *loaded)
 {
     // Validate parameters
     Q_ASSERT(parameterValue != nullptr);
@@ -563,8 +664,8 @@ bool ConfigItem::loadOptionalConfigParameter(T *parameterValue,
 
 template<typename T>
 bool ConfigItem::loadRequiredConfigContainer(T *container,
-                                               const QString &parameterName,
-                                               const ConfigObjectNode &config)
+                                             const QString &parameterName,
+                                             const ConfigObjectNode &config)
 {
     using ItemType = typename ConfigContainerHelper<T>::ItemType;
 
@@ -619,9 +720,9 @@ bool ConfigItem::loadRequiredConfigContainer(
 
 template<typename T>
 bool ConfigItem::loadOptionalConfigContainer(T *container,
-                                               const QString &parameterName,
-                                               const ConfigObjectNode &config,
-                                               bool *loaded)
+                                             const QString &parameterName,
+                                             const ConfigObjectNode &config,
+                                             bool *loaded)
 {
     using ItemType = typename ConfigContainerHelper<T>::ItemType;
 
@@ -683,9 +784,81 @@ bool ConfigItem::loadOptionalConfigContainer(
 // -------------------------------------------------------------------------------------------------
 
 template<typename T>
+bool ConfigItem::storeConfigParameter(const T &parameterValue,
+                                      const QString &parameterName,
+                                      ConfigObjectNode *config)
+{
+    // Validate parameters
+    Q_ASSERT(config != nullptr);
+
+    if (!ConfigNodePath::validateNodeName(parameterName))
+    {
+        const QString errorString = QString("Configuration parameter name [%1] is not valid "
+                                            "(configuration node [%2])!")
+                                    .arg(parameterName, config->nodePath().path());
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigItem) << errorString;
+        handleError(errorString);
+        return false;
+    }
+
+    // Convert parameter value to JSON
+    const auto jsonValue = CedarFramework::serialize(parameterValue);
+
+    // Store configuration parameter to the configuration node
+    if (!config->setMember(parameterName, std::make_unique<ConfigValueNode>(jsonValue)))
+    {
+        const QString errorString = QString("Failed to store configuration parameter with name "
+                                            "[%1] and value: [%2]")
+                                    .arg(parameterName, jsonToString(jsonValue));
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigItem) << errorString;
+        handleError(errorString);
+        return false;
+    }
+
+    return true;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+template<typename T>
+bool ConfigItem::storeConfigContainer(T &container,
+                                      const QString &parameterName,
+                                      ConfigObjectNode *config)
+{
+    // Validate parameters
+    Q_ASSERT(config != nullptr);
+
+    if (!ConfigNodePath::validateNodeName(parameterName))
+    {
+        const QString errorString = QString("Configuration parameter name [%1] is not valid "
+                                            "(configuration node [%2])!")
+                                    .arg(parameterName, config->nodePath().path());
+        qCWarning(CppConfigFramework::LoggingCategory::ConfigItem) << errorString;
+        handleError(errorString);
+        return false;
+    }
+
+    // Convert container to an Object node
+    Q_ASSERT(config->setMember(parameterName, std::make_unique<ConfigObjectNode>()));
+    ConfigObjectNode *parameterNode = &config->member(parameterName)->toObject();
+
+    for (auto &it : ConfigContainerHelper<T>::toMap(container))
+    {
+        const QString &key = it.first;
+        ConfigItem *containerItem = it.second;
+
+        containerItem->storeConfig(key, parameterNode);
+    }
+
+    return true;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+template<typename T>
 bool ConfigItem::loadConfigParameterFromNode(T *parameterValue,
-                                               const ConfigNode &node,
-                                               ConfigParameterValidator<T> validator)
+                                             const ConfigNode &node,
+                                             ConfigParameterValidator<T> validator)
 {
     // Load the node value to the parameter
     QJsonValue nodeJsonValue;
