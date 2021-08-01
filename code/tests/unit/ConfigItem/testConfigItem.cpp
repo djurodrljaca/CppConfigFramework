@@ -24,6 +24,7 @@
 
 // Qt includes
 #include <QtCore/QDebug>
+#include <QtCore/QJsonDocument>
 #include <QtCore/QLine>
 #include <QtTest/QTest>
 
@@ -61,6 +62,11 @@ private:
                                            makeConfigParameterRangeValidator(-50, 50));
     }
 
+    bool storeConfigParameters(ConfigObjectNode *config) override
+    {
+        return storeConfigParameter(param, "param", config);
+    }
+
     QString validateConfig() const override
     {
         if (param > 20)
@@ -82,6 +88,11 @@ private:
     {
         return loadRequiredConfigParameter(&param, "0param", config);
     }
+
+    bool storeConfigParameters(ConfigObjectNode *config) override
+    {
+        return storeConfigParameter(param, "0param", config);
+    }
 };
 
 class TestOptionalConfigParameter : public ConfigItem
@@ -99,6 +110,11 @@ private:
                                            makeConfigParameterRangeValidator(-50, 50),
                                            &loaded);
     }
+
+    bool storeConfigParameters(ConfigObjectNode *config) override
+    {
+        return storeConfigParameter(param, "param", config);
+    }
 };
 
 class TestOptionalConfigInvalidParameter : public ConfigItem
@@ -111,6 +127,11 @@ private:
     {
         bool loaded = false;
         return loadOptionalConfigParameter(&param, "0param", config, &loaded);
+    }
+
+    bool storeConfigParameters(ConfigObjectNode *config) override
+    {
+        return storeConfigParameter(param, "0param", config);
     }
 };
 
@@ -134,6 +155,11 @@ private:
                                            config,
                                            makeConfigParameterRangeValidator(-50, 50));
     }
+
+    bool storeConfigParameters(ConfigObjectNode *config) override
+    {
+        return storeConfigParameter(param, "param", config);
+    }
 };
 
 template<typename T>
@@ -155,6 +181,11 @@ private:
                                            config,
                                            createItem);
     }
+
+    bool storeConfigParameters(ConfigObjectNode *config) override
+    {
+        return storeConfigContainer(container, "container", config);
+    }
 };
 
 template<typename T>
@@ -174,6 +205,11 @@ private:
         bool loaded = false;
         return loadOptionalConfigContainer(&container, "container", config, createItem, &loaded);
     }
+
+    bool storeConfigParameters(ConfigObjectNode *config) override
+    {
+        return storeConfigContainer(container, "container", config);
+    }
 };
 
 class TestRequiredConfigContainerInvalidParameter : public ConfigItem
@@ -185,6 +221,11 @@ private:
     bool loadConfigParameters(const ConfigObjectNode &config) override
     {
         return loadRequiredConfigContainer(&container, "0container", config);
+    }
+
+    bool storeConfigParameters(ConfigObjectNode *config) override
+    {
+        return storeConfigContainer(container, "0container", config);
     }
 };
 
@@ -199,7 +240,15 @@ private:
         bool loaded = false;
         return loadOptionalConfigContainer(&container, "0container", config, &loaded);
     }
+
+    bool storeConfigParameters(ConfigObjectNode *config) override
+    {
+        return storeConfigContainer(container, "0container", config);
+    }
 };
+
+using ConfigItemPtr = std::shared_ptr<ConfigItem>;
+Q_DECLARE_METATYPE(ConfigItemPtr)
 
 // Test class declaration --------------------------------------------------------------------------
 
@@ -232,6 +281,15 @@ private slots:
     void testLoadConfigParameter();
 
     void testLoadConfigContainer();
+
+    void testStoreConfigAtPath();
+    void testStoreConfigAtPath_data();
+
+    void testStoreConfigAtPathNegativeTests();
+
+    void testStoreConfig();
+
+    void testStoreConfigContainer();
 };
 
 // Test Case init/cleanup methods ------------------------------------------------------------------
@@ -776,6 +834,589 @@ void TestConfigItem::testLoadConfigContainer()
 
         QCOMPARE(requiredAssociative.loadConfig("configWithInvalidItem", *config), false);
         QCOMPARE(optionalAssociative.loadConfig("configWithInvalidItem", *config), false);
+    }
+}
+
+// Test: storeConfigAtPath() method ----------------------------------------------------------------
+
+void TestConfigItem::testStoreConfigAtPath()
+{
+    QFETCH(ConfigItemPtr, configItem);
+    QFETCH(QString, path);
+    QFETCH(bool, withValueNode);
+    QFETCH(QJsonObject, expected);
+
+    ConfigObjectNode root;
+
+    if (withValueNode)
+    {
+        root.setMember("value", ConfigValueNode(""));
+    }
+
+    QVERIFY(configItem->storeConfigAtPath(path, &root));
+
+    auto result = ConfigWriter::writeToJsonConfig(root);
+    QCOMPARE(result.toJson(), QJsonDocument(expected).toJson());
+}
+
+void TestConfigItem::testStoreConfigAtPath_data()
+{
+    QTest::addColumn<ConfigItemPtr>("configItem");
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<bool>("withValueNode");
+    QTest::addColumn<QJsonObject>("expected");
+
+    {
+        auto configItem = std::make_shared<TestRequiredConfigParameter>();
+        configItem->param = 1;
+
+        QJsonObject expected
+        {
+            {
+                "config", QJsonObject
+                {
+                    {
+                        "test" , QJsonObject
+                        {
+                            { "#param", 1 }
+                        }
+                    }
+                }
+            }
+        };
+
+        QTest::newRow("sub-node") << static_cast<ConfigItemPtr>(configItem)
+                                  << "test"
+                                  << false
+                                  << expected;
+    }
+
+    {
+        auto configItem = std::make_shared<TestRequiredConfigParameter>();
+        configItem->param = 123;
+
+        QJsonObject expected
+        {
+            {
+                "config", QJsonObject
+                {
+                    {
+                        "test1" , QJsonObject
+                        {
+                            {
+                                "test2" , QJsonObject
+                                {
+                                    { "#param", 123 }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        QTest::newRow("sub-sub-node") << static_cast<ConfigItemPtr>(configItem)
+                                      << "test1/test2"
+                                      << false
+                                      << expected;
+    }
+
+    {
+        auto configItem = std::make_shared<TestRequiredConfigParameter>();
+        configItem->param = 1;
+
+        QJsonObject expected
+        {
+            {
+                "config", QJsonObject
+                {
+                    { "#value" , "" },
+                    {
+                        "test" , QJsonObject
+                        {
+                            { "#param", 1 }
+                        }
+                    }
+                }
+            }
+        };
+
+        QTest::newRow("with parent reference") << static_cast<ConfigItemPtr>(configItem)
+                                               << "value/../test"
+                                               << true
+                                               << expected;
+    }
+}
+
+// Test: negative tests for storeConfigAtPath() method ---------------------------------------------
+
+void TestConfigItem::testStoreConfigAtPathNegativeTests()
+{
+    ConfigObjectNode root;
+    root.setMember("value", ConfigValueNode(1));
+
+    TestRequiredConfigParameter configItem;
+    configItem.param = 1;
+
+    QVERIFY(!configItem.storeConfigAtPath("path", nullptr));
+    QVERIFY(!configItem.storeConfigAtPath("", &root));
+    QVERIFY(!configItem.storeConfigAtPath("0path", &root));
+    QVERIFY(!configItem.storeConfigAtPath("value", &root));
+    QVERIFY(!configItem.storeConfigAtPath("value/path", &root));
+}
+
+// Test: tests for storeConfig() methods -----------------------------------------------------------
+
+void TestConfigItem::testStoreConfig()
+{
+    ConfigObjectNode root;
+
+    TestRequiredConfigParameter configItem;
+    configItem.param = 1;
+
+    // storeConfig(config)
+    QVERIFY(!configItem.storeConfig(nullptr));
+    QVERIFY(configItem.storeConfig(&root));
+
+    QCOMPARE(root.count(), 1);
+    QVERIFY(root.contains("param"));
+    QVERIFY(root.member("param")->isValue());
+    QCOMPARE(root.member("param")->toValue().value(), QJsonValue(1));
+
+    TestRequiredConfigInvalidParameter invalidConfigItem;
+    invalidConfigItem.param = 1;
+
+    root.removeAll();
+    QVERIFY(!invalidConfigItem.storeConfig(&root));
+
+    // storeConfig(parameterName, config)
+    root.removeAll();
+
+    QVERIFY(!configItem.storeConfig("", &root));
+    QVERIFY(!configItem.storeConfig("0test", &root));
+    QVERIFY(configItem.storeConfig("test", &root));
+
+    const auto *node = root.nodeAtPath("test/param");
+    QVERIFY(node != nullptr);
+    QVERIFY(node->isValue());
+    QCOMPARE(node->toValue().value(), QJsonValue(1));
+}
+
+// Test: tests for storeConfigContainer() method ---------------------------------------------------
+
+void TestConfigItem::testStoreConfigContainer()
+{
+    std::map<QString, int> expected =
+    {
+        { "aaa", 1 },
+        { "bbb", 2 },
+        { "ccc", 3 }
+    };
+
+    // Qt containers -------------------------------------------------------------------------------
+
+    // QVector
+    {
+        ConfigObjectNode root;
+
+        TestRequiredConfigContainer<QVector<TestConfigContainerItem>> configItem;
+
+        for (const auto &item : expected)
+        {
+            configItem.container.append(TestConfigContainerItem(item.first, item.second));
+        }
+
+        QVERIFY(configItem.storeConfig(&root));
+
+        QCOMPARE(root.count(), 1);
+        QVERIFY(root.contains("container"));
+
+        const auto *node = root.member("container");
+        QVERIFY(node != nullptr);
+        QVERIFY(node->isObject());
+
+        const auto &containerNode = node->toObject();
+        QCOMPARE(containerNode.count(), 3);
+
+        int index = 0;
+        for (const auto &item : expected)
+        {
+            const QString name = "Item" + QString::number(index);
+            const int value = item.second;
+
+            QVERIFY(containerNode.contains(name));
+
+            const auto *itemNode = containerNode.member(name);
+            QVERIFY(itemNode != nullptr);
+            QVERIFY(itemNode->isObject());
+
+            const auto &itemObject = itemNode->toObject();
+            QCOMPARE(itemObject.count(), 1);
+
+            const auto *paramNode = itemObject.member("param");
+            QVERIFY(paramNode != nullptr);
+            QVERIFY(paramNode->isValue());
+
+            const auto &paramValue = paramNode->toValue();
+            QCOMPARE(paramValue.value(), value);
+
+            index++;
+        }
+    }
+
+    // QList
+    {
+        ConfigObjectNode root;
+
+        TestRequiredConfigContainer<QList<TestConfigContainerItem>> configItem;
+
+        for (const auto &item : expected)
+        {
+            configItem.container.append(TestConfigContainerItem(item.first, item.second));
+        }
+
+        QVERIFY(configItem.storeConfig(&root));
+
+        QCOMPARE(root.count(), 1);
+        QVERIFY(root.contains("container"));
+
+        const auto *node = root.member("container");
+        QVERIFY(node != nullptr);
+        QVERIFY(node->isObject());
+
+        const auto &containerNode = node->toObject();
+        QCOMPARE(containerNode.count(), 3);
+
+        int index = 0;
+        for (const auto &item : expected)
+        {
+            const QString name = "Item" + QString::number(index);
+            const int value = item.second;
+
+            QVERIFY(containerNode.contains(name));
+
+            const auto *itemNode = containerNode.member(name);
+            QVERIFY(itemNode != nullptr);
+            QVERIFY(itemNode->isObject());
+
+            const auto &itemObject = itemNode->toObject();
+            QCOMPARE(itemObject.count(), 1);
+
+            const auto *paramNode = itemObject.member("param");
+            QVERIFY(paramNode != nullptr);
+            QVERIFY(paramNode->isValue());
+
+            const auto &paramValue = paramNode->toValue();
+            QCOMPARE(paramValue.value(), value);
+
+            index++;
+        }
+    }
+
+    // QMap
+    {
+        ConfigObjectNode root;
+
+        TestRequiredConfigContainer<QMap<QString, TestConfigContainerItem>> configItem;
+
+        for (const auto &item : expected)
+        {
+            configItem.container.insert(item.first,
+                                        TestConfigContainerItem(item.first, item.second));
+        }
+
+        QVERIFY(configItem.storeConfig(&root));
+
+        QCOMPARE(root.count(), 1);
+        QVERIFY(root.contains("container"));
+
+        const auto *node = root.member("container");
+        QVERIFY(node != nullptr);
+        QVERIFY(node->isObject());
+
+        const auto &containerNode = node->toObject();
+        QCOMPARE(containerNode.count(), 3);
+
+        for (const auto &item : expected)
+        {
+            const QString &name = item.first;
+            const int value = item.second;
+
+            QVERIFY(containerNode.contains(name));
+
+            const auto *itemNode = containerNode.member(name);
+            QVERIFY(itemNode != nullptr);
+            QVERIFY(itemNode->isObject());
+
+            const auto &itemObject = itemNode->toObject();
+            QCOMPARE(itemObject.count(), 1);
+
+            const auto *paramNode = itemObject.member("param");
+            QVERIFY(paramNode != nullptr);
+            QVERIFY(paramNode->isValue());
+
+            const auto &paramValue = paramNode->toValue();
+            QCOMPARE(paramValue.value(), value);
+        }
+    }
+
+    // QHash
+    {
+        ConfigObjectNode root;
+
+        TestRequiredConfigContainer<QHash<QString, TestConfigContainerItem>> configItem;
+
+        for (const auto &item : expected)
+        {
+            configItem.container.insert(item.first,
+                                        TestConfigContainerItem(item.first, item.second));
+        }
+
+        QVERIFY(configItem.storeConfig(&root));
+
+        QCOMPARE(root.count(), 1);
+        QVERIFY(root.contains("container"));
+
+        const auto *node = root.member("container");
+        QVERIFY(node != nullptr);
+        QVERIFY(node->isObject());
+
+        const auto &containerNode = node->toObject();
+        QCOMPARE(containerNode.count(), 3);
+
+        for (const auto &item : expected)
+        {
+            const QString &name = item.first;
+            const int value = item.second;
+
+            QVERIFY(containerNode.contains(name));
+
+            const auto *itemNode = containerNode.member(name);
+            QVERIFY(itemNode != nullptr);
+            QVERIFY(itemNode->isObject());
+
+            const auto &itemObject = itemNode->toObject();
+            QCOMPARE(itemObject.count(), 1);
+
+            const auto *paramNode = itemObject.member("param");
+            QVERIFY(paramNode != nullptr);
+            QVERIFY(paramNode->isValue());
+
+            const auto &paramValue = paramNode->toValue();
+            QCOMPARE(paramValue.value(), value);
+        }
+    }
+
+    // STL containers ------------------------------------------------------------------------------
+
+    // std::vector
+    {
+        ConfigObjectNode root;
+
+        TestRequiredConfigContainer<std::vector<TestConfigContainerItem>> configItem;
+
+        for (const auto &item : expected)
+        {
+            configItem.container.emplace_back(item.first, item.second);
+        }
+
+        QVERIFY(configItem.storeConfig(&root));
+
+        QCOMPARE(root.count(), 1);
+        QVERIFY(root.contains("container"));
+
+        const auto *node = root.member("container");
+        QVERIFY(node != nullptr);
+        QVERIFY(node->isObject());
+
+        const auto &containerNode = node->toObject();
+        QCOMPARE(containerNode.count(), 3);
+
+        int index = 0;
+        for (const auto &item : expected)
+        {
+            const QString name = "Item" + QString::number(index);
+            const int value = item.second;
+
+            QVERIFY(containerNode.contains(name));
+
+            const auto *itemNode = containerNode.member(name);
+            QVERIFY(itemNode != nullptr);
+            QVERIFY(itemNode->isObject());
+
+            const auto &itemObject = itemNode->toObject();
+            QCOMPARE(itemObject.count(), 1);
+
+            const auto *paramNode = itemObject.member("param");
+            QVERIFY(paramNode != nullptr);
+            QVERIFY(paramNode->isValue());
+
+            const auto &paramValue = paramNode->toValue();
+            QCOMPARE(paramValue.value(), value);
+
+            index++;
+        }
+    }
+
+    // std::list
+    {
+        ConfigObjectNode root;
+
+        TestRequiredConfigContainer<std::list<TestConfigContainerItem>> configItem;
+
+        for (const auto &item : expected)
+        {
+            configItem.container.emplace_back(item.first, item.second);
+        }
+
+        QVERIFY(configItem.storeConfig(&root));
+
+        QCOMPARE(root.count(), 1);
+        QVERIFY(root.contains("container"));
+
+        const auto *node = root.member("container");
+        QVERIFY(node != nullptr);
+        QVERIFY(node->isObject());
+
+        const auto &containerNode = node->toObject();
+        QCOMPARE(containerNode.count(), 3);
+
+        int index = 0;
+        for (const auto &item : expected)
+        {
+            const QString name = "Item" + QString::number(index);
+            const int value = item.second;
+
+            QVERIFY(containerNode.contains(name));
+
+            const auto *itemNode = containerNode.member(name);
+            QVERIFY(itemNode != nullptr);
+            QVERIFY(itemNode->isObject());
+
+            const auto &itemObject = itemNode->toObject();
+            QCOMPARE(itemObject.count(), 1);
+
+            const auto *paramNode = itemObject.member("param");
+            QVERIFY(paramNode != nullptr);
+            QVERIFY(paramNode->isValue());
+
+            const auto &paramValue = paramNode->toValue();
+            QCOMPARE(paramValue.value(), value);
+
+            index++;
+        }
+    }
+
+    // std::map
+    {
+        ConfigObjectNode root;
+
+        TestRequiredConfigContainer<std::map<QString, TestConfigContainerItem>> configItem;
+
+        for (const auto &item : expected)
+        {
+            configItem.container.emplace(item.first,
+                                         TestConfigContainerItem(item.first, item.second));
+        }
+
+        QVERIFY(configItem.storeConfig(&root));
+
+        QCOMPARE(root.count(), 1);
+        QVERIFY(root.contains("container"));
+
+        const auto *node = root.member("container");
+        QVERIFY(node != nullptr);
+        QVERIFY(node->isObject());
+
+        const auto &containerNode = node->toObject();
+        QCOMPARE(containerNode.count(), 3);
+
+        for (const auto &item : expected)
+        {
+            const QString &name = item.first;
+            const int value = item.second;
+
+            QVERIFY(containerNode.contains(name));
+
+            const auto *itemNode = containerNode.member(name);
+            QVERIFY(itemNode != nullptr);
+            QVERIFY(itemNode->isObject());
+
+            const auto &itemObject = itemNode->toObject();
+            QCOMPARE(itemObject.count(), 1);
+
+            const auto *paramNode = itemObject.member("param");
+            QVERIFY(paramNode != nullptr);
+            QVERIFY(paramNode->isValue());
+
+            const auto &paramValue = paramNode->toValue();
+            QCOMPARE(paramValue.value(), value);
+        }
+    }
+
+    // std::unordered_map
+    {
+        ConfigObjectNode root;
+
+        TestRequiredConfigContainer<std::unordered_map<QString, TestConfigContainerItem>> configItem;
+
+        for (const auto &item : expected)
+        {
+            configItem.container.emplace(item.first,
+                                         TestConfigContainerItem(item.first, item.second));
+        }
+
+        QVERIFY(configItem.storeConfig(&root));
+
+        QCOMPARE(root.count(), 1);
+        QVERIFY(root.contains("container"));
+
+        const auto *node = root.member("container");
+        QVERIFY(node != nullptr);
+        QVERIFY(node->isObject());
+
+        const auto &containerNode = node->toObject();
+        QCOMPARE(containerNode.count(), 3);
+
+        for (const auto &item : expected)
+        {
+            const QString &name = item.first;
+            const int value = item.second;
+
+            QVERIFY(containerNode.contains(name));
+
+            const auto *itemNode = containerNode.member(name);
+            QVERIFY(itemNode != nullptr);
+            QVERIFY(itemNode->isObject());
+
+            const auto &itemObject = itemNode->toObject();
+            QCOMPARE(itemObject.count(), 1);
+
+            const auto *paramNode = itemObject.member("param");
+            QVERIFY(paramNode != nullptr);
+            QVERIFY(paramNode->isValue());
+
+            const auto &paramValue = paramNode->toValue();
+            QCOMPARE(paramValue.value(), value);
+        }
+    }
+
+    // Negative tests ------------------------------------------------------------------------------
+
+    // Invalid parameter name
+    {
+        ConfigObjectNode root;
+
+        TestRequiredConfigContainerInvalidParameter configItem;
+
+        for (const auto &item : expected)
+        {
+            configItem.container.append(TestConfigContainerItem(item.first, item.second));
+        }
+
+        QVERIFY(!configItem.storeConfig(&root));
+
+        QCOMPARE(root.count(), 0);
     }
 }
 
