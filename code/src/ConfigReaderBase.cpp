@@ -491,7 +491,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReaderBase::transformConfig(
         const ConfigNodePath &sourceNodePath,
         const ConfigNodePath &destinationNodePath)
 {
-    Q_ASSERT(config);
+    Q_ASSERT(config != nullptr);
     Q_ASSERT(sourceNodePath.isAbsolute());
     Q_ASSERT(destinationNodePath.isAbsolute());
 

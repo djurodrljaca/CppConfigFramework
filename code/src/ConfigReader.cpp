@@ -326,7 +326,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::read(
 bool ConfigReader::readEnvironmentVariablesMember(const QJsonObject &rootObject,
                                                   EnvironmentVariables *environmentVariables) const
 {
-    Q_ASSERT(environmentVariables);
+    Q_ASSERT(environmentVariables != nullptr);
 
     // Read individual environment variables
     QMap<QString, QString> newEnvironmentVariables;
@@ -571,7 +571,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readObjectNode(
             {
                 // Explicit Value node (even if it is a JSON Object type)
                 memberNode = readValueNode(it.value(), memberNodePath);
-                Q_ASSERT(memberNode);
+                Q_ASSERT(memberNode != nullptr);
                 break;
             }
 
@@ -591,7 +591,7 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readObjectNode(
                 }
 
                 memberNode = readValueNode(resolvedValue, memberNodePath);
-                Q_ASSERT(memberNode);
+                Q_ASSERT(memberNode != nullptr);
                 break;
             }
 
@@ -653,14 +653,14 @@ std::unique_ptr<ConfigObjectNode> ConfigReader::readObjectNode(
                 else
                 {
                     memberNode = readValueNode(it.value(), memberNodePath);
-                    Q_ASSERT(memberNode);
+                    Q_ASSERT(memberNode != nullptr);
                 }
                 break;
             }
         }
 
         // Add member to the object
-        Q_ASSERT(memberNode);
+        Q_ASSERT(memberNode != nullptr);
         objectNode->setMember(memberName, std::move(memberNode));
     }
 

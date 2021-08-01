@@ -839,7 +839,7 @@ bool ConfigItem::storeConfigContainer(T &container,
     }
 
     // Convert container to an Object node
-    Q_ASSERT(config->setMember(parameterName, std::make_unique<ConfigObjectNode>()));
+    config->setMember(parameterName, std::make_unique<ConfigObjectNode>());
     ConfigObjectNode *parameterNode = &config->member(parameterName)->toObject();
 
     for (auto &it : ConfigContainerHelper<T>::toMap(container))
