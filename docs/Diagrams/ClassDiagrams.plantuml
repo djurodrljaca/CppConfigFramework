@@ -1,8 +1,10 @@
 @startuml ConfigNode
 ConfigNode <|-- ConfigValueNode
 ConfigNode <|-- ConfigObjectNode
+ConfigNode <|-- ConfigArrayNode
 ConfigNode <|-- ConfigNodeReference
 ConfigNode <|-- ConfigDerivedObjectNode
+ConfigNode <|-- ConfigDerivedArrayNode
 
 abstract class ConfigNode {
     {abstract} +clone()
@@ -31,7 +33,7 @@ abstract class ConfigNode
 
 class ConfigValueNode {
     {abstract} +clone()
-    {abstract} +type() 
+    {abstract} +type()
     +value()
     +setValue(value)
 }
@@ -44,7 +46,7 @@ abstract class ConfigNode
 
 class ConfigObjectNode {
     {abstract} +clone()
-    {abstract} +type() 
+    {abstract} +type()
     +count()
     +contains(name)
     +names()
@@ -57,6 +59,26 @@ class ConfigObjectNode {
 }
 @enduml
 
+@startuml ConfigArrayNode
+ConfigNode <|-- ConfigArrayNode
+
+abstract class ConfigNode
+
+class ConfigArrayNode {
+    {abstract} +clone()
+    {abstract} +type()
+    +count()
+    +at(index)
+    +prepend(node)
+    +insert(index, node)
+    +append(node)
+    +remove(index)
+    +removeAll()
+    +apply(arrayNode)
+    +apply(index, node)
+}
+@enduml
+
 @startuml ConfigNodeReference
 ConfigNode <|-- ConfigNodeReference
 
@@ -64,7 +86,7 @@ abstract class ConfigNode
 
 class ConfigNodeReference {
     {abstract} +clone()
-    {abstract} +type() 
+    {abstract} +type()
     +reference()
     +setReference(reference)
 }
@@ -77,11 +99,61 @@ abstract class ConfigNode
 
 class ConfigDerivedObjectNode {
     {abstract} +clone()
-    {abstract} +type() 
+    {abstract} +type()
     +bases()
     +setBases(bases)
     +config()
     +setConfig(config)
+}
+@enduml
+
+@startuml ConfigDerivedArrayNode
+ConfigNode <|-- ConfigDerivedArrayNode
+ConfigDerivedArrayNode *-- ConfigDerivedArrayNodeOperation
+ConfigDerivedArrayNodeOperation -- ConfigDerivedArrayNodeOperationType
+
+abstract class ConfigNode
+
+enum ConfigDerivedArrayNodeOperationType {
+    PrependElement,
+    PrependElements,
+    InsertElement,
+    InsertElements,
+    AppendElement,
+    AppendElements,
+    OverrideElement,
+    OverrideElements,
+    RemoveElements
+}
+
+class ConfigDerivedArrayNodeOperation {
+    +type()
+    +setType(type)
+    +destinationIndex()
+    +setDestination(index)
+    +base()
+    +setBase(base)
+    +sourceIndex()
+    +setSourceIndex(index)
+    +count()
+    +setCount(count)
+    +config()
+    +setConfig(config)
+}
+
+class ConfigDerivedArrayNode {
+    {abstract} +clone()
+    {abstract} +type()
+    +operationCount()
+    +operation(index)
+    +operations()
+    +setOperations(operations)
+    +prependOperation(operation)
+    +insertOperation(index, operation)
+    +appendOperation(operation)
+    +setOperation(index, operation)
+    +removeOperation(index)
+    +removeAllOperations()
 }
 @enduml
 
