@@ -41,8 +41,20 @@ namespace CppConfigFramework
 class CPPCONFIGFRAMEWORK_EXPORT ConfigReaderRegistry
 {
 public:
+    //! Copy constructor is disabled
+    ConfigReaderRegistry(const ConfigReaderRegistry &) = delete;
+
+    //! Move constructor is disabled
+    ConfigReaderRegistry(ConfigReaderRegistry &&) = delete;
+
     //! Destructor
     ~ConfigReaderRegistry() = default;
+
+    //! Copy constructor is disabled
+    ConfigReaderRegistry &operator=(const ConfigReaderRegistry &) = delete;
+
+    //! Move constructor is disabled
+    ConfigReaderRegistry &operator=(ConfigReaderRegistry &&) = delete;
 
     /*!
      * Gets the factory instance
