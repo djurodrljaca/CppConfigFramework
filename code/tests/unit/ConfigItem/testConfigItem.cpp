@@ -1058,7 +1058,7 @@ void TestConfigItem::testStoreConfigContainer()
             QVERIFY(paramNode->isValue());
 
             const auto &paramValue = paramNode->toValue();
-            QCOMPARE(paramValue.value(), value);
+            QCOMPARE(paramValue.value(), QJsonValue(value));
 
             index++;
         }
@@ -1107,7 +1107,7 @@ void TestConfigItem::testStoreConfigContainer()
             QVERIFY(paramNode->isValue());
 
             const auto &paramValue = paramNode->toValue();
-            QCOMPARE(paramValue.value(), value);
+			QCOMPARE(paramValue.value(), QJsonValue(value));
 
             index++;
         }
@@ -1156,7 +1156,7 @@ void TestConfigItem::testStoreConfigContainer()
             QVERIFY(paramNode->isValue());
 
             const auto &paramValue = paramNode->toValue();
-            QCOMPARE(paramValue.value(), value);
+			QCOMPARE(paramValue.value(), QJsonValue(value));
         }
     }
 
@@ -1203,7 +1203,7 @@ void TestConfigItem::testStoreConfigContainer()
             QVERIFY(paramNode->isValue());
 
             const auto &paramValue = paramNode->toValue();
-            QCOMPARE(paramValue.value(), value);
+			QCOMPARE(paramValue.value(), QJsonValue(value));
         }
     }
 
@@ -1252,7 +1252,7 @@ void TestConfigItem::testStoreConfigContainer()
             QVERIFY(paramNode->isValue());
 
             const auto &paramValue = paramNode->toValue();
-            QCOMPARE(paramValue.value(), value);
+			QCOMPARE(paramValue.value(), QJsonValue(value));
 
             index++;
         }
@@ -1301,7 +1301,7 @@ void TestConfigItem::testStoreConfigContainer()
             QVERIFY(paramNode->isValue());
 
             const auto &paramValue = paramNode->toValue();
-            QCOMPARE(paramValue.value(), value);
+			QCOMPARE(paramValue.value(), QJsonValue(value));
 
             index++;
         }
@@ -1350,7 +1350,7 @@ void TestConfigItem::testStoreConfigContainer()
             QVERIFY(paramNode->isValue());
 
             const auto &paramValue = paramNode->toValue();
-            QCOMPARE(paramValue.value(), value);
+			QCOMPARE(paramValue.value(), QJsonValue(value));
         }
     }
 
@@ -1397,7 +1397,7 @@ void TestConfigItem::testStoreConfigContainer()
             QVERIFY(paramNode->isValue());
 
             const auto &paramValue = paramNode->toValue();
-            QCOMPARE(paramValue.value(), value);
+			QCOMPARE(paramValue.value(), QJsonValue(value));
         }
     }
 
