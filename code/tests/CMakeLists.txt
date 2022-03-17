@@ -45,7 +45,13 @@ function(CppConfigFramework_AddTest)
             ${PARAM_ADDITIONAL_SOURCES}
             ${PARAM_ADDITIONAL_HEADERS}
         )
-
+	#
+	set_target_properties(${PARAM_TEST_NAME} PROPERTIES
+        CXX_STANDARD 14
+        CXX_STANDARD_REQUIRED YES
+        CXX_EXTENSIONS NO
+    )
+	
     target_include_directories(${PARAM_TEST_NAME} PUBLIC
             ${CMAKE_CURRENT_BINARY_DIR}
         )
