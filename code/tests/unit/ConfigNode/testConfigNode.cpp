@@ -33,7 +33,7 @@
 #include <QtTest/QTest>
 
 // System includes
-#include <array>
+
 // Forward declarations
 
 // Macros
